@@ -1,0 +1,67 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ / Android Studio
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# VS Code
+.vscode/
+
+# Flutter/Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+
+# pubspec lock
+pubspec.lock
+
+# Android
+android/.gradle/
+android/app/build/
+android/local.properties
+android/.kotlin/
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+
+# macOS
+macos/Pods/
+macos/Podfile
+macos/Podfile.lock
+
+# Windows
+windows/flutter/ephemeral/
+
+# Linux
+linux/flutter/ephemeral/
+
+# Web
+web/flutter_service_worker.js
+web/.dart_tool/
+
+# Coverage
+coverage/
+
+# Local properties
+local.properties

@@ -1,48 +1,48 @@
-enum PaymentGatewayType { stripe, razorpay }
+enum PaymentGatewayType { mpesa, stripe, razorpay }
 
 class PaymentIntentModel {
   final PaymentGatewayType type;
-
-  // Stripe fields
+  
+  // M-Pesa fields
+  final String? checkoutRequestId;
+  final String? merchantRequestId;
+  final String? customerMessage;
+  
+  // Legacy / Other possible fields if API still returns them for some reason
   final String? paymentIntentId;
   final String? clientSecret;
-
-  // Razorpay fields
   final String? orderId;
-  final int? amount;
-  final String? key;
 
   const PaymentIntentModel({
     required this.type,
+    this.checkoutRequestId,
+    this.merchantRequestId,
+    this.customerMessage,
     this.paymentIntentId,
     this.clientSecret,
     this.orderId,
-    this.amount,
-    this.key,
   });
 
   factory PaymentIntentModel.fromJson(Map<String, dynamic> json) {
     final typeString = (json['type']?.toString() ?? '').toLowerCase().trim();
-    final isRazorpay =
-        typeString == 'razorpay' ||
-        json['order_id'] != null ||
-        json['razorpay_order_id'] != null;
-
-    if (isRazorpay) {
-      return PaymentIntentModel(
-        type: PaymentGatewayType.razorpay,
-        orderId:
-            json['order_id']?.toString() ??
-            json['razorpay_order_id']?.toString(),
-        amount: int.tryParse(json['amount']?.toString() ?? ''),
-        key: json['key']?.toString(),
-      );
+    
+    // Default to mpesa if it matches or if it's implicitly M-Pesa based on keys
+    PaymentGatewayType gatewayType = PaymentGatewayType.mpesa;
+    
+    if (typeString == 'stripe') {
+      gatewayType = PaymentGatewayType.stripe;
+    } else if (typeString == 'razorpay') {
+      gatewayType = PaymentGatewayType.razorpay;
     }
 
     return PaymentIntentModel(
-      type: PaymentGatewayType.stripe,
+      type: gatewayType,
+      checkoutRequestId: json['CheckoutRequestID']?.toString() ?? json['checkoutRequestId']?.toString(),
+      merchantRequestId: json['MerchantRequestID']?.toString() ?? json['merchantRequestId']?.toString(),
+      customerMessage: json['CustomerMessage']?.toString() ?? json['customerMessage']?.toString(),
       paymentIntentId: json['paymentIntentId']?.toString(),
       clientSecret: json['client_secret']?.toString(),
+      orderId: json['order_id']?.toString(),
     );
   }
 }

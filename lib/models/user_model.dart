@@ -9,6 +9,7 @@ class UserModel {
   final DateTime? updatedAt;
   final int eventsAttended;
   final int upcomingEvents;
+  final String membershipStatus;
 
   UserModel({
     required this.id,
@@ -21,6 +22,7 @@ class UserModel {
     this.updatedAt,
     required this.eventsAttended,
     required this.upcomingEvents,
+    this.membershipStatus = 'Active',
   });
 
   String get fullName => '$firstName $lastName';
@@ -46,6 +48,7 @@ class UserModel {
       'updated_at': updatedAt?.toIso8601String(),
       'events_attended': eventsAttended,
       'upcoming_events': upcomingEvents,
+      'membership_status': membershipStatus,
     };
   }
 
@@ -89,6 +92,7 @@ class UserModel {
           : null,
       eventsAttended: int.tryParse(eventCount.toString()) ?? 0,
       upcomingEvents: int.tryParse(upcomingEvent.toString()) ?? 0,
+      membershipStatus: userData['membership_status'] as String? ?? 'Active',
     );
   }
 }

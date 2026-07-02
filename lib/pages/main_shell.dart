@@ -1,10 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../theme/app_colors.dart';
 import 'home.dart';
 import 'search.dart';
 import 'profile.dart';
+import 'community.dart';
+import 'shop.dart';
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -18,13 +19,29 @@ class _MainShellState extends State<MainShell>
   int _currentIndex = 0;
   late AnimationController _indicatorController;
 
-  final List<Widget> _pages = const [Home(), Search(), Profile()];
+  final List<Widget> _pages = const [
+    Home(),
+    Community(),
+    Shop(),
+    Search(),
+    Profile(),
+  ];
 
   final List<_NavItem> _navItems = const [
     _NavItem(
       icon: Icons.stadium_outlined,
       activeIcon: Icons.stadium_rounded,
       label: 'Home',
+    ),
+    _NavItem(
+      icon: Icons.groups_outlined,
+      activeIcon: Icons.groups_rounded,
+      label: 'Community',
+    ),
+    _NavItem(
+      icon: Icons.shopping_bag_outlined,
+      activeIcon: Icons.shopping_bag_rounded,
+      label: 'Shop',
     ),
     _NavItem(
       icon: Icons.search_outlined,
@@ -106,8 +123,8 @@ class _GlassNavBar extends StatelessWidget {
 
     return Padding(
       padding: EdgeInsets.only(
-        left: 24,
-        right: 24,
+        left: 12,
+        right: 12,
         bottom: bottomPadding == 0 ? 24 : bottomPadding + 8,
       ),
       child: ClipRRect(
@@ -212,67 +229,74 @@ class _NavBarItemState extends State<_NavBarItem>
             Transform.scale(scale: _scale.value, child: child),
         child: SizedBox(
           width: double.infinity,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Bouncy pill highlight
-              AnimatedScale(
-                duration: const Duration(milliseconds: 500),
-                curve: Curves.elasticOut,
-                scale: widget.isSelected ? 1.0 : 0.4,
-                child: AnimatedOpacity(
-                  duration: const Duration(milliseconds: 220),
-                  opacity: widget.isSelected ? 1.0 : 0.0,
-                  child: Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.symmetric(
-                      vertical: 6,
-                      horizontal: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: widget.isDark
-                          ? Colors.white.withValues(alpha: 0.15)
-                          : Colors.black.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                ),
-              ),
-              // Icon + label on top
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      widget.isSelected
-                          ? widget.item.activeIcon
-                          : widget.item.icon,
-                      size: widget.isSelected ? 26 : 24,
-                      color: widget.isDark
-                          ? Colors.white.withValues(alpha: 0.90)
-                          : Colors.black.withValues(alpha: 0.80),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      widget.item.label,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: widget.isSelected
-                            ? FontWeight.w700
-                            : FontWeight.w500,
-                        color: widget.isDark
-                            ? Colors.white.withValues(alpha: 0.90)
-                            : Colors.black.withValues(alpha: 0.80),
-                        letterSpacing: 0.3,
-                        height: 1.0,
+          child: Center(
+            child: OverflowBox(
+              maxWidth: double.infinity,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  // Bouncy pill highlight
+                  Positioned.fill(
+                    child: AnimatedScale(
+                      duration: const Duration(milliseconds: 500),
+                      curve: Curves.elasticOut,
+                      scale: widget.isSelected ? 1.0 : 0.4,
+                      child: AnimatedOpacity(
+                        duration: const Duration(milliseconds: 220),
+                        opacity: widget.isSelected ? 0.9 : 0.0,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: widget.isDark
+                                ? Colors.white.withValues(alpha: 0.15)
+                                : Colors.black.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(40),
+                          ),
+                        ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 6,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          widget.isSelected
+                              ? widget.item.activeIcon
+                              : widget.item.icon,
+                          size: widget.isSelected ? 28 : 28,
+                          color: widget.isDark
+                              ? Colors.white.withValues(alpha: 0.90)
+                              : Colors.black.withValues(alpha: 0.80),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          widget.item.label,
+                          maxLines: 1,
+                          softWrap: false,
+                          overflow: TextOverflow.visible,
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: widget.isSelected
+                                ? FontWeight.w700
+                                : FontWeight.w500,
+                            color: widget.isDark
+                                ? Colors.white.withValues(alpha: 0.90)
+                                : Colors.black.withValues(alpha: 0.80),
+                            letterSpacing: 0.1,
+                            height: 1.0,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

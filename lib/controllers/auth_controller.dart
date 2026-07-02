@@ -177,12 +177,20 @@ class AuthController extends StateNotifier<AuthState> {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
 
     try {
-      final success = await _authRepository.verifyOtp(encryptedEmail, otp);
-      if (success) {
-        state = state.copyWith(status: AuthStatus.unauthenticated);
-        return true;
-      }
-      return false;
+      final loginResponse = await _authRepository.verifyOtp(encryptedEmail, otp);
+      
+      _userNotifier.setUserFromLogin(loginResponse.user);
+      
+      state = state.copyWith(
+        status: AuthStatus.authenticated,
+        isGuest: false,
+        token: loginResponse.token,
+      );
+
+      _initFCMAfterLogin(loginResponse.token, loginResponse.user.id);
+      _fetchUserProfileAfterLogin();
+
+      return true;
     } catch (e) {
       state = state.copyWith(
         status: AuthStatus.error,

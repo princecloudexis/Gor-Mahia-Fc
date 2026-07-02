@@ -248,7 +248,7 @@ class _ProcessingPaymentDialog extends StatelessWidget {
               CircularProgressIndicator(color: Colors.white),
               SizedBox(height: 20),
               Text(
-                'Initiating M-Pesa payment...\nPlease check your phone and enter your PIN.\nDo not close the app.',
+                'Finalizing your order...\nPlease do not close the app.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.white, fontSize: 15),
               ),
@@ -795,7 +795,7 @@ class _BillingInfoSection extends StatelessWidget {
             const SizedBox(height: 10),
             _MinimalFieldWithController(
               fieldKey: phoneKey,
-              label: 'M-Pesa Phone Number',
+              label: 'Phone Number',
               controller: phoneController,
               keyboardType: TextInputType.phone,
               validator: (v) => v!.isEmpty ? 'Phone required' : null,

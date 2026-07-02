@@ -6,6 +6,7 @@ import 'package:eventsbooking/pages/editprofile.dart';
 import 'package:eventsbooking/pages/favorites.dart';
 import 'package:eventsbooking/pages/help_and_support.dart';
 import 'package:eventsbooking/pages/login.dart';
+import 'package:eventsbooking/pages/my_membership.dart';
 import 'package:eventsbooking/pages/policy.dart';
 import 'package:eventsbooking/pages/settings.dart';
 import 'package:eventsbooking/pages/signup.dart';
@@ -71,7 +72,6 @@ class _AuthenticatedView extends ConsumerWidget {
         _ProfileHeader(user: user),
         _StatsRow(user: user),
         _MenuSection(),
-        _LogoutButton(),
         // Extra bottom padding so content clears the floating glass nav bar
         SliverToBoxAdapter(
           child: SizedBox(height: MediaQuery.of(context).padding.bottom + 30),
@@ -209,6 +209,8 @@ class _ProfileHeader extends StatelessWidget {
     );
   }
 }
+
+
 
 // ─────────────────────────────────────────────
 // AVATAR FALLBACK — initials
@@ -352,6 +354,11 @@ class _StatPill extends StatelessWidget {
 class _MenuSection extends StatelessWidget {
   static final _menuItems = [
     MenuItem(
+      icon: Icons.card_membership_outlined,
+      title: 'My Membership',
+      destination: const MyMembership(),
+    ),
+    MenuItem(
       icon: Icons.favorite_outline,
       title: 'Favorites',
       destination: const Favorites(),
@@ -477,86 +484,7 @@ class _MenuTile extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────
-// LOGOUT BUTTON — minimal outlined
-// ─────────────────────────────────────────────
-class _LogoutButton extends ConsumerWidget {
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-        child: OutlinedButton.icon(
-          onPressed: () => _showLogoutDialog(context, ref),
-          icon: Icon(Icons.logout, size: 18, color: AppTheme.accentRed),
-          label: Text(
-            'Log Out',
-            style: TextStyle(
-              color: AppTheme.accentRed,
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-            ),
-          ),
-          style: OutlinedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            side: BorderSide(
-              color: AppTheme.accentRed.withOpacity(0.5),
-              width: 1,
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-            ),
-          ),
-        ).animate().fadeIn(duration: 400.ms, delay: 300.ms),
-      ),
-    );
-  }
 
-  void _showLogoutDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          'Log Out',
-          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
-        ),
-        content: const Text(
-          'Are you sure you want to log out?',
-          style: TextStyle(fontSize: 14),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: TextStyle(
-                color: Theme.of(context).textTheme.bodySmall?.color,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ref.read(authControllerProvider.notifier).logout();
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const Login()),
-                (route) => false,
-              );
-            },
-            child: Text(
-              'Log Out',
-              style: TextStyle(
-                color: AppTheme.accentRed,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 // ─────────────────────────────────────────────
 // GUEST VIEW — clean minimal

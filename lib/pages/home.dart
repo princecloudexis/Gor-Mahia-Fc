@@ -10,6 +10,7 @@ import 'package:eventsbooking/pages/notifications.dart';
 import 'package:eventsbooking/pages/profile.dart';
 import 'package:eventsbooking/pages/search.dart';
 import 'package:eventsbooking/providers/location_providers.dart';
+import 'package:eventsbooking/widgets/safe_svg_network.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -21,6 +22,7 @@ import '../models/event_model.dart';
 import '../models/category_model.dart';
 import '../theme/apptheme.dart';
 import '../theme/app_colors.dart';
+import '../providers/user_providers.dart';
 
 final selectedCategoryProvider = StateProvider<CategoryModel?>((ref) => null);
 final currentBannerIndexProvider = StateProvider<int>((ref) => 0);
@@ -120,10 +122,100 @@ class _HomeState extends ConsumerState<Home> {
     );
   }
 
-  // ─── GREETING ──────────────────────────────
+  // ─── GREETING & PROFILE HDR ──────────────────────────────
   Widget _buildGreeting(BuildContext context) {
+    final user = ref.watch(userProvider);
+    final storageBaseUrl = ref.watch(storageBaseUrlProvider);
+
     return SliverToBoxAdapter(
-      child: Padding(padding: const EdgeInsets.fromLTRB(20, 0, 20, 0)),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.bgSurfaceDark,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withOpacity(0.05)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Avatar
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.grey.shade800,
+                border: Border.all(color: AppColors.primaryGreen, width: 2),
+              ),
+              child: ClipOval(
+                child: (user?.cleanedImageUrl != null)
+                    ? CachedNetworkImage(
+                        imageUrl: user!.cleanedImageUrl!,
+                        fit: BoxFit.cover,
+                        errorWidget: (context, error, stackTrace) =>
+                            const Icon(Icons.person, color: Colors.grey),
+                      )
+                    : const Icon(Icons.person, color: Colors.white54),
+              ),
+            ),
+            const SizedBox(width: 16),
+            // Details
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Hello, ${user?.firstName ?? "Guest"} ${user?.lastName ?? ""}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(
+                        '${user?.membershipStatus ?? "Guest"} Member',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.7),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(
+                        Icons.verified,
+                        color: AppColors.primaryGreen,
+                        size: 14,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            // Location
+            Container(
+              padding: const EdgeInsets.only(left: 12),
+              decoration: BoxDecoration(
+                border: Border(
+                  left: BorderSide(color: Colors.white.withOpacity(0.1)),
+                ),
+              ),
+              child: _LocationWidget(),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -149,17 +241,39 @@ class _HomeState extends ConsumerState<Home> {
       pinned: true,
       floating: true,
       elevation: 0,
-      backgroundColor: Theme.of(
-        context,
-      ).scaffoldBackgroundColor.withOpacity(0.95),
+      backgroundColor: AppColors.bgDark,
       toolbarHeight: 60,
-      flexibleSpace: ClipRect(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Container(color: Colors.transparent),
-        ),
+      titleSpacing: 20,
+      title: Row(
+        children: [
+          Image.asset(
+            'assets/images/Gor-Mahia-FC-logo.png',
+            height: 34,
+            width: 34,
+          ),
+          const SizedBox(width: 8),
+          RichText(
+            text: const TextSpan(
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                fontStyle: FontStyle.italic,
+                letterSpacing: 0.5,
+              ),
+              children: [
+                TextSpan(
+                  text: "K'OGALO ",
+                  style: TextStyle(color: Colors.white),
+                ),
+                TextSpan(
+                  text: "FAN HUB",
+                  style: TextStyle(color: AppColors.greenLight),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
-      title: _LocationWidget(),
       actions: [
         _TopIconBtn(
           icon: Icons.notifications_none_rounded,
@@ -168,7 +282,7 @@ class _HomeState extends ConsumerState<Home> {
             MaterialPageRoute(builder: (_) => const Notifications()),
           ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 12),
       ],
     );
   }
@@ -387,54 +501,50 @@ class _LocationWidget extends ConsumerWidget {
         context,
         MaterialPageRoute(builder: (_) => const LocationSelectionPage()),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.location_on_rounded,
-            color: AppColors.primaryBlue,
-            size: 16,
-          ),
-          const SizedBox(width: 4),
-          Flexible(
-            child: locationAsync.when(
-              data: (location) => Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    location?.displayAddress ?? 'Select Location',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.location_on_rounded,
+                color: AppColors.primaryGreen,
+                size: 14,
+              ),
+              const SizedBox(width: 4),
+              Flexible(
+                child: locationAsync.when(
+                  data: (location) => Text(
+                    location?.displayAddress ?? 'Location',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
                       fontWeight: FontWeight.w600,
-                      fontSize: 13,
+                      fontSize: 12,
                     ),
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  Text(
-                    'Tap to change',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodySmall?.copyWith(fontSize: 10),
+                  loading: () => Text(
+                    'Finding...',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.7),
+                      fontSize: 12,
+                    ),
                   ),
-                ],
+                  error: (_, __) => Text(
+                    'Error',
+                    style: TextStyle(color: AppTheme.accentRed, fontSize: 12),
+                  ),
+                ),
               ),
-              loading: () => Text(
-                'Finding location...',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              error: (_, __) => Text(
-                'Location Error',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: AppTheme.accentRed),
-              ),
-            ),
+            ],
           ),
-          const SizedBox(width: 4),
-          Icon(
-            Icons.keyboard_arrow_down_rounded,
-            size: 16,
-            color: Theme.of(context).textTheme.bodySmall?.color,
+          const SizedBox(height: 2),
+          Text(
+            'Tap to change',
+            style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 9),
           ),
         ],
       ),
@@ -514,7 +624,7 @@ class _CategoryChip extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             if (iconUrl != null) ...[
-              SvgPicture.network(iconUrl!, height: 14, width: 14),
+              SafeSvgNetwork(iconUrl!, height: 14, width: 14),
               const SizedBox(width: 6),
             ],
             Text(

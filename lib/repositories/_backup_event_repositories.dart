@@ -809,57 +809,37 @@ class EventRepository {
 
   Future<PaymentIntentModel> createPaymentIntent({
     required double amount,
-    required String orderId,
-    required String phoneNumber,
+    required int eventId,
+    required String streetAddress,
   }) async {
     try {
       final response = await _apiClient.dio.post(
-        '/user/mpesa/stk-push',
+        '/user/payment/intent',
         data: {
-          'order_id': orderId,
-          'amount': amount.round(),
-          'phone': int.tryParse(phoneNumber) ?? phoneNumber,
+          'amount': amount.toString(),
+          'event_id': eventId.toString(),
+          'street_address': streetAddress,
         },
       );
 
       if (response.data is! Map<String, dynamic>) {
-        throw Exception('Invalid response format from M-Pesa API.');
+        throw Exception('Invalid response format from payment intent API.');
       }
 
       final Map<String, dynamic> body = response.data as Map<String, dynamic>;
-      // Assuming backend returns success: true and maybe some M-Pesa fields
-      final success = body['success'] == true || body['CheckoutRequestID'] != null;
+      final hasStripePayload =
+          body['client_secret'] != null || body['paymentIntentId'] != null;
+      final hasRazorpayPayload =
+          body['order_id'] != null && body['amount'] != null;
+      final success =
+          body['success'] == true || hasStripePayload || hasRazorpayPayload;
 
       if (success) {
         return PaymentIntentModel.fromJson(body);
       } else {
-        throw Exception(body['message'] ?? 'Failed to initiate M-Pesa payment.');
+        throw Exception(body['message'] ?? 'Failed to create payment intent.');
       }
     } on DioException catch (e) {
-      throw AppException.fromDioException(e);
-    }
-  }
-
-  Future<String> checkMpesaPaymentStatus(String checkoutRequestId) async {
-    try {
-      final response = await _apiClient.dio.get('/user/mpesa/status/$checkoutRequestId');
-      
-      if (response.data is Map) {
-        final data = response.data as Map<String, dynamic>;
-        final status = (data['status']?.toString() ?? '').toLowerCase();
-        
-        if (status == 'success' || status == 'completed' || data['success'] == true) {
-          return 'success';
-        } else if (status == 'failed' || status == 'cancelled' || status == 'error') {
-          return 'failed';
-        }
-        // Otherwise assume it's still pending
-        return 'pending';
-      }
-      return 'pending';
-    } on DioException catch (e) {
-      // If the webhook hasn't processed, it might return 404 or similar, treat as pending
-      if (e.response?.statusCode == 404) return 'pending';
       throw AppException.fromDioException(e);
     }
   }
@@ -870,7 +850,9 @@ class EventRepository {
     required String streetAddress,
     required int eventId,
     String? paymentIntentId,
-    String? checkoutRequestId,
+    String? razorpayPaymentId,
+    String? razorpayOrderId,
+    String? razorpaySignature,
     String? promoCode,
     required Map<String, TicketHolderInfoModel> ticketHolders,
   }) async {
@@ -884,12 +866,17 @@ class EventRepository {
       if (paymentIntentId != null && paymentIntentId.isNotEmpty) {
         data['paymentIntentId'] = paymentIntentId;
       }
-      if (checkoutRequestId != null && checkoutRequestId.isNotEmpty) {
-        data['checkoutRequestId'] = checkoutRequestId;
-        data['CheckoutRequestID'] = checkoutRequestId; // send both just in case
+      if (razorpayPaymentId != null && razorpayPaymentId.isNotEmpty) {
+        data['razorpay_payment_id'] = razorpayPaymentId;
+      }
+      if (razorpayOrderId != null && razorpayOrderId.isNotEmpty) {
+        data['razorpay_order_id'] = razorpayOrderId;
+      }
+      if (razorpaySignature != null && razorpaySignature.isNotEmpty) {
+        data['razorpay_signature'] = razorpaySignature;
       }
       if (!data.containsKey('paymentIntentId') &&
-          !data.containsKey('checkoutRequestId')) {
+          !data.containsKey('razorpay_payment_id')) {
         throw Exception('No payment confirmation details were provided.');
       }
 

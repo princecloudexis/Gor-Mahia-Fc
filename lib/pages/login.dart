@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/apptheme.dart';
+import '../theme/app_colors.dart';
 import './signup.dart';
 import './main_shell.dart';
 import '../controllers/auth_controller.dart';
@@ -69,6 +70,8 @@ class _LoginState extends ConsumerState<Login>
   Widget build(BuildContext context) {
     // Listen for auth state changes
     ref.listen<AuthState>(authControllerProvider, (previous, next) {
+      if (ModalRoute.of(context)?.isCurrent != true) return;
+
       if (next.status == AuthStatus.error && next.errorMessage != null) {
         _showErrorSnackBar(next.errorMessage!);
         ref.read(authControllerProvider.notifier).resetError();
@@ -82,82 +85,18 @@ class _LoginState extends ConsumerState<Login>
         ref.watch(authControllerProvider).status == AuthStatus.loading;
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppColors.bgDark,
       body: SafeArea(
         child: Stack(
           children: [
-            // Background decorations
-            _buildBackgroundDecorations(),
-
             // Main content
             _buildMainContent(isLoading),
-
-            // Skip button
-            _buildSkipButton(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildBackgroundDecorations() {
-    return Stack(
-      children: [
-        Positioned(
-          top: -100,
-          right: -100,
-          child: _BackgroundCircle(
-            size: 200,
-            color: AppTheme.primaryPink.withOpacity(0.15),
-          ),
-        ).animate().scale(duration: 800.ms, curve: Curves.easeOut),
-        Positioned(
-          bottom: -50,
-          left: -50,
-          child: _BackgroundCircle(
-            size: 150,
-            color: AppTheme.primaryPink.withOpacity(0.1),
-          ),
-        ).animate().scale(duration: 1000.ms, curve: Curves.easeOut),
-      ],
-    );
-  }
-
-  Widget _buildSkipButton() {
-    return Positioned(
-      top: 16,
-      right: 16,
-      child: TextButton(
-        onPressed: _handleSkipLogin,
-        style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          backgroundColor: Colors.black.withOpacity(0.05),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Skip',
-              style: TextStyle(
-                color: AppTheme.textDark.withOpacity(0.7),
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(width: 4),
-            Icon(
-              Icons.arrow_forward_rounded,
-              size: 16,
-              color: AppTheme.textDark.withOpacity(0.7),
-            ),
-          ],
-        ),
-      ),
-    ).animate().fadeIn(duration: 500.ms, delay: 300.ms);
-  }
 
   Widget _buildMainContent(bool isLoading) {
     return SingleChildScrollView(
@@ -208,15 +147,15 @@ class _LoginState extends ConsumerState<Login>
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: AppTheme.textDark,
+            color: Colors.white,
           ),
         ).animate().fadeIn(duration: 500.ms, delay: 200.ms),
         const SizedBox(height: 8),
         Text(
-          'Sign in to continue to Ticketify',
+          'Sign in to continue to Gor Mahia FC',
           style: TextStyle(
             fontSize: 15,
-            color: AppTheme.textLight.withOpacity(0.8),
+            color: Colors.white70,
           ),
         ).animate().fadeIn(duration: 500.ms, delay: 300.ms),
       ],
@@ -274,7 +213,7 @@ class _LoginState extends ConsumerState<Login>
           _obscurePassword
               ? Icons.visibility_off_outlined
               : Icons.visibility_outlined,
-          color: AppTheme.textLight,
+          color: Colors.white.withOpacity(0.5),
           size: 20,
         ),
         onPressed: () {
@@ -299,7 +238,7 @@ class _LoginState extends ConsumerState<Login>
         child: const Text(
           'Forgot Password?',
           style: TextStyle(
-            color: AppTheme.primaryPink,
+            color: AppTheme.primaryGreen,
             fontSize: 13,
             fontWeight: FontWeight.w500,
           ),
@@ -326,17 +265,10 @@ class _LoginState extends ConsumerState<Login>
         },
         child: Container(
           width: double.infinity,
-          height: 54,
+          height: 56,
           decoration: BoxDecoration(
-            gradient: AppTheme.primaryGradient,
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.primaryPink.withOpacity(0.3),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
-              ),
-            ],
+            color: AppColors.primaryGreen,
+            borderRadius: BorderRadius.circular(12),
           ),
           child: Center(
             child: AnimatedSwitcher(
@@ -384,7 +316,7 @@ class _LoginState extends ConsumerState<Login>
           child: const Text(
             'Sign Up',
             style: TextStyle(
-              color: AppTheme.primaryPink,
+              color: AppTheme.primaryGreen,
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),
@@ -408,11 +340,6 @@ class _LoginState extends ConsumerState<Login>
     }
   }
 
-  void _handleSkipLogin() {
-    HapticFeedback.lightImpact();
-    ref.read(authControllerProvider.notifier).skipLogin();
-    _navigateToHome();
-  }
 
   void _navigateToHome() {
     Navigator.pushAndRemoveUntil(
@@ -483,26 +410,6 @@ class _LoginState extends ConsumerState<Login>
   }
 }
 
-class _BackgroundCircle extends StatelessWidget {
-  final double size;
-  final Color color;
-
-  const _BackgroundCircle({required this.size, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: size,
-      height: size,
-      child: Icon(
-        Icons.sports_soccer_rounded,
-        size: size,
-        color: color,
-      ),
-    );
-  }
-}
-
 class _AppLogo extends StatelessWidget {
   const _AppLogo();
 
@@ -560,68 +467,63 @@ class _InputField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: AppColors.bgSurfaceDark,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white.withOpacity(0.04)),
       ),
-      child: TextFormField(
-        controller: controller,
-        obscureText: obscureText,
-        keyboardType: keyboardType,
-        textInputAction: textInputAction,
-        onFieldSubmitted: onFieldSubmitted,
-        style: const TextStyle(color: AppTheme.textDark, fontSize: 15),
-        decoration: InputDecoration(
-          labelText: labelText,
-          hintText: hintText,
-          labelStyle: TextStyle(
-            color: AppTheme.textLight.withOpacity(0.8),
-            fontSize: 14,
-          ),
-          hintStyle: TextStyle(
-            color: AppTheme.textLight.withOpacity(0.5),
-            fontSize: 14,
-          ),
-          prefixIcon: Icon(prefixIcon, color: AppTheme.primaryPink, size: 20),
-          suffixIcon: suffixIcon,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide.none,
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide.none,
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(
-              color: AppTheme.primaryPink,
-              width: 1.5,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              labelText,
+              style: TextStyle(
+                color: AppColors.textSecondaryDark.withOpacity(0.7),
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: Colors.red.shade300, width: 1),
-          ),
-          focusedErrorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: Colors.red.shade400, width: 1.5),
-          ),
-          filled: true,
-          fillColor: Colors.white,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
-          ),
-          errorStyle: const TextStyle(fontSize: 11),
+            const SizedBox(height: 2),
+            TextFormField(
+              controller: controller,
+              obscureText: obscureText,
+              keyboardType: keyboardType,
+              textInputAction: textInputAction,
+              onFieldSubmitted: onFieldSubmitted,
+              style: const TextStyle(color: Colors.white, fontSize: 14),
+              decoration: InputDecoration(
+                hintText: hintText,
+                hintStyle: TextStyle(
+                  color: Colors.white.withOpacity(0.2),
+                  fontSize: 14,
+                ),
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                errorBorder: InputBorder.none,
+                focusedErrorBorder: InputBorder.none,
+                isDense: true,
+                contentPadding: EdgeInsets.zero,
+                suffixIconConstraints: const BoxConstraints(maxHeight: 20),
+                suffixIcon: suffixIcon != null
+                    ? Container(
+                        alignment: Alignment.centerRight,
+                        width: 30,
+                        child: suffixIcon,
+                      )
+                    : null,
+                prefixIconConstraints: const BoxConstraints(minWidth: 32, maxHeight: 20),
+                prefixIcon: Container(
+                  alignment: Alignment.centerLeft,
+                  width: 32,
+                  child: Icon(prefixIcon, color: AppColors.primaryGreen, size: 18),
+                ),
+              ),
+              validator: validator,
+            ),
+          ],
         ),
-        validator: validator,
       ),
     );
   }
@@ -654,7 +556,7 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
     return Container(
       padding: EdgeInsets.only(bottom: bottomPadding),
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: AppColors.bgSurfaceDark,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SingleChildScrollView(
@@ -684,7 +586,7 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.textDark,
+                  color: Colors.white,
                 ),
               ),
               const SizedBox(height: 8),
@@ -694,7 +596,7 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
                 'Enter your email address and we\'ll send you a link to reset your password.',
                 style: TextStyle(
                   fontSize: 14,
-                  color: AppTheme.textLight.withOpacity(0.8),
+                  color: Colors.white70,
                   height: 1.4,
                 ),
               ),
@@ -724,7 +626,7 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
                   child: Text(
                     'Cancel',
                     style: TextStyle(
-                      color: AppTheme.textLight.withOpacity(0.8),
+                      color: Colors.white70,
                       fontSize: 15,
                     ),
                   ),
@@ -745,13 +647,13 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
       child: ElevatedButton(
         onPressed: _isLoading ? null : _handlePasswordReset,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppTheme.primaryPink,
+          backgroundColor: AppTheme.primaryGreen,
           foregroundColor: Colors.white,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
-          disabledBackgroundColor: AppTheme.primaryPink.withOpacity(0.6),
+          disabledBackgroundColor: AppTheme.primaryGreen.withOpacity(0.6),
         ),
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 200),
@@ -848,7 +750,7 @@ class _SuccessDialog extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.bgSurfaceDark,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
@@ -869,16 +771,16 @@ class _SuccessDialog extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: AppTheme.textDark,
+                color: Colors.white,
               ),
             ),
             const SizedBox(height: 8),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 14,
-                color: AppTheme.textLight.withOpacity(0.8),
+                color: Colors.white70,
                 height: 1.4,
               ),
             ),
@@ -888,7 +790,7 @@ class _SuccessDialog extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: onPressed,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryPink,
+                  backgroundColor: AppTheme.primaryGreen,
                   foregroundColor: Colors.white,
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(vertical: 12),

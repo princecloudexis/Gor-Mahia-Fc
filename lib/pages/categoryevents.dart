@@ -7,6 +7,7 @@ import 'package:eventsbooking/pages/details.dart';
 import 'package:eventsbooking/pages/search.dart';
 import 'package:eventsbooking/providers/location_providers.dart';
 import 'package:eventsbooking/repositories/event_repositories.dart';
+import 'package:eventsbooking/widgets/safe_svg_network.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -156,7 +157,7 @@ class _AppBar extends ConsumerWidget {
               borderRadius: BorderRadius.circular(10),
               border: Border.all(color: AppTheme.primaryPink.withOpacity(0.2)),
             ),
-            child: SvgPicture.network(
+            child: SafeSvgNetwork(
               category.iconUrl,
               width: 18,
               height: 18,

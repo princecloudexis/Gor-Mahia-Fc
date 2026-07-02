@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:eventsbooking/providers/theme_provider.dart';
 import 'package:eventsbooking/theme/apptheme.dart';
+import 'package:eventsbooking/controllers/auth_controller.dart';
+import 'package:eventsbooking/pages/login.dart';
 
 class Settings extends ConsumerWidget {
   const Settings({super.key});
@@ -31,7 +33,12 @@ class Settings extends ConsumerWidget {
         elevation: 0,
       ),
       body: ListView(
-        children: [_buildThemeSection(context, ref, currentTheme, isDark)],
+        children: [
+          _buildThemeSection(context, ref, currentTheme, isDark),
+          const SizedBox(height: 16),
+          _LogoutButton(),
+          const SizedBox(height: 32),
+        ],
       ),
     );
   }
@@ -154,6 +161,86 @@ class Settings extends ConsumerWidget {
           ref.read(themeProvider.notifier).setThemeMode(newValue);
         }
       },
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+// LOGOUT BUTTON
+// ─────────────────────────────────────────────
+class _LogoutButton extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: OutlinedButton.icon(
+        onPressed: () => _showLogoutDialog(context, ref),
+        icon: const Icon(Icons.logout, size: 18, color: AppTheme.accentRed),
+        label: const Text(
+          'Log Out',
+          style: TextStyle(
+            color: AppTheme.accentRed,
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          side: BorderSide(
+            color: AppTheme.accentRed.withOpacity(0.5),
+            width: 1,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Log Out',
+          style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
+        ),
+        content: const Text(
+          'Are you sure you want to log out?',
+          style: TextStyle(fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                color: Theme.of(context).textTheme.bodySmall?.color,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              ref.read(authControllerProvider.notifier).logout();
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const Login()),
+                (route) => false,
+              );
+            },
+            child: const Text(
+              'Log Out',
+              style: TextStyle(
+                color: AppTheme.accentRed,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

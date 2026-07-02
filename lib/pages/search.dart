@@ -11,6 +11,7 @@ import '../api/api_client.dart';
 import '../models/event_model.dart';
 import '../providers/search_provider.dart';
 import '../theme/app_colors.dart';
+import '../widgets/safe_svg_network.dart';
 
 class Search extends ConsumerStatefulWidget {
   const Search({super.key});
@@ -549,7 +550,7 @@ class _CategoryFilterBar extends ConsumerWidget {
             isSelected: isSelected,
             onTap: () => notifier.selectCategory(category.id),
             avatar: category.iconUrl.isNotEmpty
-                ? SvgPicture.network(
+                ? SafeSvgNetwork(
                     category.iconUrl,
                     width: 18,
                     height: 18,

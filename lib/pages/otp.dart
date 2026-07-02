@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'package:eventsbooking/pages/login.dart';
+import 'package:eventsbooking/pages/membership_signup.dart';
 import 'package:eventsbooking/providers/fcm_providers.dart';
 import 'package:eventsbooking/theme/apptheme.dart';
+import 'package:eventsbooking/theme/app_colors.dart';
+import 'package:eventsbooking/widgets/breadcrumb_tab_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -98,6 +101,7 @@ class _OtpVerificationState extends ConsumerState<OtpVerification> {
   @override
   Widget build(BuildContext context) {
     ref.listen<AuthState>(authControllerProvider, (_, next) {
+      if (ModalRoute.of(context)?.isCurrent != true) return;
       if (next.status == AuthStatus.error) {
         _showErrorSnackBar(next.errorMessage ?? 'An unknown error occurred');
       }
@@ -107,38 +111,56 @@ class _OtpVerificationState extends ConsumerState<OtpVerification> {
     final isLoading = authState.status == AuthStatus.loading;
 
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
-      body: Stack(
-        children: [
-          const _BackgroundDecorations(),
-          SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                children: [
-                  const SizedBox(height: 60),
-                  _AppHeader(email: widget.email),
-                  const SizedBox(height: 40),
-                  _OtpInputFields(
-                    controllers: _otpControllers,
-                    focusNodes: _focusNodes,
-                    onCompleted: _handleVerify,
-                  ),
-                  const SizedBox(height: 32),
-                  _VerifyButton(isLoading: isLoading, onTap: _handleVerify),
-                  const SizedBox(height: 32),
-                  _ResendCodeSection(onResend: _handleResend),
-                ],
+      backgroundColor: AppColors.bgDark,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Colors.white,
+            size: 20,
+          ),
+          onPressed: () => Navigator.maybePop(context),
+        ),
+        title: const Text(
+          'OTP Verification',
+          style: TextStyle(color: Colors.white, fontSize: 16),
+        ),
+        centerTitle: true,
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            const BreadcrumbTabBar(activeStep: 2),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    _AppHeader(email: widget.email),
+                    const SizedBox(height: 40),
+                    _OtpInputFields(
+                      controllers: _otpControllers,
+                      focusNodes: _focusNodes,
+                      onCompleted: _handleVerify,
+                    ),
+                    const SizedBox(height: 32),
+                    _VerifyButton(isLoading: isLoading, onTap: _handleVerify),
+                    const SizedBox(height: 32),
+                    _ResendCodeSection(onResend: _handleResend),
+                  ],
+                ),
               ),
             ),
-          ),
-          const _BackButton(),
-        ],
+          ],
+        ),
       ),
     );
   }
 
- void _showSuccessDialog() {
+  void _showSuccessDialog() {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -147,13 +169,26 @@ class _OtpVerificationState extends ConsumerState<OtpVerification> {
         gradient: AppTheme.primaryGradient,
         title: 'Verification Successful!',
         message: 'Your account is now active. Welcome!',
-        buttonText: 'Continue to Login',
+        buttonText: 'Continue',
         onPressed: () {
           Navigator.pop(dialogContext);
-          Navigator.pushAndRemoveUntil(
+          Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const Login()),
-            (route) => false,
+            PageRouteBuilder(
+              pageBuilder: (_, __, ___) => const MembershipSignup(),
+              transitionsBuilder: (_, animation, __, child) {
+                return SlideTransition(
+                  position:
+                      Tween<Offset>(
+                            begin: const Offset(1.0, 0.0),
+                            end: Offset.zero,
+                          )
+                          .chain(CurveTween(curve: Curves.easeInOut))
+                          .animate(animation),
+                  child: child,
+                );
+              },
+            ),
           );
         },
       ),
@@ -192,22 +227,24 @@ class _AppHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final maskedEmail = email.replaceRange(3, email.indexOf('@'), '****');
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        const _AppLogo(),
-        const SizedBox(height: 24),
-        Text(
+        const Text(
           'Verify Your Account',
-          style: theme.textTheme.displaySmall,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
         ).animate().fadeIn(duration: 500.ms, delay: 200.ms),
         const SizedBox(height: 12),
         Text(
           'Enter the 4-digit code sent to\n$maskedEmail',
           textAlign: TextAlign.center,
-          style: theme.textTheme.bodyLarge?.copyWith(color: AppTheme.textLight),
+          style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16),
         ).animate().fadeIn(duration: 500.ms, delay: 300.ms),
       ],
     );
@@ -241,15 +278,9 @@ class _OtpInputFieldsState extends State<_OtpInputFields> {
           width: 64,
           height: 64,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.bgSurfaceDark,
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            border: Border.all(color: Colors.white.withOpacity(0.05)),
           ),
           child: TextFormField(
             controller: widget.controllers[index],
@@ -259,9 +290,10 @@ class _OtpInputFieldsState extends State<_OtpInputFields> {
             textAlign: TextAlign.center,
             textAlignVertical: TextAlignVertical.top,
             maxLength: 1,
-            style: theme.textTheme.headlineMedium?.copyWith(
+            style: const TextStyle(
               fontWeight: FontWeight.bold,
-              color: AppTheme.textDark,
+              color: Colors.white,
+              fontSize: 24,
             ),
             decoration: InputDecoration(
               counterText: '',
@@ -373,14 +405,14 @@ class _ResendCodeSection extends ConsumerWidget {
             children: [
               Text(
                 "Didn't receive the code? ",
-                style: TextStyle(color: AppTheme.textLight),
+                style: TextStyle(color: Colors.white.withOpacity(0.7)),
               ),
               TextButton(
                 onPressed: onResend,
                 child: const Text(
                   'Resend',
                   style: TextStyle(
-                    color: AppTheme.primaryPink,
+                    color: AppColors.greenLight,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -392,96 +424,9 @@ class _ResendCodeSection extends ConsumerWidget {
   }
 }
 
-class _BackButton extends StatelessWidget {
-  const _BackButton();
-  @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      top: 46,
-      left: 16,
-      child: IconButton.filledTonal(
-        onPressed: () => Navigator.maybePop(context),
-        icon: const Icon(Icons.arrow_back_sharp, color: Colors.white),
-        style: IconButton.styleFrom(backgroundColor: const Color(0xFFEC398B)),
-      ),
-    ).animate().fadeIn(duration: 500.ms);
-  }
-}
+// Removed _BackButton as we now use AppBar back button
 
-class _BackgroundDecorations extends StatelessWidget {
-  const _BackgroundDecorations();
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Positioned(
-          top: -100,
-          right: -100,
-          child: _BackgroundCircle(
-            size: 200,
-            gradient: AppTheme.primaryGradient.scale(0.5),
-          ),
-        ).animate().scale(duration: 1000.ms, curve: Curves.easeOut),
-        Positioned(
-          bottom: -50,
-          left: -50,
-          child: _BackgroundCircle(
-            size: 150,
-            gradient: AppTheme.primaryGradient.scale(0.5),
-          ),
-        ).animate().scale(duration: 1200.ms, curve: Curves.easeOut),
-      ],
-    );
-  }
-}
-
-class _BackgroundCircle extends StatelessWidget {
-  final double size;
-  final Gradient gradient;
-  const _BackgroundCircle({required this.size, required this.gradient});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: size,
-      height: size,
-      child: Icon(
-        Icons.sports_soccer_rounded,
-        size: size,
-        color: AppTheme.primaryPink.withValues(alpha: 0.15),
-      ),
-    );
-  }
-}
-
-class _AppLogo extends StatelessWidget {
-  const _AppLogo();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 120,
-      height: 120,
-      decoration: BoxDecoration(
-        gradient: AppTheme.primaryGradient,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primaryPink.withOpacity(0.3),
-            blurRadius: 30,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: const Icon(
-        Icons.mark_email_read_outlined,
-        size: 60,
-        color: Colors.white,
-      ),
-    ).animate().scale(duration: 800.ms, curve: Curves.elasticOut).fadeIn();
-  }
-}
+// Removed background decorations and logo classes to maintain a sleek minimalist design.
 
 class _InfoDialog extends StatelessWidget {
   final IconData icon;
@@ -502,37 +447,67 @@ class _InfoDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      backgroundColor: AppColors.bgSurfaceDark,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(color: Colors.white.withOpacity(0.05)),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(32.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
-              width: 70,
-              height: 70,
-              decoration: BoxDecoration(
-                gradient: gradient,
+              width: 72,
+              height: 72,
+              decoration: const BoxDecoration(
+                color: AppColors.primaryGreen,
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: Colors.white, size: 32),
+              child: Icon(icon, color: Colors.white, size: 36),
             ).animate().scale(duration: 600.ms, curve: Curves.elasticOut),
             const SizedBox(height: 24),
-            Text(title, style: theme.textTheme.headlineSmall),
-            const SizedBox(height: 8),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
             Text(
               message,
               textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.7),
+                fontSize: 15,
+              ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: onPressed,
-                child: Text(buttonText),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primaryGreen,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 0,
+                ),
+                child: Text(
+                  buttonText,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ],

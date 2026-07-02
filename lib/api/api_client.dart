@@ -5,7 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiClient {
   final Dio dio;
-  static const String _apiBaseUrl = 'https://undrgrnd.staging-workhub.com/api';
+  static const String _apiBaseUrl =
+      'https://footballclub.staging-workhub.com/api';
 
   // Cache SharedPreferences instance
   SharedPreferences? _prefs;

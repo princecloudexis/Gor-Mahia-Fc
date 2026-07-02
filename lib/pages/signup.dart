@@ -1,20 +1,21 @@
-import 'package:eventsbooking/pages/main_shell.dart';
 import 'package:eventsbooking/pages/login.dart';
 import 'package:eventsbooking/pages/otp.dart';
 import 'package:eventsbooking/theme/apptheme.dart';
+import 'package:eventsbooking/theme/app_colors.dart';
+import 'package:eventsbooking/widgets/breadcrumb_tab_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controllers/auth_controller.dart';
 import '../repositories/auth_repository.dart';
 
-final firstNameControllerProvider = Provider.autoDispose<TextEditingController>(
-  (ref) {
-    final c = TextEditingController();
-    ref.onDispose(c.dispose);
-    return c;
-  },
-);
+final firstNameControllerProvider = Provider.autoDispose<TextEditingController>((
+  ref,
+) {
+  final c = TextEditingController();
+  ref.onDispose(c.dispose);
+  return c;
+});
 
 final lastNameControllerProvider = Provider.autoDispose<TextEditingController>((
   ref,
@@ -30,6 +31,7 @@ final signupEmailControllerProvider =
       ref.onDispose(c.dispose);
       return c;
     });
+
 final phoneControllerProvider = Provider.autoDispose<TextEditingController>((
   ref,
 ) {
@@ -37,12 +39,21 @@ final phoneControllerProvider = Provider.autoDispose<TextEditingController>((
   ref.onDispose(c.dispose);
   return c;
 });
+
+final nationalIdControllerProvider =
+    Provider.autoDispose<TextEditingController>((ref) {
+      final c = TextEditingController();
+      ref.onDispose(c.dispose);
+      return c;
+    });
+
 final signupPasswordControllerProvider =
     Provider.autoDispose<TextEditingController>((ref) {
       final c = TextEditingController();
       ref.onDispose(c.dispose);
       return c;
     });
+
 final confirmPasswordControllerProvider =
     Provider.autoDispose<TextEditingController>((ref) {
       final c = TextEditingController();
@@ -55,11 +66,18 @@ final firstNameValidatorProvider =
       (ref) =>
           (v) => v!.isEmpty ? 'Please enter your first name' : null,
     );
+
 final lastNameValidatorProvider =
     Provider.autoDispose<String? Function(String?)>(
       (ref) =>
           (v) => v!.isEmpty ? 'Please enter your last name' : null,
     );
+final nationalIdValidatorProvider =
+    Provider.autoDispose<String? Function(String?)>(
+      (ref) =>
+          (v) => v!.isEmpty ? 'Please enter your National ID / Passport' : null,
+    );
+
 final emailValidatorProvider = Provider.autoDispose<String? Function(String?)>((
   ref,
 ) {
@@ -72,6 +90,7 @@ final emailValidatorProvider = Provider.autoDispose<String? Function(String?)>((
     return null;
   };
 });
+
 final passwordValidatorProvider =
     Provider.autoDispose<String? Function(String?)>((ref) {
       return (value) {
@@ -80,6 +99,7 @@ final passwordValidatorProvider =
         return null;
       };
     });
+
 final phoneValidatorProvider = Provider.autoDispose<String? Function(String?)>((
   ref,
 ) {
@@ -142,20 +162,63 @@ class _SignupState extends ConsumerState<Signup> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     ref.listen<AuthState>(authControllerProvider, (previous, next) {
+      if (ModalRoute.of(context)?.isCurrent != true) return;
       if (next.status == AuthStatus.error) {
         showErrorSnackBar(next.errorMessage ?? 'An error occurred');
       }
     });
+
     final authState = ref.watch(authControllerProvider);
     final isLoading = authState.status == AuthStatus.loading;
+
     return Scaffold(
-      backgroundColor: AppTheme.backgroundColor,
+      backgroundColor: AppColors.bgDark, // Deep dark background from reference
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Colors.white,
+            size: 20,
+          ),
+          onPressed: () => Navigator.maybePop(context),
+        ),
+        title: const Text(
+          'Registration',
+          style: TextStyle(color: Colors.white, fontSize: 16),
+        ),
+        centerTitle: true,
+      ),
       body: SafeArea(
-        child: Stack(
+        child: Column(
           children: [
-            backgroundDecoration(),
-            mainContent(isLoading),
-            skipButton(),
+            const BreadcrumbTabBar(activeStep: 1),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'PERSONAL INFORMATION',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.2,
+                      ),
+                    ).animate().fadeIn(duration: 500.ms),
+                    const SizedBox(height: 20),
+                    form(),
+                    const SizedBox(height: 30),
+                    submitButton(isLoading),
+                    const SizedBox(height: 30),
+                    signInLink(),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -168,11 +231,17 @@ class _SignupState extends ConsumerState<Signup> with TickerProviderStateMixin {
       final phone = ref.read(phoneControllerProvider).text.trim();
       final password = ref.read(signupPasswordControllerProvider).text;
 
+      final firstName = ref.read(firstNameControllerProvider).text.trim();
+      final lastName = ref.read(lastNameControllerProvider).text.trim();
+
+      final nationalId = ref.read(nationalIdControllerProvider).text.trim();
+
       final formData = SignupFormData(
-        firstName: ref.read(firstNameControllerProvider).text.trim(),
-        lastName: ref.read(lastNameControllerProvider).text.trim(),
+        firstName: firstName,
+        lastName: lastName,
         email: email,
         phone: phone,
+        nationalId: nationalId,
         password: password,
         passwordConfirmation: password,
       );
@@ -188,259 +257,40 @@ class _SignupState extends ConsumerState<Signup> with TickerProviderStateMixin {
   }
 
   void showSuccessDialog(String encryptedEmail, String email, String phone) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  gradient: AppTheme.primaryGradient,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.check_rounded,
-                  color: Colors.white,
-                  size: 40,
-                ),
-              ).animate().scale(duration: 600.ms, curve: Curves.elasticOut),
-              const SizedBox(height: 24),
-              const Text(
-                'Account Created!',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textDark,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Please verify your account with the OTP sent to your email.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: AppTheme.textLight),
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  navigateToOtp(encryptedEmail, email, phone);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.primaryPink,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 12,
-                  ),
-                ),
-                child: const Text(
-                  'Verify Now',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    navigateToOtp(encryptedEmail, email, phone);
   }
 
   void navigateToOtp(String encryptedEmail, String email, String phone) {
     Navigator.push(
-    context,
-    PageRouteBuilder(
-      pageBuilder: (_, __, ___) => OtpVerification(
-        encryptedEmail: encryptedEmail,
-        email: email,
-        phone: phone,
+      context,
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => OtpVerification(
+          encryptedEmail: encryptedEmail,
+          email: email,
+          phone: phone,
+        ),
+        transitionsBuilder: (_, animation, __, child) {
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(1.0, 0.0),
+              end: Offset.zero,
+            ).chain(CurveTween(curve: Curves.easeInOut)).animate(animation),
+            child: child,
+          );
+        },
       ),
-      transitionsBuilder: (_, animation, __, child) {
-        return SlideTransition(
-          position: Tween<Offset>(
-            begin: const Offset(1.0, 0.0),
-            end: Offset.zero,
-          ).chain(CurveTween(curve: Curves.easeInOut)).animate(animation),
-          child: child,
-        );
-      },
-    ),
-  );
-}
+    );
+  }
 
   void showErrorSnackBar(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Colors.red,
+        backgroundColor: AppColors.error,
         behavior: SnackBarBehavior.floating,
-        margin: const EdgeInsets.all(16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
     ref.read(authControllerProvider.notifier).resetError();
-  }
-
-  Widget backgroundDecoration() {
-    return Stack(
-      children: [
-        Positioned(
-          top: -100,
-          right: -100,
-          child: SizedBox(
-            width: 200,
-            height: 200,
-            child: Icon(
-              Icons.sports_soccer_rounded,
-              size: 200,
-              color: AppTheme.primaryPink.withValues(alpha: 0.15),
-            ),
-          ),
-        ).animate().scale(duration: 1000.ms, curve: Curves.easeOut),
-        Positioned(
-          bottom: -50,
-          left: -50,
-          child: SizedBox(
-            width: 150,
-            height: 150,
-            child: Icon(
-              Icons.sports_soccer_rounded,
-              size: 150,
-              color: AppTheme.primaryPink.withValues(alpha: 0.10),
-            ),
-          ),
-        ).animate().scale(duration: 1200.ms, curve: Curves.easeOut),
-      ],
-    );
-  }
-
-  Widget skipButton() {
-    return Positioned(
-      top: 20,
-      right: 20,
-      child: TextButton(
-        onPressed: () {
-          Navigator.pop(context);
-          ref.read(authControllerProvider.notifier).skipLogin();
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const MainShell()),
-            (route) => false,
-          );
-        },
-        style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          backgroundColor: Colors.white.withValues(alpha: 0.2),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(25),
-            side: BorderSide(
-              color: Colors.white.withValues(alpha: 0.2),
-              width: 1.5,
-            ),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Skip',
-              style: TextStyle(
-                color: AppTheme.textDark.withValues(alpha: 0.8),
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Icon(
-              Icons.arrow_forward_rounded,
-              size: 18,
-              color: AppTheme.textDark.withValues(alpha: 0.8),
-            ),
-          ],
-        ),
-      ),
-    ).animate().fadeIn(duration: 600.ms, delay: 300.ms).slideX(begin: 0.2);
-  }
-
-  Widget mainContent(bool isLoading) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        children: [
-          const SizedBox(height: 40),
-          logo(),
-          const SizedBox(height: 30),
-          header(),
-          const SizedBox(height: 40),
-          form(),
-          const SizedBox(height: 30),
-          submitButton(isLoading),
-          const SizedBox(height: 30),
-          signInLink(),
-          const SizedBox(height: 20),
-        ],
-      ),
-    );
-  }
-
-  Widget logo() {
-    return Container(
-      width: 110,
-      height: 110,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(18),
-      child: Image.asset(
-        'assets/images/Gor-Mahia-FC-logo.png',
-        fit: BoxFit.contain,
-      ),
-    ).animate().scale(duration: 800.ms, curve: Curves.elasticOut).fadeIn();
-  }
-
-  Widget header() {
-    return Column(
-      children: [
-        const Text(
-          'Create Account',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-            color: AppTheme.textDark,
-          ),
-        ).animate().fadeIn(duration: 600.ms, delay: 200.ms),
-        const SizedBox(height: 8),
-        const Text(
-          'Join us to discover amazing events',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 16, color: AppTheme.textLight),
-        ).animate().fadeIn(duration: 600.ms, delay: 300.ms),
-      ],
-    );
   }
 
   Widget form() {
@@ -448,6 +298,7 @@ class _SignupState extends ConsumerState<Signup> with TickerProviderStateMixin {
     final lastNameController = ref.watch(lastNameControllerProvider);
     final emailController = ref.watch(signupEmailControllerProvider);
     final phoneController = ref.watch(phoneControllerProvider);
+    final nationalIdController = ref.watch(nationalIdControllerProvider);
     final passwordController = ref.watch(signupPasswordControllerProvider);
     final confirmPasswordController = ref.watch(
       confirmPasswordControllerProvider,
@@ -457,6 +308,7 @@ class _SignupState extends ConsumerState<Signup> with TickerProviderStateMixin {
     final lastNameValidator = ref.watch(lastNameValidatorProvider);
     final emailValidator = ref.watch(emailValidatorProvider);
     final phoneValidator = ref.watch(phoneValidatorProvider);
+    final nationalIdValidator = ref.watch(nationalIdValidatorProvider);
     final passwordValidator = ref.watch(passwordValidatorProvider);
     final confirmPasswordValidator = ref.watch(
       confirmPasswordValidatorProvider,
@@ -469,72 +321,82 @@ class _SignupState extends ConsumerState<Signup> with TickerProviderStateMixin {
       key: _formKey,
       child: Column(
         children: [
-          textField(
+          _buildSleekField(
             controller: firstNameController,
             label: 'First Name',
-            icon: Icons.person_outline,
+            hint: 'John',
             validator: firstNameValidator,
-            delay: 2,
+            delay: 1,
           ),
-          const SizedBox(height: 16),
-          textField(
+          const SizedBox(height: 12),
+          _buildSleekField(
             controller: lastNameController,
             label: 'Last Name',
-            icon: Icons.person_outline,
+            hint: 'Ochieng\'',
             validator: lastNameValidator,
-            delay: 3,
+            delay: 1,
           ),
-          const SizedBox(height: 16),
-          textField(
-            controller: emailController,
-            label: 'Email',
-            icon: Icons.email_outlined,
-            keyboardType: TextInputType.emailAddress,
-            validator: emailValidator,
-            delay: 4,
-          ),
-          const SizedBox(height: 16),
-          textField(
+          const SizedBox(height: 12),
+          _buildSleekField(
             controller: phoneController,
             label: 'Phone Number',
-            icon: Icons.phone_outlined,
+            hint: '07XX XXX XXX',
             keyboardType: TextInputType.phone,
-            prefixText: '+91 ',
             validator: phoneValidator,
-            delay: 5,
+            delay: 2,
           ),
-          const SizedBox(height: 16),
-          textField(
+          const SizedBox(height: 12),
+          _buildSleekField(
+            controller: emailController,
+            label: 'Email Address',
+            hint: 'john.ochieng@email.com',
+            keyboardType: TextInputType.emailAddress,
+            validator: emailValidator,
+            delay: 3,
+          ),
+          const SizedBox(height: 12),
+          _buildSleekField(
+            controller: nationalIdController,
+            label: 'National ID / Passport (Optional)',
+            hint: '12345678',
+            keyboardType: TextInputType.number,
+            validator: nationalIdValidator,
+            delay: 4,
+          ),
+          const SizedBox(height: 12),
+          _buildSleekField(
             controller: passwordController,
             label: 'Password',
-            icon: Icons.lock_outline_rounded,
+            hint: '••••••••',
             obscureText: obscurePassword,
             validator: passwordValidator,
-            delay: 6,
+            delay: 5,
             suffixIcon: IconButton(
               icon: Icon(
                 obscurePassword ? Icons.visibility_off : Icons.visibility,
-                color: AppTheme.textLight,
+                color: AppTheme.textLightInDarkMode,
+                size: 20,
               ),
               onPressed: () =>
                   ref.read(passwordVisibilityProvider.notifier).state =
                       !obscurePassword,
             ),
           ),
-          const SizedBox(height: 16),
-          textField(
+          const SizedBox(height: 12),
+          _buildSleekField(
             controller: confirmPasswordController,
             label: 'Confirm Password',
-            icon: Icons.lock_outline_rounded,
+            hint: '••••••••',
             obscureText: obscureConfirmPassword,
             validator: confirmPasswordValidator,
-            delay: 7,
+            delay: 6,
             suffixIcon: IconButton(
               icon: Icon(
                 obscureConfirmPassword
                     ? Icons.visibility_off
                     : Icons.visibility,
-                color: AppTheme.textLight,
+                color: AppTheme.textLightInDarkMode,
+                size: 20,
               ),
               onPressed: () =>
                   ref.read(confirmPasswordVisibilityProvider.notifier).state =
@@ -546,62 +408,72 @@ class _SignupState extends ConsumerState<Signup> with TickerProviderStateMixin {
     );
   }
 
-  Widget textField({
+  Widget _buildSleekField({
     required TextEditingController controller,
     required String label,
-    required IconData icon,
+    required String hint,
     required String? Function(String?) validator,
     required int delay,
     TextInputType? keyboardType,
     bool obscureText = false,
-    String? prefixText,
     Widget? suffixIcon,
   }) {
     return Container(
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            color: AppColors.bgSurfaceDark,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.white.withOpacity(0.04)),
           ),
-          child: TextFormField(
-            controller: controller,
-            keyboardType: keyboardType,
-            obscureText: obscureText,
-            style: const TextStyle(color: AppTheme.textDark, fontSize: 16),
-            decoration: InputDecoration(
-              labelText: label,
-              labelStyle: const TextStyle(color: AppTheme.textLight),
-              prefixIcon: Icon(icon, color: AppTheme.primaryPink),
-              prefixText: prefixText,
-              prefixStyle: const TextStyle(
-                color: AppTheme.textDark,
-                fontSize: 16,
-              ),
-              suffixIcon: suffixIcon,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16),
-                borderSide: BorderSide.none,
-              ),
-              filled: true,
-              fillColor: Colors.white,
-              errorStyle: const TextStyle(fontSize: 12),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 16,
-              ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: AppColors.textSecondaryDark.withOpacity(0.7),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                TextFormField(
+                  controller: controller,
+                  keyboardType: keyboardType,
+                  obscureText: obscureText,
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  decoration: InputDecoration(
+                    hintText: hint,
+                    hintStyle: TextStyle(
+                      color: Colors.white.withOpacity(0.2),
+                      fontSize: 14,
+                    ),
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    focusedErrorBorder: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                    suffixIconConstraints: const BoxConstraints(maxHeight: 20),
+                    suffixIcon: suffixIcon != null
+                        ? Container(
+                            alignment: Alignment.centerRight,
+                            width: 30,
+                            child: suffixIcon,
+                          )
+                        : null,
+                  ),
+                  validator: validator,
+                ),
+              ],
             ),
-            validator: validator,
           ),
         )
         .animate()
-        .fadeIn(duration: 500.ms, delay: (delay * 100).ms)
-        .slideY(begin: 0.1);
+        .fadeIn(duration: 400.ms, delay: (delay * 100).ms)
+        .slideY(begin: 0.05);
   }
 
   Widget submitButton(bool isLoading) {
@@ -626,15 +498,8 @@ class _SignupState extends ConsumerState<Signup> with TickerProviderStateMixin {
           height: 56,
           width: double.infinity,
           decoration: BoxDecoration(
-            gradient: AppTheme.primaryGradient,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: AppTheme.primaryPink.withValues(alpha: 0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
-              ),
-            ],
+            color: AppColors.primaryGreen,
+            borderRadius: BorderRadius.circular(12),
           ),
           child: Center(
             child: isLoading
@@ -647,26 +512,26 @@ class _SignupState extends ConsumerState<Signup> with TickerProviderStateMixin {
                     ),
                   )
                 : const Text(
-                    'Get Started',
+                    'Next',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
           ),
         ),
       ),
-    ).animate().fadeIn(duration: 500.ms, delay: 800.ms).slideY(begin: 0.2);
+    ).animate().fadeIn(duration: 500.ms, delay: 800.ms);
   }
 
   Widget signInLink() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const Text(
+        Text(
           'Already have an account? ',
-          style: TextStyle(color: AppTheme.textLight),
+          style: TextStyle(color: Colors.white.withOpacity(0.7)),
         ),
         TextButton(
           onPressed: () => Navigator.pushReplacement(
@@ -676,12 +541,12 @@ class _SignupState extends ConsumerState<Signup> with TickerProviderStateMixin {
           child: const Text(
             'Sign In',
             style: TextStyle(
-              color: AppTheme.primaryPink,
-              fontWeight: FontWeight.w600,
+              color: AppColors.greenLight,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),
       ],
-    ).animate().fadeIn(duration: 500.ms, delay: 800.ms);
+    ).animate().fadeIn(duration: 500.ms, delay: 900.ms);
   }
 }

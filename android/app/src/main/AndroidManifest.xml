@@ -78,22 +78,9 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="text/plain" />
             </intent-filter>
-
-            <!-- Stripe return URL -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="eventsbooking" android:host="stripe-redirect" />
-            </intent-filter>
         </activity>
         
-        <!-- Stripe Redirect Activity -->
-        <activity
-            android:name="com.stripe.android.payments.StripeRedirectLauncherActivity"
-            android:exported="true"
-            android:theme="@style/StripeTransparentTheme" />
-        
+
         <!-- Flutter Embedding -->
         <meta-data
             android:name="flutterEmbedding"

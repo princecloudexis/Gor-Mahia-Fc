@@ -16,6 +16,7 @@ class SignupFormData {
   final String lastName;
   final String email;
   final String phone;
+  final String nationalId;
   final String password;
   final String passwordConfirmation;
 
@@ -24,6 +25,7 @@ class SignupFormData {
     required this.lastName,
     required this.email,
     required this.phone,
+    required this.nationalId,
     required this.password,
     required this.passwordConfirmation,
   });
@@ -34,6 +36,7 @@ class SignupFormData {
       'last_name': lastName,
       'email': email,
       'phone_number': phone,
+      'national_id': nationalId,
       'password': password,
       'password_confirmation': passwordConfirmation,
     };
@@ -160,7 +163,7 @@ class AuthRepository {
     }
   }
 
-  Future<bool> verifyOtp(String encryptedEmail, String otp) async {
+  Future<LoginResponse> verifyOtp(String encryptedEmail, String otp) async {
     try {
       final response = await _apiClient.dio.post(
         '/user/register/submit',
@@ -168,7 +171,11 @@ class AuthRepository {
       );
       final responseData = response.data as Map<String, dynamic>;
       if (responseData['success'] == true) {
-        return true;
+        final user = UserModel.fromJson(responseData);
+        final token = responseData['token'] as String;
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('auth_token', token);
+        return LoginResponse(token: token, user: user);
       } else {
         throw Exception(responseData['message'] ?? 'OTP Verification failed.');
       }

@@ -7,6 +7,8 @@ import 'package:eventsbooking/theme/apptheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:eventsbooking/pages/coming_soon.dart';
+import 'package:eventsbooking/pages/membership_signup.dart';
 
 class MyMembership extends ConsumerWidget {
   const MyMembership({super.key});
@@ -14,24 +16,32 @@ class MyMembership extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(userProvider);
+    final detailsAsync = ref.watch(membershipDetailsProvider);
 
     if (user == null) {
       return Scaffold(
-        backgroundColor: AppColors.bgDark,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           elevation: 0,
           leading: IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.arrow_back_ios_new,
-              color: Colors.white,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black87,
               size: 20,
             ),
             onPressed: () => Navigator.maybePop(context),
           ),
-          title: const Text(
+          title: Text(
             'My Membership',
-            style: TextStyle(color: Colors.white, fontSize: 16),
+            style: TextStyle(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black87,
+              fontSize: 16,
+            ),
           ),
           centerTitle: true,
         ),
@@ -42,34 +52,62 @@ class MyMembership extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.bgDark,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new,
-            color: Colors.white,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black87,
             size: 20,
           ),
           onPressed: () => Navigator.maybePop(context),
         ),
-        title: const Text(
+        title: Text(
           'My Membership',
-          style: TextStyle(color: Colors.white, fontSize: 16),
+          style: TextStyle(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black87,
+            fontSize: 16,
+          ),
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(vertical: 24),
-        child: Column(
-          children: [
-            _MembershipCard(user: user),
-            const SizedBox(height: 24),
-            _MembershipDetails(user: user),
-            const SizedBox(height: 24),
-            const _QuickActions(),
-          ],
+      body: detailsAsync.when(
+        data: (details) {
+          return SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(vertical: 24),
+            child: Column(
+              children: [
+                _MembershipCard(user: user, details: details),
+                const SizedBox(height: 24),
+                _MembershipDetails(details: details),
+                const SizedBox(height: 24),
+                _QuickActions(details: details),
+              ],
+            ),
+          );
+        },
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: AppColors.primaryGreen),
+        ),
+        error: (error, _) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 48, color: Colors.red),
+              const SizedBox(height: 16),
+              const Text('Failed to load membership details.'),
+              TextButton(
+                onPressed: () => ref.invalidate(membershipDetailsProvider),
+                child: const Text('Try Again'),
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -81,11 +119,13 @@ class MyMembership extends ConsumerWidget {
 // ─────────────────────────────────────────────
 class _MembershipCard extends StatelessWidget {
   final UserModel user;
-  const _MembershipCard({required this.user});
+  final MembershipDetails details;
+  const _MembershipCard({required this.user, required this.details});
 
   @override
   Widget build(BuildContext context) {
     final String? fullImageUrl = user.cleanedImageUrl;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -93,7 +133,10 @@ class _MembershipCard extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
-            colors: [AppColors.primaryGreen.withOpacity(0.2), AppColors.bgDark],
+            colors: [
+              AppColors.primaryGreen.withOpacity(0.2),
+              isDark ? AppColors.bgDark : Colors.grey.shade100,
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -142,9 +185,9 @@ class _MembershipCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    user.fullName,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    details.memberName.isNotEmpty ? details.memberName : user.fullName,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black87,
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -153,29 +196,39 @@ class _MembershipCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Green Army Member', // Mock data, should come from user model in the future
+                    details.membershipType,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.8),
+                      color: isDark
+                          ? Colors.white.withOpacity(0.8)
+                          : Colors.black87,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Member ID: GM1968-000123',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.6),
-                      fontSize: 12,
+                  if (details.memberId != null && details.memberId!.isNotEmpty && details.memberId != 'null') ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      'Member ID: ${details.memberId}',
+                      style: TextStyle(
+                        color: isDark
+                            ? Colors.white.withOpacity(0.6)
+                            : Colors.black54,
+                        fontSize: 12,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Since: May 2024',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.6),
-                      fontSize: 12,
+                  ],
+                  if (details.since != null && details.since!.isNotEmpty && details.since != 'null') ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      'Since: ${details.since}',
+                      style: TextStyle(
+                        color: isDark
+                            ? Colors.white.withOpacity(0.6)
+                            : Colors.black54,
+                        fontSize: 12,
+                      ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
@@ -233,8 +286,8 @@ class _AvatarFallback extends StatelessWidget {
 // MEMBERSHIP DETAILS
 // ─────────────────────────────────────────────
 class _MembershipDetails extends StatelessWidget {
-  final UserModel user;
-  const _MembershipDetails({required this.user});
+  final MembershipDetails details;
+  const _MembershipDetails({required this.details});
 
   @override
   Widget build(BuildContext context) {
@@ -250,62 +303,72 @@ class _MembershipDetails extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'MEMBERSHIP DETAILS',
               style: TextStyle(
-                color: Colors.white,
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white
+                    : Colors.black87,
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
                 letterSpacing: 1.0,
               ),
             ),
             const SizedBox(height: 16),
-            _buildDetailRow(context, 'Membership Type', 'Green Army Member'),
-            const SizedBox(height: 16),
-            Divider(
-              height: 1,
-              thickness: 0.5,
-              color: Theme.of(context).dividerColor,
-            ),
-            const SizedBox(height: 16),
-            _buildDetailRow(context, 'Valid Until', '31 May 2025'),
-            const SizedBox(height: 16),
-            Divider(
-              height: 1,
-              thickness: 0.5,
-              color: Theme.of(context).dividerColor,
-            ),
-            const SizedBox(height: 16),
-            _buildDetailRow(context, 'Branch', 'Kisumu Branch'),
-            const SizedBox(height: 16),
-            Divider(
-              height: 1,
-              thickness: 0.5,
-              color: Theme.of(context).dividerColor,
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Status',
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.6),
-                    fontSize: 14,
+            _buildDetailRow(context, 'Membership Type', details.membershipType),
+            if (details.validUntil != null && details.validUntil!.isNotEmpty && details.validUntil != 'null') ...[
+              const SizedBox(height: 16),
+              Divider(
+                height: 1,
+                thickness: 0.5,
+                color: Theme.of(context).dividerColor,
+              ),
+              const SizedBox(height: 16),
+              _buildDetailRow(context, 'Valid Until', details.validUntil!),
+            ],
+            if (details.branch != null && details.branch!.isNotEmpty && details.branch != 'null') ...[
+              const SizedBox(height: 16),
+              Divider(
+                height: 1,
+                thickness: 0.5,
+                color: Theme.of(context).dividerColor,
+              ),
+              const SizedBox(height: 16),
+              _buildDetailRow(context, 'Branch', details.branch!),
+            ],
+            if (details.status != null && details.status!.isNotEmpty && details.status != 'null') ...[
+              const SizedBox(height: 16),
+              Divider(
+                height: 1,
+                thickness: 0.5,
+                color: Theme.of(context).dividerColor,
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Status',
+                    style: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white.withOpacity(0.6)
+                          : Colors.black54,
+                      fontSize: 14,
+                    ),
                   ),
-                ),
-                Text(
-                  user.membershipStatus,
-                  style: TextStyle(
-                    color: user.membershipStatus.toLowerCase() == 'active'
-                        ? AppColors.success
-                        : AppColors.error,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
+                  Text(
+                    details.status!,
+                    style: TextStyle(
+                      color: details.status!.toLowerCase() == 'active'
+                          ? AppColors.success
+                          : AppColors.error,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-              ],
-            ),
+                ],
+              ),
+            ],
           ],
         ),
       ).animate().fadeIn(duration: 400.ms, delay: 200.ms).slideY(begin: 0.1),
@@ -313,17 +376,21 @@ class _MembershipDetails extends StatelessWidget {
   }
 
   Widget _buildDetailRow(BuildContext context, String label, String value) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           label,
-          style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 14),
+          style: TextStyle(
+            color: isDark ? Colors.white.withOpacity(0.6) : Colors.black54,
+            fontSize: 14,
+          ),
         ),
         Text(
           value,
-          style: const TextStyle(
-            color: Colors.white,
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black87,
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
@@ -337,19 +404,28 @@ class _MembershipDetails extends StatelessWidget {
 // QUICK ACTIONS
 // ─────────────────────────────────────────────
 class _QuickActions extends StatelessWidget {
-  const _QuickActions();
+  final MembershipDetails details;
+  const _QuickActions({required this.details});
 
   @override
   Widget build(BuildContext context) {
+    final isFreePlan = details.memberId == null ||
+                       details.memberId!.isEmpty ||
+                       details.memberId == 'null' ||
+                       details.status == null ||
+                       details.status!.toLowerCase() != 'active';
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'QUICK ACTIONS',
             style: TextStyle(
-              color: Colors.white,
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black87,
               fontSize: 13,
               fontWeight: FontWeight.bold,
               letterSpacing: 1.0,
@@ -364,17 +440,42 @@ class _QuickActions extends StatelessWidget {
             ),
             child: Column(
               children: [
+                if (isFreePlan) ...[
+                  _buildActionTile(
+                    context,
+                    icon: Icons.workspace_premium_outlined,
+                    title: 'Purchase Membership',
+                    subtitle: 'Upgrade to a premium plan',
+                    isFirst: true,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const MembershipSignup(),
+                        ),
+                      );
+                    },
+                  ),
+                  Divider(
+                    height: 1,
+                    thickness: 0.5,
+                    indent: 64,
+                    color: Theme.of(context).dividerColor,
+                  ),
+                ],
                 _buildActionTile(
                   context,
                   icon: Icons.calendar_month_outlined,
                   title: 'Monthly Contributions',
                   subtitle: 'Pay and manage contributions',
-                  isFirst: true,
+                  isFirst: !isFreePlan,
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const MonthlyContribution(),
+                        builder: (context) => const ComingSoonPage(
+                          title: 'Monthly Contributions',
+                        ),
                       ),
                     );
                   },
@@ -390,6 +491,15 @@ class _QuickActions extends StatelessWidget {
                   icon: Icons.receipt_long_outlined,
                   title: 'Payment History',
                   subtitle: 'View all payments and receipts',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const ComingSoonPage(title: 'Payment History'),
+                      ),
+                    );
+                  },
                 ),
                 Divider(
                   height: 1,
@@ -403,6 +513,15 @@ class _QuickActions extends StatelessWidget {
                   title: 'Membership Renewal',
                   subtitle: 'Renew your membership',
                   isLast: true,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const ComingSoonPage(title: 'Membership Renewal'),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -421,6 +540,7 @@ class _QuickActions extends StatelessWidget {
     bool isLast = false,
     VoidCallback? onTap,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return InkWell(
       onTap: onTap ?? () {},
       borderRadius: BorderRadius.vertical(
@@ -447,8 +567,8 @@ class _QuickActions extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black87,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                     ),
@@ -457,7 +577,9 @@ class _QuickActions extends StatelessWidget {
                   Text(
                     subtitle,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.6),
+                      color: isDark
+                          ? Colors.white.withOpacity(0.6)
+                          : Colors.black54,
                       fontSize: 12,
                     ),
                   ),
@@ -466,7 +588,7 @@ class _QuickActions extends StatelessWidget {
             ),
             Icon(
               Icons.chevron_right,
-              color: Colors.white.withOpacity(0.4),
+              color: isDark ? Colors.white.withOpacity(0.4) : Colors.black38,
               size: 20,
             ),
           ],

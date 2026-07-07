@@ -74,3 +74,7 @@ final userProvider = StateNotifierProvider<UserNotifier, UserModel?>((ref) {
 final hasUserProvider = Provider<bool>((ref) {
   return ref.watch(userProvider) != null;
 });
+
+final membershipDetailsProvider = FutureProvider<MembershipDetails>((ref) {
+  return ref.watch(authRepositoryProvider).getMembershipDetails();
+});

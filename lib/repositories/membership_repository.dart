@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:eventsbooking/api/api_client.dart';
 import 'package:eventsbooking/models/membership_models.dart';
 import 'package:eventsbooking/utils/app_exception.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class MembershipRepository {
@@ -57,6 +58,7 @@ class MembershipRepository {
     required String packageName,
   }) async {
     try {
+      debugPrint('💳 [MembershipPay] POST /user/pay → phone=$phone, membershipId=$membershipId, amount=$amount');
       final response = await _apiClient.dio.post(
         '/user/pay',
         data: {
@@ -67,12 +69,14 @@ class MembershipRepository {
           'package_name': packageName,
         },
       );
+      debugPrint('💳 [MembershipPay] /user/pay RAW RESPONSE: ${response.data}');
 
       if (response.data != null && response.data['success'] == true) {
         return PaymentInitiateResponse.fromJson(response.data);
       }
       throw Exception(response.data['message'] ?? 'Failed to initiate payment');
     } on DioException catch (e) {
+      debugPrint('💳 [MembershipPay] /user/pay ERROR: ${e.response?.data}');
       throw AppException.fromDioException(e);
     } catch (e) {
       throw Exception(e.toString());
@@ -85,21 +89,27 @@ class MembershipRepository {
     required String plan,
   }) async {
     try {
+      // NOTE: We do NOT send 'payment_status' here — we are ASKING for the status,
+      // not telling the backend what it is. Sending 'pending' was causing the API
+      // to always respond with pending.
+      debugPrint('💳 [MembershipPay] POST /user/status → checkoutRequestId=$checkoutRequestId, membershipId=$membershipId');
       final response = await _apiClient.dio.post(
         '/user/status',
         data: {
           'checkout_request_id': checkoutRequestId,
-          'payment_status': 'pending',
           'membership_id': membershipId,
           'plan': plan,
         },
       );
+      // Log the FULL raw response so we can see exactly what the API returns
+      debugPrint('💳 [MembershipPay] /user/status RAW RESPONSE: ${response.data}');
 
-      if (response.data != null && response.data['success'] == true) {
+      if (response.statusCode == 200) {
         return PaymentStatusResponse.fromJson(response.data);
       }
       throw Exception(response.data['message'] ?? 'Failed to check payment status');
     } on DioException catch (e) {
+      debugPrint('💳 [MembershipPay] /user/status ERROR: ${e.response?.data}');
       throw AppException.fromDioException(e);
     } catch (e) {
       throw Exception(e.toString());

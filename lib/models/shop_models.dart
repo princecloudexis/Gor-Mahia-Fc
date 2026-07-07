@@ -1,0 +1,396 @@
+class ShopBanner {
+  final int id;
+  final String title;
+  final String? subtitle;
+  final String? buttonText;
+  final String image;
+  final String? targetType;
+  final int? targetId;
+
+  ShopBanner({
+    required this.id,
+    required this.title,
+    this.subtitle,
+    this.buttonText,
+    required this.image,
+    this.targetType,
+    this.targetId,
+  });
+
+  factory ShopBanner.fromJson(Map<String, dynamic> json) {
+    String? parsedImage = json['image'];
+    if (parsedImage != null && parsedImage.startsWith('http:https://')) {
+      parsedImage = parsedImage.replaceFirst('http:https://', 'https://');
+    }
+
+    return ShopBanner(
+      id: json['id'],
+      title: json['title'] ?? '',
+      subtitle: json['subtitle'],
+      buttonText: json['button_text'],
+      image: parsedImage ?? '',
+      targetType: json['target_type'],
+      targetId: json['target_id'],
+    );
+  }
+}
+
+class ShopCategory {
+  final int id;
+  final String name;
+  final String? icon;
+
+  ShopCategory({
+    required this.id,
+    required this.name,
+    this.icon,
+  });
+
+  factory ShopCategory.fromJson(Map<String, dynamic> json) {
+    String? parsedIcon = json['icon'];
+    if (parsedIcon != null && parsedIcon.startsWith('http:https://')) {
+      parsedIcon = parsedIcon.replaceFirst('http:https://', 'https://');
+    }
+
+    return ShopCategory(
+      id: json['id'],
+      name: json['name'] ?? '',
+      icon: parsedIcon,
+    );
+  }
+}
+
+class ShopProductVariant {
+  final int id;
+  final String size;
+  final int stock;
+  final double? priceOverride;
+
+  ShopProductVariant({
+    required this.id,
+    required this.size,
+    required this.stock,
+    this.priceOverride,
+  });
+
+  factory ShopProductVariant.fromJson(Map<String, dynamic> json) {
+    return ShopProductVariant(
+      id: json['id'],
+      size: json['size'] ?? '',
+      stock: json['stock'] ?? 0,
+      priceOverride: json['price_override'] != null 
+          ? double.tryParse(json['price_override'].toString()) 
+          : null,
+    );
+  }
+}
+
+class ShopProduct {
+  final int id;
+  final String name;
+  final String? description;
+  final double price;
+  final String? image;
+  final bool isNew;
+  final bool isTopPick;
+  final bool isFavourite;
+  final List<ShopProductVariant> variants;
+
+  ShopProduct({
+    required this.id,
+    required this.name,
+    this.description,
+    required this.price,
+    this.image,
+    this.isNew = false,
+    this.isTopPick = false,
+    this.isFavourite = false,
+    this.variants = const [],
+  });
+
+  ShopProduct copyWith({
+    int? id,
+    String? name,
+    String? description,
+    double? price,
+    String? image,
+    bool? isNew,
+    bool? isTopPick,
+    bool? isFavourite,
+    List<ShopProductVariant>? variants,
+  }) {
+    return ShopProduct(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      price: price ?? this.price,
+      image: image ?? this.image,
+      isNew: isNew ?? this.isNew,
+      isTopPick: isTopPick ?? this.isTopPick,
+      isFavourite: isFavourite ?? this.isFavourite,
+      variants: variants ?? this.variants,
+    );
+  }
+
+  factory ShopProduct.fromJson(Map<String, dynamic> json) {
+    var variantsList = <ShopProductVariant>[];
+    if (json['variants'] != null) {
+      json['variants'].forEach((v) {
+        variantsList.add(ShopProductVariant.fromJson(v));
+      });
+    }
+
+    String? parsedImage = json['image'];
+    if (parsedImage != null && parsedImage.startsWith('http:https://')) {
+      parsedImage = parsedImage.replaceFirst('http:https://', 'https://');
+    }
+
+    return ShopProduct(
+      id: json['id'],
+      name: json['name'] ?? '',
+      description: json['description'],
+      price: double.tryParse(json['price']?.toString() ?? '0') ?? 0.0,
+      image: parsedImage,
+      isNew: json['is_new'] == 1 || json['is_new'] == true,
+      isTopPick: json['is_top_pick'] == 1 || json['is_top_pick'] == true,
+      isFavourite: json['is_favourite'] == 1 || json['is_favourite'] == true,
+      variants: variantsList,
+    );
+  }
+}
+
+class ShopCartProduct {
+  final int id;
+  final String name;
+  final double price;
+  final String? image;
+
+  ShopCartProduct({required this.id, required this.name, required this.price, this.image});
+
+  factory ShopCartProduct.fromJson(Map<String, dynamic> json) {
+    String? parsedImage = json['image'];
+    if (parsedImage != null && parsedImage.startsWith('http:https://')) {
+      parsedImage = parsedImage.replaceFirst('http:https://', 'https://');
+    }
+
+    return ShopCartProduct(
+      id: json['id'] ?? 0,
+      name: json['name'] ?? '',
+      price: double.tryParse(json['price']?.toString() ?? '0') ?? 0.0,
+      image: parsedImage,
+    );
+  }
+}
+
+class ShopCartVariant {
+  final int id;
+  final String size;
+
+  ShopCartVariant({required this.id, required this.size});
+
+  factory ShopCartVariant.fromJson(Map<String, dynamic> json) {
+    return ShopCartVariant(
+      id: json['id'] ?? 0,
+      size: json['size'] ?? '',
+    );
+  }
+}
+
+class ShopCartItem {
+  final int id;
+  final int quantity;
+  final ShopCartProduct product;
+  final ShopCartVariant? variant;
+
+  ShopCartItem({required this.id, required this.quantity, required this.product, this.variant});
+
+  factory ShopCartItem.fromJson(Map<String, dynamic> json) {
+    return ShopCartItem(
+      id: json['cart_item_id'] ?? json['id'] ?? 0,
+      quantity: int.tryParse(json['quantity']?.toString() ?? '1') ?? 1,
+      product: ShopCartProduct.fromJson(json['product'] ?? {}),
+      variant: json['variant'] != null ? ShopCartVariant.fromJson(json['variant']) : null,
+    );
+  }
+}
+
+class ShopCart {
+  final int id;
+  final List<ShopCartItem> items;
+  final double cartTotal;
+
+  ShopCart({required this.id, required this.items, required this.cartTotal});
+
+  factory ShopCart.fromJson(Map<String, dynamic> json) {
+    var itemsList = <ShopCartItem>[];
+    if (json['items'] != null) {
+      json['items'].forEach((v) {
+        itemsList.add(ShopCartItem.fromJson(v));
+      });
+    }
+
+    return ShopCart(
+      id: json['cart_id'] ?? json['id'] ?? 0,
+      items: itemsList,
+      cartTotal: double.tryParse((json['total_price'] ?? json['cart_total'])?.toString() ?? '0') ?? 0.0,
+    );
+  }
+}
+
+class ShopOrderResponse {
+  final int orderId;
+  final String orderNumber;
+  final String totalAmount;
+
+  ShopOrderResponse({required this.orderId, required this.orderNumber, required this.totalAmount});
+
+  factory ShopOrderResponse.fromJson(Map<String, dynamic> json) {
+    return ShopOrderResponse(
+      orderId: json['order_id'] ?? json['id'] ?? 0,
+      orderNumber: json['order_number'] ?? json['reference'] ?? '',
+      totalAmount: json['total_amount']?.toString() ?? '0',
+    );
+  }
+}
+
+class MpesaStkPushResponse {
+  final String checkoutRequestId;
+  final String orderId;
+  final double amount;
+
+  MpesaStkPushResponse({required this.checkoutRequestId, required this.orderId, required this.amount});
+
+  factory MpesaStkPushResponse.fromJson(Map<String, dynamic> json) {
+    return MpesaStkPushResponse(
+      checkoutRequestId: json['checkout_request_id'] ?? '',
+      orderId: json['order_id']?.toString() ?? '',
+      amount: double.tryParse(json['amount']?.toString() ?? '0') ?? 0.0,
+    );
+  }
+}
+
+class MpesaStatusResponse {
+  final String payment; // "pending", "success", "failed"
+  final String message;
+  final Map<String, dynamic>? data;
+
+  MpesaStatusResponse({required this.payment, required this.message, this.data});
+
+  factory MpesaStatusResponse.fromJson(Map<String, dynamic> json) {
+    final data = json['data'];
+    
+    String parsedStatus = 'pending';
+    // Check top-level keys first (most common API response patterns)
+    if (json['payment'] != null) {
+      parsedStatus = json['payment'].toString().toLowerCase();
+    } else if (json['payment_status'] != null) {
+      // Also check payment_status at the top level
+      parsedStatus = json['payment_status'].toString().toLowerCase();
+    } else if (json['status'] != null && json['status'] is String) {
+      parsedStatus = json['status'].toString().toLowerCase();
+    } else if (data is Map) {
+      // Fall back to nested data object
+      if (data['payment'] != null) {
+        parsedStatus = data['payment'].toString().toLowerCase();
+      } else if (data['payment_status'] != null) {
+        parsedStatus = data['payment_status'].toString().toLowerCase();
+      } else if (data['status'] != null) {
+        parsedStatus = data['status'].toString().toLowerCase();
+      }
+    }
+    
+    // Normalize status aliases to canonical values
+    if (parsedStatus == 'completed' || parsedStatus == 'paid') {
+      parsedStatus = 'success';
+    } else if (parsedStatus == 'cancelled' || parsedStatus == 'canceled') {
+      parsedStatus = 'failed';
+    }
+
+    return MpesaStatusResponse(
+      payment: parsedStatus,
+      message: json['message'] ?? '',
+      data: data is Map<String, dynamic> ? data : null,
+    );
+  }
+}
+
+class ShopOrderItem {
+  final int id;
+  final String productName;
+  final double price;
+  final int quantity;
+  final String? image;
+
+  ShopOrderItem({
+    required this.id,
+    required this.productName,
+    required this.price,
+    required this.quantity,
+    this.image,
+  });
+
+  factory ShopOrderItem.fromJson(Map<String, dynamic> json) {
+    String? parsedImage = json['image'] ?? json['product_image'];
+    if (parsedImage != null && parsedImage.startsWith('http:https://')) {
+      parsedImage = parsedImage.replaceFirst('http:https://', 'https://');
+    }
+
+    return ShopOrderItem(
+      id: json['id'] ?? 0,
+      productName: json['product_name'] ?? json['name'] ?? '',
+      price: double.tryParse(json['price']?.toString() ?? '0') ?? 0.0,
+      quantity: int.tryParse(json['quantity']?.toString() ?? '1') ?? 1,
+      image: parsedImage,
+    );
+  }
+}
+
+class ShopOrder {
+  final int id;
+  final String orderNumber;
+  final double totalAmount;
+  final String status;
+  final String paymentStatus;
+  final DateTime? createdAt;
+  final List<ShopOrderItem> items;
+
+  ShopOrder({
+    required this.id,
+    required this.orderNumber,
+    required this.totalAmount,
+    required this.status,
+    required this.paymentStatus,
+    this.createdAt,
+    required this.items,
+  });
+
+  factory ShopOrder.fromJson(Map<String, dynamic> json) {
+    var itemsList = <ShopOrderItem>[];
+    final itemsSource = json['items'] ?? json['items_preview'];
+    if (itemsSource != null) {
+      itemsSource.forEach((v) {
+        itemsList.add(ShopOrderItem.fromJson(v));
+      });
+    }
+
+    DateTime? parsedDate;
+    final dateString = json['created_at'] ?? json['placed_at'];
+    if (dateString != null) {
+      try {
+        parsedDate = DateTime.parse(dateString.toString().replaceAll(' ', 'T'));
+      } catch (e) {
+        // ignore date parse errors
+      }
+    }
+
+    return ShopOrder(
+      id: json['id'] ?? 0,
+      orderNumber: json['order_number'] ?? json['reference'] ?? '',
+      totalAmount: double.tryParse(json['total_amount']?.toString() ?? '0') ?? 0.0,
+      status: json['status'] ?? json['order_status'] ?? 'pending',
+      paymentStatus: json['payment_status'] ?? 'pending',
+      createdAt: parsedDate,
+      items: itemsList,
+    );
+  }
+}

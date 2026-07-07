@@ -1,6 +1,8 @@
 import 'package:eventsbooking/theme/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 
 class AppTheme {
   AppTheme._();
@@ -155,6 +157,14 @@ class AppTheme {
     appBarTheme: AppBarTheme(
       backgroundColor: AppColors.primaryGreen,
       elevation: 0,
+      systemOverlayStyle: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarDividerColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        systemNavigationBarIconBrightness: Brightness.dark,
+        systemNavigationBarContrastEnforced: false,
+      ),
       iconTheme: const IconThemeData(color: Colors.white),
       titleTextStyle: GoogleFonts.manrope(
         fontWeight: FontWeight.w700,
@@ -282,6 +292,14 @@ class AppTheme {
     appBarTheme: AppBarTheme(
       backgroundColor: AppColors.greenDark,
       elevation: 0,
+      systemOverlayStyle: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarDividerColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarIconBrightness: Brightness.light,
+        systemNavigationBarContrastEnforced: false,
+      ),
       iconTheme: const IconThemeData(color: Colors.white),
       titleTextStyle: GoogleFonts.manrope(
         fontWeight: FontWeight.w700,

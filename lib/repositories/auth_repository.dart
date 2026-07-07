@@ -109,6 +109,22 @@ class AuthRepository {
     }
   }
 
+  Future<MembershipDetails> getMembershipDetails() async {
+    try {
+      final response = await _apiClient.dio.get('/user/membership/details');
+      if (response.data['status'] == 200 || response.data['success'] == true) {
+        return MembershipDetails.fromJson(response.data['data']);
+      } else {
+        throw Exception(response.data['message'] ?? 'Failed to fetch membership details.');
+      }
+    } on DioException catch (e) {
+      final errorMessage =
+          e.response?.data?['message'] ??
+          'An error occurred fetching membership details.';
+      throw Exception(errorMessage);
+    }
+  }
+
   Future<void> sendPasswordResetEmail(String email) async {
     try {
       final response = await _apiClient.dio.post(

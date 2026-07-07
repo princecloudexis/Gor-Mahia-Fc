@@ -78,21 +78,24 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.bgDark,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new,
-            color: Colors.white,
+            color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
             size: 20,
           ),
           onPressed: () => Navigator.maybePop(context),
         ),
-        title: const Text(
+        title: Text(
           'Membership',
-          style: TextStyle(color: Colors.white, fontSize: 16),
+          style: TextStyle(
+            color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
+            fontSize: 16,
+          ),
         ),
         centerTitle: true,
       ),
@@ -126,10 +129,10 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
                               delay: 2,
                             ),
                           const SizedBox(height: 32),
-                          const Text(
+                          Text(
                                 'MEMBERSHIP TYPE',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
                                   fontSize: 13,
                                   fontWeight: FontWeight.bold,
                                   letterSpacing: 1.0,
@@ -168,11 +171,12 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
   }
 
   Widget _buildCountryTextField() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.bgSurfaceDark,
+        color: isDark ? AppColors.bgSurfaceDark : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white.withOpacity(0.04)),
+        border: Border.all(color: isDark ? Colors.white.withOpacity(0.04) : Colors.grey.shade300),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       child: Column(
@@ -182,7 +186,7 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
           Text(
             'Country',
             style: TextStyle(
-              color: AppColors.textSecondaryDark.withOpacity(0.7),
+              color: isDark ? AppColors.textSecondaryDark.withOpacity(0.7) : Colors.black54,
               fontSize: 11,
               fontWeight: FontWeight.w500,
             ),
@@ -190,11 +194,12 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
           const SizedBox(height: 2),
           TextFormField(
             controller: _countryController,
-            style: const TextStyle(color: Colors.white, fontSize: 14),
+            style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontSize: 14),
             decoration: InputDecoration(
+              filled: false,
               hintText: 'Enter your country',
               hintStyle: TextStyle(
-                color: Colors.white.withOpacity(0.3),
+                color: isDark ? Colors.white.withOpacity(0.3) : Colors.black26,
                 fontSize: 14,
               ),
               border: InputBorder.none,
@@ -219,11 +224,12 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
     required ValueChanged<T?> onChanged,
     required int delay,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
           decoration: BoxDecoration(
-            color: AppColors.bgSurfaceDark,
+            color: isDark ? AppColors.bgSurfaceDark : Colors.grey.shade100,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.white.withOpacity(0.04)),
+            border: Border.all(color: isDark ? Colors.white.withOpacity(0.04) : Colors.grey.shade300),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           child: Column(
@@ -233,7 +239,7 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
               Text(
                 label,
                 style: TextStyle(
-                  color: AppColors.textSecondaryDark.withOpacity(0.7),
+                  color: isDark ? AppColors.textSecondaryDark.withOpacity(0.7) : Colors.black54,
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
                 ),
@@ -245,10 +251,10 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
                   isDense: true,
                   icon: Icon(
                     Icons.keyboard_arrow_down,
-                    color: Colors.white.withOpacity(0.5),
+                    color: isDark ? Colors.white.withOpacity(0.5) : Colors.black54,
                   ),
-                  dropdownColor: AppColors.bgSurfaceDark,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  dropdownColor: isDark ? AppColors.bgSurfaceDark : Colors.white,
+                  style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontSize: 14),
                   onChanged: onChanged,
                   items: items,
                 ),
@@ -266,6 +272,7 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
     required MembershipPackage package,
     required int delay,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isSelected = selectedPackageId == package.id;
     IconData icon = Icons.shield_outlined;
     if (package.name.toLowerCase().contains('premium')) {
@@ -280,12 +287,12 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
             decoration: BoxDecoration(
               color: isSelected
                   ? AppColors.greenMedium.withOpacity(0.1)
-                  : AppColors.bgSurfaceDark,
+                  : (isDark ? AppColors.bgSurfaceDark : Colors.grey.shade100),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: isSelected
                     ? AppColors.primaryGreen
-                    : Colors.white.withOpacity(0.05),
+                    : (isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade300),
                 width: isSelected ? 2 : 1,
               ),
             ),
@@ -297,14 +304,14 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
                   size: 36,
                   color: isSelected
                       ? AppColors.primaryGreen
-                      : Colors.white.withOpacity(0.3),
+                      : (isDark ? Colors.white.withOpacity(0.3) : Colors.black38),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   package.name,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
+                  style: TextStyle(
+                    color: isDark ? Colors.white : Colors.black87,
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                     height: 1.4,
@@ -312,10 +319,10 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'KSh ${package.price} / ${package.type}',
+                  'KSh \${package.price} / \${package.type}',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
+                    color: isDark ? Colors.white.withOpacity(0.7) : Colors.black54,
                     fontSize: 12,
                   ),
                 ),
@@ -328,16 +335,10 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
                       color: AppColors.primaryGreen,
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
-                      Icons.check,
-                      color: Colors.white,
-                      size: 16,
-                    ),
+                    child: const Icon(Icons.check, color: Colors.white, size: 16),
                   ).animate().scale(duration: 300.ms, curve: Curves.elasticOut)
                 else
-                  const SizedBox(
-                    height: 24,
-                  ), 
+                  const SizedBox(height: 24),
               ],
             ),
           ),
@@ -410,7 +411,9 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
           child: Text(
             'Skip for Now',
             style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white.withOpacity(0.7)
+                  : Colors.black54,
               fontSize: 14,
               fontWeight: FontWeight.w600,
             ),

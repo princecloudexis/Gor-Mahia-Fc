@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
+import 'coming_soon.dart';
+import 'group_details.dart';
+import 'search_groups.dart';
 
 class Community extends StatelessWidget {
   const Community({super.key});
@@ -9,7 +12,7 @@ class Community extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return DefaultTabController(
-      length: 3,
+      length: 2,
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
@@ -42,7 +45,6 @@ class Community extends StatelessWidget {
               fontSize: 14,
             ),
             tabs: const [
-              Tab(text: 'Branches'),
               Tab(text: 'Groups'),
               Tab(text: 'Members'),
             ],
@@ -50,13 +52,7 @@ class Community extends StatelessWidget {
         ),
         body: const TabBarView(
           children: [
-            _BranchesTab(),
-            Center(
-              child: Text(
-                'Groups functionality coming soon!',
-                style: TextStyle(fontSize: 16),
-              ),
-            ),
+            _GroupsTab(),
             Center(
               child: Text(
                 'Members functionality coming soon!',
@@ -70,19 +66,26 @@ class Community extends StatelessWidget {
   }
 }
 
-class _BranchesTab extends StatelessWidget {
-  const _BranchesTab();
+class _GroupsTab extends StatelessWidget {
+  const _GroupsTab();
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final branches = [
-      {'name': 'Nairobi Branch', 'members': '1,245 members', 'color': Colors.green.shade700},
-      {'name': 'Kisumu Branch', 'members': '892 members', 'color': Colors.green.shade900},
-      {'name': 'Mombasa Branch', 'members': '678 members', 'color': Colors.purple.shade700},
-      {'name': 'Eldoret Branch', 'members': '543 members', 'color': Colors.lightGreen.shade700},
-      {'name': 'Nakuru Branch', 'members': '512 members', 'color': Colors.blueGrey.shade700},
+    final groups = [
+      {
+        'name': 'Nairobi Group',
+        'members': '1,245 members',
+        'color': Colors.green.shade700,
+        'type': 'public',
+      },
+      {
+        'name': 'Kisumu Group',
+        'members': '892 members',
+        'color': Colors.green.shade900,
+        'type': 'private',
+      },
     ];
 
     return Column(
@@ -90,10 +93,10 @@ class _BranchesTab extends StatelessWidget {
         Expanded(
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-            itemCount: branches.length,
+            itemCount: groups.length,
             separatorBuilder: (context, index) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
-              final branch = branches[index];
+              final group = groups[index];
               return Container(
                 decoration: BoxDecoration(
                   color: isDark ? AppColors.bgCardDark : AppColors.bgCardLight,
@@ -105,35 +108,70 @@ class _BranchesTab extends StatelessWidget {
                   ),
                 ),
                 child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
                   leading: CircleAvatar(
-                    backgroundColor: branch['color'] as Color,
+                    backgroundColor: group['color'] as Color,
                     radius: 22,
-                    child: const Icon(Icons.diversity_3, color: Colors.white, size: 24),
+                    child: const Icon(
+                      Icons.groups,
+                      color: Colors.white,
+                      size: 24,
+                    ),
                   ),
                   title: Text(
-                    branch['name'] as String,
+                    group['name'] as String,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
-                      color: isDark ? AppColors.textOnDark : AppColors.textOnLight,
+                      color: isDark
+                          ? AppColors.textOnDark
+                          : AppColors.textOnLight,
                     ),
                   ),
                   subtitle: Padding(
                     padding: const EdgeInsets.only(top: 4),
                     child: Text(
-                      branch['members'] as String,
+                      group['members'] as String,
                       style: TextStyle(
                         fontSize: 13,
-                        color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
+                        color: isDark
+                            ? AppColors.textMutedDark
+                            : AppColors.textMutedLight,
                       ),
                     ),
                   ),
-                  trailing: Icon(
-                    Icons.chevron_right,
-                    color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (group['type'] == 'private') ...[
+                        Icon(
+                          Icons.lock_outline,
+                          size: 18,
+                          color: isDark
+                              ? AppColors.textMutedDark
+                              : AppColors.textMutedLight,
+                        ),
+                        const SizedBox(width: 4),
+                      ],
+                      Icon(
+                        Icons.chevron_right,
+                        color: isDark
+                            ? AppColors.textMutedDark
+                            : AppColors.textMutedLight,
+                      ),
+                    ],
                   ),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => GroupDetails(group: group),
+                      ),
+                    );
+                  },
                 ),
               );
             },
@@ -146,7 +184,14 @@ class _BranchesTab extends StatelessWidget {
             width: double.infinity,
             height: 54,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SearchGroups(),
+                  ),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryGreen,
                 foregroundColor: Colors.white,
@@ -156,7 +201,7 @@ class _BranchesTab extends StatelessWidget {
                 elevation: 0,
               ),
               child: const Text(
-                '+ JOIN A BRANCH',
+                '+ EXPLORE MORE GROUPS',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
@@ -169,4 +214,6 @@ class _BranchesTab extends StatelessWidget {
       ],
     );
   }
+
+
 }

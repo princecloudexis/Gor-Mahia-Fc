@@ -404,8 +404,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       _buildLogo(),
                       const SizedBox(height: 28),
                       _buildClubName(),
-                      const SizedBox(height: 10),
-                      _buildTagline(),
                       const SizedBox(height: 26),
                       _buildDivider(),
                       const SizedBox(height: 52),
@@ -636,65 +634,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         .slideY(begin: 0.3, end: 0, curve: Curves.easeOutCubic);
   }
 
-  // ── Tagline ───────────────────────────────────────────────────────────────
-  Widget _buildTagline() {
-    return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-          decoration: BoxDecoration(
-            // Lighter blue — clearly visible
-            color: AppColors.blueMain.withValues(alpha: 0.35),
-            borderRadius: BorderRadius.circular(4),
-            border: Border.all(
-              color: AppColors.blueLight.withValues(alpha: 0.55),
-              width: 1.0,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.blueMain.withValues(alpha: 0.25),
-                blurRadius: 16,
-                spreadRadius: 1,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 4,
-                height: 4,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.bluePale.withValues(alpha: 0.9),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'OFFICIAL TICKET BOOKING',
-                style: TextStyle(
-                  fontSize: 10.5,
-                  color: Colors.white.withValues(alpha: 0.98),
-                  fontWeight: FontWeight.w700,
-                  fontFamily: 'Manrope',
-                  letterSpacing: 2.0,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                width: 4,
-                height: 4,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.bluePale.withValues(alpha: 0.9),
-                ),
-              ),
-            ],
-          ),
-        )
-        .animate()
-        .fadeIn(duration: 700.ms, delay: 680.ms)
-        .slideY(begin: 0.3, end: 0, curve: Curves.easeOutCubic);
-  }
+
 
   // ── Divider ───────────────────────────────────────────────────────────────
   Widget _buildDivider() {

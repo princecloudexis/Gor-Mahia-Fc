@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:eventsbooking/models/membership_models.dart';
 import 'package:eventsbooking/repositories/membership_repository.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 enum PaymentStatus { initial, initiating, waitingForMpesa, success, error }
@@ -93,6 +94,9 @@ class PaymentController extends StateNotifier<PaymentState> {
           plan: 'paid',
         );
 
+        // Debug: log what API returns so we can trace issues
+        debugPrint('💳 [MembershipPay] Poll #$_pollCount → status="${statusResponse.status}", receipt="${statusResponse.mpesaReceipt}", message="${statusResponse.message}"');
+
         if (statusResponse.status == 'success') {
           timer.cancel();
           state = state.copyWith(
@@ -102,15 +106,19 @@ class PaymentController extends StateNotifier<PaymentState> {
         } else if (statusResponse.status == 'failed' ||
             statusResponse.status == 'cancelled') {
           timer.cancel();
+          // Use the real M-Pesa reason (e.g. "insufficient funds", "cancelled by user")
+          final errorMsg = statusResponse.message.isNotEmpty
+              ? statusResponse.message
+              : 'Payment failed. Please try again.';
           state = state.copyWith(
             status: PaymentStatus.error,
-            errorMessage:
-                'Payment was not completed successfully. Status: ${statusResponse.status}',
+            errorMessage: errorMsg,
           );
         }
+        // If 'pending', do nothing — keep polling
       } catch (e) {
-        // Ignore errors during polling, as the payment might just be pending and returning success: false
-        // The timeout will catch true permanent failures if the backend doesn't resolve it.
+        // Ignore errors during polling, as the payment might just be pending
+        debugPrint('💳 [MembershipPay] Poll error (will retry): $e');
       }
     });
   }

@@ -18,19 +18,24 @@ class Settings extends ConsumerWidget {
           ? AppTheme.backgroundColorDark
           : AppTheme.backgroundColor,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_new,
+            color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
+            size: 20,
+          ),
+          onPressed: () => Navigator.maybePop(context),
+        ),
         title: Text(
           'Settings',
           style: TextStyle(
-            color: Theme.of(context).textTheme.bodyLarge?.color,
-            fontWeight: FontWeight.w700,
+            color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
+            fontSize: 16,
           ),
         ),
-        backgroundColor: isDark ? AppTheme.cardColorDark : Colors.white,
-        foregroundColor: Theme.of(context).textTheme.bodyLarge?.color,
-        iconTheme: IconThemeData(
-          color: Theme.of(context).textTheme.bodyLarge?.color,
-        ),
-        elevation: 0,
+        centerTitle: true,
       ),
       body: ListView(
         children: [

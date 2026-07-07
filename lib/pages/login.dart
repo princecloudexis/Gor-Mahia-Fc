@@ -85,7 +85,7 @@ class _LoginState extends ConsumerState<Login>
         ref.watch(authControllerProvider).status == AuthStatus.loading;
 
     return Scaffold(
-      backgroundColor: AppColors.bgDark,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Stack(
           children: [
@@ -140,14 +140,15 @@ class _LoginState extends ConsumerState<Login>
   }
 
   Widget _buildHeader() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       children: [
-        const Text(
+        Text(
           'Welcome Back!',
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: isDark ? Colors.white : Colors.black87,
           ),
         ).animate().fadeIn(duration: 500.ms, delay: 200.ms),
         const SizedBox(height: 8),
@@ -155,7 +156,7 @@ class _LoginState extends ConsumerState<Login>
           'Sign in to continue to Gor Mahia FC',
           style: TextStyle(
             fontSize: 15,
-            color: Colors.white70,
+            color: isDark ? Colors.white70 : Colors.black54,
           ),
         ).animate().fadeIn(duration: 500.ms, delay: 300.ms),
       ],
@@ -213,7 +214,9 @@ class _LoginState extends ConsumerState<Login>
           _obscurePassword
               ? Icons.visibility_off_outlined
               : Icons.visibility_outlined,
-          color: Colors.white.withOpacity(0.5),
+          color: Theme.of(context).brightness == Brightness.dark
+              ? Colors.white.withOpacity(0.5)
+              : Colors.black38,
           size: 20,
         ),
         onPressed: () {
@@ -301,13 +304,14 @@ class _LoginState extends ConsumerState<Login>
   }
 
   Widget _buildSignUpLink() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
           "Don't have an account? ",
           style: TextStyle(
-            color: AppTheme.textLight.withOpacity(0.8),
+            color: isDark ? AppTheme.textLight.withOpacity(0.8) : Colors.black54,
             fontSize: 14,
           ),
         ),
@@ -465,11 +469,12 @@ class _InputField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.bgSurfaceDark,
+        color: isDark ? AppColors.bgSurfaceDark : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.white.withOpacity(0.04)),
+        border: Border.all(color: isDark ? Colors.white.withOpacity(0.04) : Colors.grey.shade300),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -479,7 +484,7 @@ class _InputField extends StatelessWidget {
             Text(
               labelText,
               style: TextStyle(
-                color: AppColors.textSecondaryDark.withOpacity(0.7),
+                color: isDark ? AppColors.textSecondaryDark.withOpacity(0.7) : Colors.black54,
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
               ),
@@ -491,11 +496,12 @@ class _InputField extends StatelessWidget {
               keyboardType: keyboardType,
               textInputAction: textInputAction,
               onFieldSubmitted: onFieldSubmitted,
-              style: const TextStyle(color: Colors.white, fontSize: 14),
+              style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontSize: 14),
               decoration: InputDecoration(
+                filled: false,
                 hintText: hintText,
                 hintStyle: TextStyle(
-                  color: Colors.white.withOpacity(0.2),
+                  color: isDark ? Colors.white.withOpacity(0.2) : Colors.black26,
                   fontSize: 14,
                 ),
                 border: InputBorder.none,
@@ -550,14 +556,18 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final emailValidator = ref.watch(emailValidatorProvider);
     final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
+    final sheetBg = isDark ? AppColors.bgSurfaceDark : Colors.white;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subTextColor = isDark ? Colors.white70 : Colors.black54;
 
     return Container(
       padding: EdgeInsets.only(bottom: bottomPadding),
-      decoration: const BoxDecoration(
-        color: AppColors.bgSurfaceDark,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: sheetBg,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -567,7 +577,6 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Handle bar
               Center(
                 child: Container(
                   width: 40,
@@ -579,30 +588,16 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
                 ),
               ),
               const SizedBox(height: 24),
-
-              // Title
-              const Text(
+              Text(
                 'Reset Password',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: textColor),
               ),
               const SizedBox(height: 8),
-
-              // Description
               Text(
                 'Enter your email address and we\'ll send you a link to reset your password.',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.white70,
-                  height: 1.4,
-                ),
+                style: TextStyle(fontSize: 14, color: subTextColor, height: 1.4),
               ),
               const SizedBox(height: 24),
-
-              // Email input
               _InputField(
                 controller: _emailController,
                 labelText: 'Email',
@@ -614,22 +609,12 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
                 onFieldSubmitted: (_) => _handlePasswordReset(),
               ),
               const SizedBox(height: 24),
-
-              // Send button
               _buildSendButton(),
               const SizedBox(height: 12),
-
-              // Cancel button
               Center(
                 child: TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text(
-                    'Cancel',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 15,
-                    ),
-                  ),
+                  child: Text('Cancel', style: TextStyle(color: subTextColor, fontSize: 15)),
                 ),
               ),
               const SizedBox(height: 8),
@@ -745,12 +730,16 @@ class _SuccessDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black87;
+    final subTextColor = isDark ? Colors.white70 : Colors.black54;
+    final cardBg = isDark ? AppColors.bgSurfaceDark : Colors.white;
     return Dialog(
       backgroundColor: Colors.transparent,
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: AppColors.bgSurfaceDark,
+          color: cardBg,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
@@ -766,24 +755,9 @@ class _SuccessDialog extends StatelessWidget {
               child: Icon(icon, color: Colors.white, size: 36),
             ).animate().scale(duration: 500.ms, curve: Curves.elasticOut),
             const SizedBox(height: 20),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
+            Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
             const SizedBox(height: 8),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.white70,
-                height: 1.4,
-              ),
-            ),
+            Text(message, textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: subTextColor, height: 1.4)),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,

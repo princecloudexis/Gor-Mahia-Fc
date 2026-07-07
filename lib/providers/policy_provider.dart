@@ -10,7 +10,7 @@ final privacyPolicyProvider = FutureProvider.autoDispose<List<PolicyModel>>((
     PolicyModel(
       id: 1,
       title: 'Information We Collect',
-      description: 'When you use KogaloTix to purchase Gor Mahia FC match tickets or merchandise, we may collect your name, phone number, email address, and payment information to process your transactions securely.',
+      description: 'When you use GormahiaFc to purchase Gor Mahia FC match tickets or merchandise, we may collect your name, phone number, email address, and payment information to process your transactions securely.',
     ),
     PolicyModel(
       id: 2,
@@ -39,7 +39,7 @@ final termsOfServiceProvider = FutureProvider.autoDispose<List<PolicyModel>>((
     PolicyModel(
       id: 1,
       title: 'Acceptance of Terms',
-      description: 'By using KogaloTix, you agree to abide by these terms. This app is the official ticketing platform for Gor Mahia FC. Any unauthorized use or ticket scalping is strictly prohibited.',
+      description: 'By using GormahiaFc, you agree to abide by these terms. This app is the official ticketing platform for Gor Mahia FC. Any unauthorized use or ticket scalping is strictly prohibited.',
     ),
     PolicyModel(
       id: 2,
@@ -54,7 +54,7 @@ final termsOfServiceProvider = FutureProvider.autoDispose<List<PolicyModel>>((
     PolicyModel(
       id: 4,
       title: 'Updates to Terms',
-      description: 'Gor Mahia FC reserves the right to update these terms at any time. Continued use of the KogaloTix app constitutes your acceptance of any new terms.',
+      description: 'Gor Mahia FC reserves the right to update these terms at any time. Continued use of the GormahiaFc app constitutes your acceptance of any new terms.',
     ),
   ];
 });

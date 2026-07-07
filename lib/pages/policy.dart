@@ -69,52 +69,24 @@ class _AppBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return SliverAppBar(
       pinned: true,
+      floating: true,
+      backgroundColor: Colors.transparent,
       elevation: 0,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      leading: Padding(
-        padding: const EdgeInsets.all(8),
-        child: InkWell(
-          onTap: () => Navigator.pop(context),
-          borderRadius: BorderRadius.circular(10),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Theme.of(context).dividerColor),
-            ),
-            child: Icon(
-              Icons.arrow_back_ios_new_rounded,
-              size: 16,
-              color: Theme.of(context).textTheme.bodyLarge?.color,
-            ),
-          ),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
+          fontSize: 16,
         ),
       ),
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-              fontSize: 17,
-            ),
-          ),
-          Text(
-            'Tap a section to expand',
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(fontSize: 11),
-          ),
-        ],
-      ),
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(1),
-        child: Divider(
-          height: 1,
-          thickness: 1,
-          color: Theme.of(context).dividerColor,
+      centerTitle: true,
+      leading: IconButton(
+        icon: Icon(
+          Icons.arrow_back_ios_new,
+          color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
+          size: 20,
         ),
+        onPressed: () => Navigator.maybePop(context),
       ),
     );
   }

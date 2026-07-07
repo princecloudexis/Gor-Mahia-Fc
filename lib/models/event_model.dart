@@ -131,11 +131,16 @@ class EventModel {
       brandIcon = json['brand_icon'];
     }
 
+    String? parsedEventImage = json['event_image'];
+    if (parsedEventImage != null && parsedEventImage.startsWith('http:https://')) {
+      parsedEventImage = parsedEventImage.replaceFirst('http:https://', 'https://');
+    }
+
     return EventModel(
       id: json['favouriteEventId'] ?? json['id'] ?? 0,
       eventName: json['event_name'] ?? 'Untitled Match',
       venueName: json['venue_name'] ?? 'TBA',
-      eventImage: json['event_image'],
+      eventImage: parsedEventImage,
       slug: json['slug'] ?? json['event_url'],
       eventStartDate: _safeParseDateTime(json['event_start_date']),
       ticketPrice: price,

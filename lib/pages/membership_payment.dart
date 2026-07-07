@@ -5,6 +5,7 @@ import 'package:eventsbooking/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:eventsbooking/providers/user_providers.dart';
 
 class MembershipPayment extends ConsumerStatefulWidget {
   final String title;
@@ -38,14 +39,14 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
   @override
   Widget build(BuildContext context) {
     ref.listen<PaymentState>(paymentControllerProvider, (previous, next) {
-      if (previous?.status == PaymentStatus.waitingForMpesa && next.status != PaymentStatus.waitingForMpesa) {
-        // Close the dialog if it was open
-        if (Navigator.of(context, rootNavigator: true).canPop()) {
-           Navigator.of(context, rootNavigator: true).pop();
-        }
-      }
-
       if (next.status == PaymentStatus.error && next.errorMessage != null) {
+        // Close the dialog first if it was waiting
+        if (previous?.status == PaymentStatus.waitingForMpesa) {
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+        }
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.errorMessage!),
@@ -54,31 +55,131 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
         );
         ref.read(paymentControllerProvider.notifier).resetStatus();
       } else if (next.status == PaymentStatus.success) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => PaymentSuccess(title: widget.title)),
-        );
+        ref.read(userProvider.notifier).fetchUser();
+        ref.invalidate(membershipDetailsProvider);
+
+        // Close the dialog if it was waiting
+        if (previous?.status == PaymentStatus.waitingForMpesa) {
+          if (Navigator.of(context, rootNavigator: true).canPop()) {
+            Navigator.of(context, rootNavigator: true).pop();
+          }
+        }
+
+        // Use Future.delayed to ensure the dialog's dismiss animation finishes 
+        // before attempting to push the new route, preventing Navigator lock exceptions.
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (mounted) {
+            final isDark = Theme.of(context).brightness == Brightness.dark;
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) => Dialog(
+                backgroundColor: isDark ? AppColors.bgSurfaceDark : Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryGreen.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.check_circle_rounded,
+                          color: AppColors.primaryGreen,
+                          size: 64,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Payment Confirmed!',
+                        style: TextStyle(
+                          color: isDark ? Colors.white : Colors.black87,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Your ${widget.title} membership has been successfully activated.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: isDark ? Colors.white.withOpacity(0.7) : Colors.black54,
+                          fontSize: 15,
+                          height: 1.4,
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              MaterialPageRoute(builder: (_) => const MainShell()),
+                              (route) => false,
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryGreen,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: const Text(
+                            'GO TO DASHBOARD',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }
+        });
       }
     });
 
-    final isInitiating = ref.watch(paymentControllerProvider).status == PaymentStatus.initiating;
+    final isInitiating =
+        ref.watch(paymentControllerProvider).status == PaymentStatus.initiating;
 
     return Scaffold(
-      backgroundColor: AppColors.bgDark,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new,
-            color: Colors.white,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black87,
             size: 20,
           ),
           onPressed: () => Navigator.maybePop(context),
         ),
-        title: const Text(
+        title: Text(
           'Checkout',
-          style: TextStyle(color: Colors.white, fontSize: 16),
+          style: TextStyle(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black87,
+            fontSize: 16,
+          ),
         ),
         centerTitle: true,
       ),
@@ -105,9 +206,14 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
               Center(
                 child: TextButton(
                   onPressed: () => Navigator.maybePop(context),
-                  child: const Text(
+                  child: Text(
                     'Cancel',
-                    style: TextStyle(color: Colors.white, fontSize: 14),
+                    style: TextStyle(
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white
+                          : Colors.black54,
+                      fontSize: 14,
+                    ),
                   ),
                 ),
               ).animate().fadeIn(duration: 500.ms, delay: 600.ms),
@@ -119,10 +225,11 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
   }
 
   Widget _buildSectionTitle(String title) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Text(
       title,
-      style: const TextStyle(
-        color: Colors.white,
+      style: TextStyle(
+        color: isDark ? Colors.white : Colors.black87,
         fontSize: 13,
         fontWeight: FontWeight.bold,
         letterSpacing: 1.0,
@@ -131,11 +238,14 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
   }
 
   Widget _buildOrderSummary() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.bgSurfaceDark,
+        color: isDark ? AppColors.bgSurfaceDark : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(
+          color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade300,
+        ),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -162,8 +272,8 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
                   children: [
                     Text(
                       widget.title,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black87,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -172,7 +282,9 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
                     Text(
                       widget.period,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.7),
+                        color: isDark
+                            ? Colors.white.withOpacity(0.7)
+                            : Colors.black54,
                         fontSize: 13,
                       ),
                     ),
@@ -181,8 +293,8 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
               ),
               Text(
                 widget.price,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black87,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -190,7 +302,9 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
             ],
           ),
           const SizedBox(height: 16),
-          Divider(color: Colors.white.withOpacity(0.1)),
+          Divider(
+            color: isDark ? Colors.white.withOpacity(0.1) : Colors.black12,
+          ),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -198,7 +312,9 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
               Text(
                 'Total Amount',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.7),
+                  color: isDark
+                      ? Colors.white.withOpacity(0.7)
+                      : Colors.black54,
                   fontSize: 14,
                 ),
               ),
@@ -218,9 +334,10 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
   }
 
   Widget _buildPaymentMethod() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.bgSurfaceDark,
+        color: isDark ? AppColors.bgSurfaceDark : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.primaryGreen),
       ),
@@ -243,10 +360,10 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'M-PESA',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: isDark ? Colors.white : Colors.black87,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
@@ -255,28 +372,39 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
                 Text(
                   'Pay securely via M-PESA STK Push',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.7),
+                    color: isDark
+                        ? Colors.white.withOpacity(0.7)
+                        : Colors.black54,
                     fontSize: 13,
                   ),
                 ),
               ],
             ),
           ),
-          const Icon(Icons.check_circle, color: AppColors.primaryGreen, size: 24),
+          const Icon(
+            Icons.check_circle,
+            color: AppColors.primaryGreen,
+            size: 24,
+          ),
         ],
       ),
     ).animate().fadeIn(duration: 400.ms, delay: 200.ms).slideY(begin: 0.1);
   }
 
   Widget _buildMpesaForm() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           decoration: BoxDecoration(
-            color: AppColors.bgSurfaceDark,
+            color: isDark ? AppColors.bgSurfaceDark : Colors.grey.shade100,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.white.withOpacity(0.04)),
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withOpacity(0.04)
+                  : Colors.grey.shade300,
+            ),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           child: Column(
@@ -285,7 +413,9 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
               Text(
                 'M-PESA Phone Number',
                 style: TextStyle(
-                  color: AppColors.textSecondaryDark.withOpacity(0.7),
+                  color: isDark
+                      ? AppColors.textSecondaryDark.withOpacity(0.7)
+                      : Colors.black54,
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
                 ),
@@ -294,11 +424,17 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
               TextFormField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
-                style: const TextStyle(color: Colors.white, fontSize: 16),
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black87,
+                  fontSize: 16,
+                ),
                 decoration: InputDecoration(
+                  filled: false,
                   hintText: 'e.g. 254700000000',
                   hintStyle: TextStyle(
-                    color: Colors.white.withOpacity(0.2),
+                    color: isDark
+                        ? Colors.white.withOpacity(0.2)
+                        : Colors.black26,
                     fontSize: 16,
                   ),
                   border: InputBorder.none,
@@ -332,7 +468,9 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
                 child: Text(
                   'Instructions: Enter your M-PESA phone number above and tap Pay. A prompt will be sent to your phone. Enter your M-PESA PIN to complete the transaction.',
                   style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
+                    color: isDark
+                        ? Colors.white.withOpacity(0.8)
+                        : Colors.black87,
                     fontSize: 13,
                     height: 1.4,
                   ),
@@ -346,6 +484,7 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
   }
 
   Widget _buildPayButton(bool isInitiating) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return SizedBox(
       width: double.infinity,
       height: 52,
@@ -356,7 +495,9 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
                 final phone = _phoneController.text.trim();
                 if (phone.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Please enter your phone number')),
+                    const SnackBar(
+                      content: Text('Please enter your phone number'),
+                    ),
                   );
                   return;
                 }
@@ -366,10 +507,16 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
                   context: context,
                   barrierDismissible: false,
                   builder: (context) => Dialog(
-                    backgroundColor: AppColors.bgSurfaceDark,
+                    backgroundColor: isDark
+                        ? AppColors.bgSurfaceDark
+                        : Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(color: Colors.white.withOpacity(0.05)),
+                      side: BorderSide(
+                        color: isDark
+                            ? Colors.white.withOpacity(0.05)
+                            : Colors.black12,
+                      ),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
@@ -383,10 +530,10 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
                             color: AppColors.primaryGreen,
                           ),
                           const SizedBox(height: 24),
-                          const Text(
+                          Text(
                             'Waiting for M-PESA...',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: isDark ? Colors.white : Colors.black87,
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
@@ -395,7 +542,9 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
                           Text(
                             'Please check your phone',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.6),
+                              color: isDark
+                                  ? Colors.white.withOpacity(0.6)
+                                  : Colors.black54,
                               fontSize: 14,
                             ),
                           ),
@@ -405,7 +554,9 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
                   ),
                 );
 
-                ref.read(paymentControllerProvider.notifier).initiatePayment(
+                ref
+                    .read(paymentControllerProvider.notifier)
+                    .initiatePayment(
                       phone: phone,
                       membershipId: widget.membershipId,
                       amount: widget.rawAmount,

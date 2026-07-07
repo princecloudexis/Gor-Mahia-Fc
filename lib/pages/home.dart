@@ -185,7 +185,7 @@ class _HomeState extends ConsumerState<Home> {
                   Row(
                     children: [
                       Text(
-                        '${user?.membershipStatus ?? "Guest"} Member',
+                        user?.membershipPlan ?? "Free Plan",
                         style: TextStyle(
                           color: Colors.white.withOpacity(0.7),
                           fontSize: 13,

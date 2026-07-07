@@ -28,7 +28,7 @@
     </queries>
     
     <application
-        android:label="KogaloTix"
+        android:label="GormahiaFc"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         

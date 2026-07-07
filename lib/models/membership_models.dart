@@ -91,22 +91,64 @@ class PaymentInitiateResponse {
 }
 
 class PaymentStatusResponse {
-  final String status;
+  final String status;      // 'pending', 'success', or 'failed'
   final String membershipId;
   final String mpesaReceipt;
+  final String message;     // Real error/success message from M-Pesa
 
   PaymentStatusResponse({
     required this.status,
     required this.membershipId,
     required this.mpesaReceipt,
+    this.message = '',
   });
 
   factory PaymentStatusResponse.fromJson(Map<String, dynamic> json) {
     final data = json['data'];
+    final apiMessage = json['message']?.toString() ?? '';
+
+    // === EXACT API CONTRACT FOR MEMBERSHIP /user/status ===
+    //
+    // PENDING:  { "success": true,  "status": "pending", "message": "Waiting..." }
+    //             → status is a STRING "pending"
+    //
+    // FAILED:   { "status": 200, "success": true, "message": "insufficient funds" }
+    //             → status is an INTEGER 200, NO data field
+    //
+    // SUCCESS:  { "status": 200, "success": true, "message": "Payment confirmed.",
+    //             "data": { "membership_id": 55, "mpesa_receipt": "SGH123ABCD" } }
+    //             → status is an INTEGER 200, WITH data.mpesa_receipt
+
+    String parsedStatus = 'pending';
+
+    final statusValue = json['status'];
+
+    if (statusValue is String) {
+      // Pending case: "status": "pending"
+      parsedStatus = statusValue.toLowerCase();
+    } else if (statusValue is int) {
+      // Success or Failed: "status": 200
+      // We can distinguish because the backend ONLY returns the "data" object on success!
+      final hasData = data is Map;
+      parsedStatus = hasData ? 'success' : 'failed';
+    }
+
+    // Normalize any other aliases just in case
+    if (parsedStatus == 'completed' || parsedStatus == 'paid') {
+      parsedStatus = 'success';
+    } else if (parsedStatus == 'cancelled' || parsedStatus == 'canceled') {
+      parsedStatus = 'failed';
+    }
+
     return PaymentStatusResponse(
-      status: json['status']?.toString() ?? 'pending',
-      membershipId: (data is Map && data['membership_id'] != null) ? data['membership_id'].toString() : '',
-      mpesaReceipt: (data is Map && data['mpesa_receipt'] != null) ? data['mpesa_receipt'].toString() : '',
+      status: parsedStatus,
+      message: apiMessage,
+      membershipId: (data is Map && data['membership_id'] != null)
+          ? data['membership_id'].toString()
+          : '',
+      mpesaReceipt: (data is Map && data['mpesa_receipt'] != null)
+          ? data['mpesa_receipt'].toString()
+          : '',
     );
   }
 }

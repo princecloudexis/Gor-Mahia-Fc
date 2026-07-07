@@ -9,13 +9,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controllers/auth_controller.dart';
 import '../repositories/auth_repository.dart';
 
-final firstNameControllerProvider = Provider.autoDispose<TextEditingController>((
-  ref,
-) {
-  final c = TextEditingController();
-  ref.onDispose(c.dispose);
-  return c;
-});
+final firstNameControllerProvider = Provider.autoDispose<TextEditingController>(
+  (ref) {
+    final c = TextEditingController();
+    ref.onDispose(c.dispose);
+    return c;
+  },
+);
 
 final lastNameControllerProvider = Provider.autoDispose<TextEditingController>((
   ref,
@@ -105,10 +105,6 @@ final phoneValidatorProvider = Provider.autoDispose<String? Function(String?)>((
 ) {
   return (value) {
     if (value == null || value.isEmpty) return 'Please enter your phone number';
-    const phoneRegex = r'^[0-9]{10}$';
-    if (!RegExp(phoneRegex).hasMatch(value)) {
-      return 'Please enter a valid 10-digit phone number';
-    }
     return null;
   };
 });
@@ -172,21 +168,28 @@ class _SignupState extends ConsumerState<Signup> with TickerProviderStateMixin {
     final isLoading = authState.status == AuthStatus.loading;
 
     return Scaffold(
-      backgroundColor: AppColors.bgDark, // Deep dark background from reference
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new,
-            color: Colors.white,
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black87,
             size: 20,
           ),
           onPressed: () => Navigator.maybePop(context),
         ),
-        title: const Text(
+        title: Text(
           'Registration',
-          style: TextStyle(color: Colors.white, fontSize: 16),
+          style: TextStyle(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white
+                : Colors.black87,
+            fontSize: 16,
+          ),
         ),
         centerTitle: true,
       ),
@@ -200,10 +203,12 @@ class _SignupState extends ConsumerState<Signup> with TickerProviderStateMixin {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'PERSONAL INFORMATION',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black87,
                         fontSize: 14,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 1.2,
@@ -340,7 +345,7 @@ class _SignupState extends ConsumerState<Signup> with TickerProviderStateMixin {
           _buildSleekField(
             controller: phoneController,
             label: 'Phone Number',
-            hint: '07XX XXX XXX',
+            hint: '2547XX XXX XXX',
             keyboardType: TextInputType.phone,
             validator: phoneValidator,
             delay: 2,
@@ -418,11 +423,16 @@ class _SignupState extends ConsumerState<Signup> with TickerProviderStateMixin {
     bool obscureText = false,
     Widget? suffixIcon,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
           decoration: BoxDecoration(
-            color: AppColors.bgSurfaceDark,
+            color: isDark ? AppColors.bgSurfaceDark : Colors.grey.shade100,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.white.withOpacity(0.04)),
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withOpacity(0.04)
+                  : Colors.grey.shade300,
+            ),
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -432,7 +442,9 @@ class _SignupState extends ConsumerState<Signup> with TickerProviderStateMixin {
                 Text(
                   label,
                   style: TextStyle(
-                    color: AppColors.textSecondaryDark.withOpacity(0.7),
+                    color: isDark
+                        ? AppColors.textSecondaryDark.withOpacity(0.7)
+                        : Colors.black54,
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
                   ),
@@ -442,11 +454,17 @@ class _SignupState extends ConsumerState<Signup> with TickerProviderStateMixin {
                   controller: controller,
                   keyboardType: keyboardType,
                   obscureText: obscureText,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  style: TextStyle(
+                    color: isDark ? Colors.white : Colors.black87,
+                    fontSize: 14,
+                  ),
                   decoration: InputDecoration(
+                    filled: false,
                     hintText: hint,
                     hintStyle: TextStyle(
-                      color: Colors.white.withOpacity(0.2),
+                      color: isDark
+                          ? Colors.white.withOpacity(0.2)
+                          : Colors.black26,
                       fontSize: 14,
                     ),
                     border: InputBorder.none,
@@ -526,12 +544,15 @@ class _SignupState extends ConsumerState<Signup> with TickerProviderStateMixin {
   }
 
   Widget signInLink() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
           'Already have an account? ',
-          style: TextStyle(color: Colors.white.withOpacity(0.7)),
+          style: TextStyle(
+            color: isDark ? Colors.white.withOpacity(0.7) : Colors.black54,
+          ),
         ),
         TextButton(
           onPressed: () => Navigator.pushReplacement(

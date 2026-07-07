@@ -111,21 +111,24 @@ class _OtpVerificationState extends ConsumerState<OtpVerification> {
     final isLoading = authState.status == AuthStatus.loading;
 
     return Scaffold(
-      backgroundColor: AppColors.bgDark,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new,
-            color: Colors.white,
+            color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
             size: 20,
           ),
           onPressed: () => Navigator.maybePop(context),
         ),
-        title: const Text(
+        title: Text(
           'OTP Verification',
-          style: TextStyle(color: Colors.white, fontSize: 16),
+          style: TextStyle(
+            color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
+            fontSize: 16,
+          ),
         ),
         centerTitle: true,
       ),
@@ -227,15 +230,15 @@ class _AppHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final maskedEmail = email.replaceRange(3, email.indexOf('@'), '****');
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        const Text(
+        Text(
           'Verify Your Account',
           style: TextStyle(
-            color: Colors.white,
+            color: isDark ? Colors.white : Colors.black87,
             fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
@@ -244,7 +247,7 @@ class _AppHeader extends StatelessWidget {
         Text(
           'Enter the 4-digit code sent to\n$maskedEmail',
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 16),
+          style: TextStyle(color: isDark ? Colors.white.withOpacity(0.7) : Colors.black54, fontSize: 16),
         ).animate().fadeIn(duration: 500.ms, delay: 300.ms),
       ],
     );
@@ -270,6 +273,7 @@ class _OtpInputFieldsState extends State<_OtpInputFields> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -278,9 +282,9 @@ class _OtpInputFieldsState extends State<_OtpInputFields> {
           width: 64,
           height: 64,
           decoration: BoxDecoration(
-            color: AppColors.bgSurfaceDark,
+            color: isDark ? AppColors.bgSurfaceDark : Colors.grey.shade100,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.white.withOpacity(0.05)),
+            border: Border.all(color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade300),
           ),
           child: TextFormField(
             controller: widget.controllers[index],
@@ -290,16 +294,16 @@ class _OtpInputFieldsState extends State<_OtpInputFields> {
             textAlign: TextAlign.center,
             textAlignVertical: TextAlignVertical.top,
             maxLength: 1,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: Colors.white,
+              color: isDark ? Colors.white : Colors.black87,
               fontSize: 24,
             ),
             decoration: InputDecoration(
+              filled: false,
               counterText: '',
-              // contentPadding: EdgeInsets.zero,
               contentPadding: const EdgeInsets.symmetric(vertical: 20),
-              border: OutlineInputBorder(borderSide: BorderSide.none),
+              border: const OutlineInputBorder(borderSide: BorderSide.none),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),
                 borderSide: BorderSide(
@@ -405,7 +409,7 @@ class _ResendCodeSection extends ConsumerWidget {
             children: [
               Text(
                 "Didn't receive the code? ",
-                style: TextStyle(color: Colors.white.withOpacity(0.7)),
+                style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white.withOpacity(0.7) : Colors.black54),
               ),
               TextButton(
                 onPressed: onResend,
@@ -448,7 +452,7 @@ class _InfoDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: AppColors.bgSurfaceDark,
+      backgroundColor: Theme.of(context).brightness == Brightness.dark ? AppColors.bgSurfaceDark : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
         side: BorderSide(color: Colors.white.withOpacity(0.05)),
@@ -472,8 +476,8 @@ class _InfoDialog extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black87,
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
@@ -483,7 +487,7 @@ class _InfoDialog extends StatelessWidget {
               message,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.7),
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.white.withOpacity(0.7) : Colors.black54,
                 fontSize: 15,
               ),
             ),

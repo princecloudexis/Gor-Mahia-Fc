@@ -11,6 +11,7 @@ import 'package:eventsbooking/pages/policy.dart';
 import 'package:eventsbooking/pages/settings.dart';
 import 'package:eventsbooking/pages/signup.dart';
 import 'package:eventsbooking/pages/tickets.dart';
+import 'package:eventsbooking/pages/shop_orders.dart';
 import 'package:eventsbooking/providers/policy_provider.dart';
 import 'package:eventsbooking/providers/user_providers.dart';
 import 'package:eventsbooking/theme/app_colors.dart';
@@ -364,6 +365,11 @@ class _MenuSection extends StatelessWidget {
       destination: const Favorites(),
     ),
     MenuItem(
+      icon: Icons.inventory_2_outlined,
+      title: 'My Orders',
+      destination: const ShopOrdersPage(),
+    ),
+    MenuItem(
       icon: Icons.confirmation_number_outlined,
       title: 'Your Tickets',
       destination: const Tickets(),
@@ -419,7 +425,11 @@ class _MenuSection extends StatelessWidget {
               color: Theme.of(context).dividerColor,
             ),
             itemBuilder: (context, index) {
-              return _MenuTile(item: _menuItems[index], index: index);
+              return _MenuTile(
+                item: _menuItems[index],
+                isFirst: index == 0,
+                isLast: index == _menuItems.length - 1,
+              );
             },
           ),
         ).animate().fadeIn(duration: 400.ms, delay: 200.ms),
@@ -433,8 +443,14 @@ class _MenuSection extends StatelessWidget {
 // ─────────────────────────────────────────────
 class _MenuTile extends StatelessWidget {
   final MenuItem item;
-  final int index;
-  const _MenuTile({required this.item, required this.index});
+  final bool isFirst;
+  final bool isLast;
+
+  const _MenuTile({
+    required this.item,
+    required this.isFirst,
+    required this.isLast,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -446,8 +462,8 @@ class _MenuTile extends StatelessWidget {
             )
           : null,
       borderRadius: BorderRadius.vertical(
-        top: index == 0 ? const Radius.circular(16) : Radius.zero,
-        bottom: index == 5 ? const Radius.circular(16) : Radius.zero,
+        top: isFirst ? const Radius.circular(16) : Radius.zero,
+        bottom: isLast ? const Radius.circular(16) : Radius.zero,
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

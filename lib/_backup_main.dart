@@ -51,7 +51,7 @@ class MyApp extends ConsumerWidget {
       navigatorKey: NavigationService.navigatorKey,
       scaffoldMessengerKey: scaffoldMessengerKey,
       debugShowCheckedModeBanner: false,
-      title: 'KogaloTix',
+      title: 'GormahiaFc',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,

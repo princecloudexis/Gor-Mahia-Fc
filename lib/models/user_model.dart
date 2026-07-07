@@ -10,6 +10,9 @@ class UserModel {
   final int eventsAttended;
   final int upcomingEvents;
   final String membershipStatus;
+  final String membershipPlan;
+  final bool isPaidMember;
+  final DateTime? membershipExpiry;
 
   UserModel({
     required this.id,
@@ -23,6 +26,9 @@ class UserModel {
     required this.eventsAttended,
     required this.upcomingEvents,
     this.membershipStatus = 'Active',
+    this.membershipPlan = 'Free Plan',
+    this.isPaidMember = false,
+    this.membershipExpiry,
   });
 
   String get fullName => '$firstName $lastName';
@@ -49,6 +55,9 @@ class UserModel {
       'events_attended': eventsAttended,
       'upcoming_events': upcomingEvents,
       'membership_status': membershipStatus,
+      'membership_plan': membershipPlan,
+      'is_paid_member': isPaidMember,
+      'membership_expiry': membershipExpiry?.toIso8601String(),
     };
   }
 
@@ -77,6 +86,18 @@ class UserModel {
         userData['upcoming_events'] ??
         0;
 
+    final mPlan =
+        json['membership_plan'] ?? userData['membership_plan'] ?? 'Free Plan';
+    final isPaid =
+        json['is_paid_member'] ?? userData['is_paid_member'] ?? false;
+
+    DateTime? mExpiry;
+    final expiryRaw =
+        json['membership_expiry'] ?? userData['membership_expiry'];
+    if (expiryRaw != null) {
+      mExpiry = DateTime.tryParse(expiryRaw.toString());
+    }
+
     return UserModel(
       id: userData['id'] as int,
       firstName: userData['first_name'] as String? ?? '',
@@ -93,6 +114,41 @@ class UserModel {
       eventsAttended: int.tryParse(eventCount.toString()) ?? 0,
       upcomingEvents: int.tryParse(upcomingEvent.toString()) ?? 0,
       membershipStatus: userData['membership_status'] as String? ?? 'Active',
+      membershipPlan: mPlan?.toString() ?? 'Free Plan',
+      isPaidMember: isPaid == true || isPaid == 1 || isPaid == 'true',
+      membershipExpiry: mExpiry,
+    );
+  }
+}
+
+class MembershipDetails {
+  final String memberName;
+  final String membershipType;
+  final String? memberId;
+  final String? since;
+  final String? validUntil;
+  final String? branch;
+  final String? status;
+
+  MembershipDetails({
+    required this.memberName,
+    required this.membershipType,
+    this.memberId,
+    this.since,
+    this.validUntil,
+    this.branch,
+    this.status,
+  });
+
+  factory MembershipDetails.fromJson(Map<String, dynamic> json) {
+    return MembershipDetails(
+      memberName: json['member_name'] as String? ?? '',
+      membershipType: json['membership_type'] as String? ?? 'Free Plan',
+      memberId: json['member_id'] as String?,
+      since: json['since'] as String?,
+      validUntil: json['valid_until'] as String?,
+      branch: json['branch'] as String?,
+      status: json['status'] as String?,
     );
   }
 }

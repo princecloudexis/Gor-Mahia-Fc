@@ -2,29 +2,31 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'home.dart';
-import 'search.dart';
-import 'profile.dart';
-import 'community.dart';
+import 'matches.dart';
 import 'shop.dart';
+import 'community.dart';
+import 'monthly_contribution.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/community_providers.dart';
 
-class MainShell extends StatefulWidget {
+class MainShell extends ConsumerStatefulWidget {
   const MainShell({super.key});
 
   @override
-  State<MainShell> createState() => _MainShellState();
+  ConsumerState<MainShell> createState() => _MainShellState();
 }
 
-class _MainShellState extends State<MainShell>
+class _MainShellState extends ConsumerState<MainShell>
     with SingleTickerProviderStateMixin {
   int _currentIndex = 0;
   late AnimationController _indicatorController;
 
   final List<Widget> _pages = const [
     Home(),
+    Matches(),
     Community(),
+    MonthlyContribution(),
     Shop(),
-    Search(),
-    Profile(),
   ];
 
   final List<_NavItem> _navItems = const [
@@ -34,24 +36,24 @@ class _MainShellState extends State<MainShell>
       label: 'Home',
     ),
     _NavItem(
+      icon: Icons.sports_soccer_outlined,
+      activeIcon: Icons.sports_soccer_rounded,
+      label: 'Matches',
+    ),
+    _NavItem(
       icon: Icons.groups_outlined,
       activeIcon: Icons.groups_rounded,
       label: 'Community',
     ),
     _NavItem(
+      icon: Icons.account_balance_wallet_outlined,
+      activeIcon: Icons.account_balance_wallet_rounded,
+      label: 'Contributions',
+    ),
+    _NavItem(
       icon: Icons.shopping_bag_outlined,
       activeIcon: Icons.shopping_bag_rounded,
       label: 'Shop',
-    ),
-    _NavItem(
-      icon: Icons.search_outlined,
-      activeIcon: Icons.search_rounded,
-      label: 'Search',
-    ),
-    _NavItem(
-      icon: Icons.person_outline_rounded,
-      activeIcon: Icons.person_rounded,
-      label: 'Profile',
     ),
   ];
 
@@ -73,6 +75,13 @@ class _MainShellState extends State<MainShell>
   void _onTap(int index) {
     if (_currentIndex == index) return;
     HapticFeedback.lightImpact();
+
+    // Refresh community data if navigating to the Community tab (index 2)
+    if (index == 2) {
+      ref.invalidate(joinedGroupsProvider);
+      ref.invalidate(exploreGroupsProvider);
+    }
+
     setState(() => _currentIndex = index);
   }
 
@@ -257,7 +266,7 @@ class _NavBarItemState extends State<_NavBarItem>
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
+                      horizontal: 14,
                       vertical: 6,
                     ),
                     child: Column(

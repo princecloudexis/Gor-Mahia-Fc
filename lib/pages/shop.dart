@@ -9,6 +9,9 @@ import 'package:eventsbooking/providers/shop_providers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:eventsbooking/pages/shop_cart.dart';
 import 'package:eventsbooking/pages/shop_orders.dart';
+import 'profile.dart';
+import 'search.dart';
+import '../widgets/top_action_btn.dart';
 
 class Shop extends ConsumerStatefulWidget {
   const Shop({super.key});
@@ -52,21 +55,24 @@ class _ShopState extends ConsumerState<Shop> {
         iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black),
         elevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.receipt_long_outlined),
-            onPressed: () {
+          TopActionBtn(
+            icon: Icons.receipt_long_outlined,
+            onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const ShopOrdersPage()),
               );
             },
-            tooltip: 'My Orders',
           ),
-          IconButton(
-            icon: Stack(
+          TopActionBtn(
+            child: Stack(
               clipBehavior: Clip.none,
               children: [
-                const Icon(Icons.shopping_cart_outlined),
+                Icon(
+                  Icons.shopping_cart_outlined, 
+                  size: 18, 
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                ),
                 ref
                     .watch(shopCartProvider)
                     .when(
@@ -102,13 +108,32 @@ class _ShopState extends ConsumerState<Shop> {
                     ),
               ],
             ),
-            onPressed: () {
+            onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (context) => const ShopCartPage()),
               );
             },
           ),
+          TopActionBtn(
+            icon: Icons.search_rounded,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const Search()),
+              );
+            },
+          ),
+          TopActionBtn(
+            icon: Icons.person_outline_rounded,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const Profile()),
+              );
+            },
+          ),
+          const SizedBox(width: 12),
         ],
       ),
       body: CustomScrollView(

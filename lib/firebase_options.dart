@@ -51,29 +51,29 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBzrcMvKSUbuWP_VzTEbFgx8Z_BIZPnzY4',
-    appId: '1:378675941206:android:9e77e77ceb2ac0449cd0f7',
-    messagingSenderId: '378675941206',
-    projectId: 'eventapp-bd9cb',
-    storageBucket: 'eventapp-bd9cb.firebasestorage.app',
+    apiKey: 'AIzaSyDq3FxVKVTn6IvXOB2q040uD-ZC7Y7t60I',
+    appId: '1:503736580212:android:774577e44f756ba33af921',
+    messagingSenderId: '503736580212',
+    projectId: 'footballstaging',
+    storageBucket: 'footballstaging.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyANU6dv-Q5FvRXPiS4hEH0UTfcexydlK_E',
-    appId: '1:378675941206:ios:70f020ae54cb66f49cd0f7',
-    messagingSenderId: '378675941206',
-    projectId: 'eventapp-bd9cb',
-    storageBucket: 'eventapp-bd9cb.firebasestorage.app',
-    iosBundleId: 'com.example.eventsbooking',
+    apiKey: 'AIzaSyDV59hZsGWEMTzONnH6VWCqkDj1on0l8V0',
+    appId: '1:503736580212:ios:7eeefe1057eeacbe3af921',
+    messagingSenderId: '503736580212',
+    projectId: 'footballstaging',
+    storageBucket: 'footballstaging.firebasestorage.app',
+    iosBundleId: 'FootBall.Ios1',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyANU6dv-Q5FvRXPiS4hEH0UTfcexydlK_E',
-    appId: '1:378675941206:ios:70f020ae54cb66f49cd0f7',
-    messagingSenderId: '378675941206',
-    projectId: 'eventapp-bd9cb',
-    storageBucket: 'eventapp-bd9cb.firebasestorage.app',
-    iosBundleId: 'com.example.eventsbooking',
+    apiKey: 'AIzaSyDV59hZsGWEMTzONnH6VWCqkDj1on0l8V0',
+    appId: '1:503736580212:ios:7eeefe1057eeacbe3af921',
+    messagingSenderId: '503736580212',
+    projectId: 'footballstaging',
+    storageBucket: 'footballstaging.firebasestorage.app',
+    iosBundleId: 'FootBall.Ios1',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(

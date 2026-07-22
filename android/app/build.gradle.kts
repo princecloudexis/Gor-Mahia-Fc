@@ -48,7 +48,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.eventsbooking"
+        applicationId = "FootBall.Ard1"
         minSdk = flutterMinSdkVersion.toInt()
         targetSdk = flutterTargetSdkVersion.toInt()
         versionCode = flutterVersionCode.toInt()

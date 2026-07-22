@@ -201,8 +201,25 @@ class ShopCartItem {
   final int quantity;
   final ShopCartProduct product;
   final ShopCartVariant? variant;
+  final double effectivePrice;
+  final double subtotal;
+  final double vat;
+  final double vatRate;
+  final double platformCharge;
+  final double platformChargeRate;
 
-  ShopCartItem({required this.id, required this.quantity, required this.product, this.variant});
+  ShopCartItem({
+    required this.id,
+    required this.quantity,
+    required this.product,
+    this.variant,
+    this.effectivePrice = 0.0,
+    this.subtotal = 0.0,
+    this.vat = 0.0,
+    this.vatRate = 0.0,
+    this.platformCharge = 0.0,
+    this.platformChargeRate = 0.0,
+  });
 
   factory ShopCartItem.fromJson(Map<String, dynamic> json) {
     return ShopCartItem(
@@ -210,6 +227,12 @@ class ShopCartItem {
       quantity: int.tryParse(json['quantity']?.toString() ?? '1') ?? 1,
       product: ShopCartProduct.fromJson(json['product'] ?? {}),
       variant: json['variant'] != null ? ShopCartVariant.fromJson(json['variant']) : null,
+      effectivePrice: double.tryParse(json['effective_price']?.toString() ?? '0') ?? 0.0,
+      subtotal: double.tryParse(json['subtotal']?.toString() ?? '0') ?? 0.0,
+      vat: double.tryParse(json['vat']?.toString() ?? '0') ?? 0.0,
+      vatRate: double.tryParse(json['vat_rate']?.toString() ?? '0') ?? 0.0,
+      platformCharge: double.tryParse(json['platform_charge']?.toString() ?? '0') ?? 0.0,
+      platformChargeRate: double.tryParse(json['platform_charge_rate']?.toString() ?? '0') ?? 0.0,
     );
   }
 }
@@ -320,6 +343,11 @@ class ShopOrderItem {
   final double price;
   final int quantity;
   final String? image;
+  final double subtotal;
+  final double vat;
+  final double vatRate;
+  final double platformCharge;
+  final double platformChargeRate;
 
   ShopOrderItem({
     required this.id,
@@ -327,6 +355,11 @@ class ShopOrderItem {
     required this.price,
     required this.quantity,
     this.image,
+    this.subtotal = 0.0,
+    this.vat = 0.0,
+    this.vatRate = 0.0,
+    this.platformCharge = 0.0,
+    this.platformChargeRate = 0.0,
   });
 
   factory ShopOrderItem.fromJson(Map<String, dynamic> json) {
@@ -338,9 +371,14 @@ class ShopOrderItem {
     return ShopOrderItem(
       id: json['id'] ?? 0,
       productName: json['product_name'] ?? json['name'] ?? '',
-      price: double.tryParse(json['price']?.toString() ?? '0') ?? 0.0,
+      price: double.tryParse((json['price'] ?? json['unit_price'])?.toString() ?? '0') ?? 0.0,
       quantity: int.tryParse(json['quantity']?.toString() ?? '1') ?? 1,
       image: parsedImage,
+      subtotal: double.tryParse(json['subtotal']?.toString() ?? '0') ?? 0.0,
+      vat: double.tryParse(json['vat']?.toString() ?? '0') ?? 0.0,
+      vatRate: double.tryParse(json['vat_rate']?.toString() ?? '0') ?? 0.0,
+      platformCharge: double.tryParse(json['platform_charge']?.toString() ?? '0') ?? 0.0,
+      platformChargeRate: double.tryParse(json['platform_charge_rate']?.toString() ?? '0') ?? 0.0,
     );
   }
 }

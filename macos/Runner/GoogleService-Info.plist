@@ -3,17 +3,17 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyANU6dv-Q5FvRXPiS4hEH0UTfcexydlK_E</string>
+	<string>AIzaSyDV59hZsGWEMTzONnH6VWCqkDj1on0l8V0</string>
 	<key>GCM_SENDER_ID</key>
-	<string>378675941206</string>
+	<string>503736580212</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.eventsbooking</string>
+	<string>FootBall.Ios1</string>
 	<key>PROJECT_ID</key>
-	<string>eventapp-bd9cb</string>
+	<string>footballstaging</string>
 	<key>STORAGE_BUCKET</key>
-	<string>eventapp-bd9cb.firebasestorage.app</string>
+	<string>footballstaging.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:378675941206:ios:70f020ae54cb66f49cd0f7</string>
+	<string>1:503736580212:ios:7eeefe1057eeacbe3af921</string>
 </dict>
 </plist>

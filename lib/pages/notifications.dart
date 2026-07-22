@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../theme/apptheme.dart';
 import '../models/notification_model.dart';
+import '../repositories/community_repository.dart';
+import 'group_details.dart';
 
 class Notifications extends ConsumerStatefulWidget {
   const Notifications({super.key});
@@ -318,18 +320,60 @@ class _NotificationTile extends ConsumerWidget {
         ),
       ),
       child: InkWell(
-        onTap: () {
+        onTap: () async {
           if (isUnread) {
             ref
                 .read(notificationsProvider.notifier)
                 .markAsRead(notification.id);
           }
+
+          // Parse the backend target_url for precise navigation
+          final nav = notification.parsedTargetUrl;
+          final parsedGroupId = nav['groupId'] ?? notification.groupId;
+          final parsedPostId = nav['postId'] ?? notification.postId;
+
           if (notification.eventSlug != null) {
             Navigator.pushNamed(
               context,
               '/event-details',
               arguments: notification.eventSlug,
             );
+          } else if (parsedGroupId != null) {
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) => const Center(
+                child: CircularProgressIndicator(),
+              ),
+            );
+            try {
+              final group = await ref
+                  .read(communityRepositoryProvider)
+                  .fetchGroupDetails(parsedGroupId);
+              if (context.mounted) {
+                Navigator.pop(context); // hide loading
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => GroupDetails(
+                      group: group,
+                      isJoined: group.isJoined,
+                      initialPostId: parsedPostId,
+                      initialCommentId: nav['commentId'],
+                    ),
+                  ),
+                );
+              }
+            } catch (e) {
+              if (context.mounted) {
+                Navigator.pop(context); // hide loading
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Failed to load group details'),
+                  ),
+                );
+              }
+            }
           }
         },
         borderRadius: BorderRadius.circular(14),
@@ -350,8 +394,21 @@ class _NotificationTile extends ConsumerWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // ── Icon ──
-              _TypeIcon(type: notification.type),
+              // ── Icon / Avatar ──
+              if (notification.senderAvatar != null && notification.senderAvatar!.isNotEmpty)
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    image: DecorationImage(
+                      image: NetworkImage(notification.senderAvatar!),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                )
+              else
+                _TypeIcon(type: notification.type),
               const SizedBox(width: 12),
 
               // ── Content ──
@@ -416,7 +473,9 @@ class _NotificationTile extends ConsumerWidget {
               ),
 
               // ── Arrow if tappable ──
-              if (notification.eventSlug != null) ...[
+              if (notification.eventSlug != null ||
+                  notification.groupId != null ||
+                  notification.targetUrl != null) ...[ 
                 const SizedBox(width: 6),
                 Icon(
                   Icons.chevron_right_rounded,
@@ -449,6 +508,11 @@ class _TypeIcon extends StatelessWidget {
         return Icons.local_offer_rounded;
       case NotificationType.system:
         return Icons.info_outline_rounded;
+      case NotificationType.like:
+        return Icons.favorite_rounded;
+      case NotificationType.comment:
+      case NotificationType.reply:
+        return Icons.comment_rounded;
     }
   }
 
@@ -462,6 +526,11 @@ class _TypeIcon extends StatelessWidget {
         return Colors.green;
       case NotificationType.system:
         return Colors.blueGrey;
+      case NotificationType.like:
+        return Colors.redAccent;
+      case NotificationType.comment:
+      case NotificationType.reply:
+        return AppTheme.primaryGreen;
     }
   }
 

@@ -202,7 +202,7 @@ class _ShopCartPageState extends ConsumerState<ShopCartPage> {
                                     ],
                                     const SizedBox(height: 8),
                                     Text(
-                                      'KSh ${item.product.price.toStringAsFixed(0)}',
+                                      'KSh ${(item.effectivePrice > 0 ? item.effectivePrice : item.product.price).toStringAsFixed(0)}',
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         color: AppColors.primaryGreen,
@@ -272,22 +272,62 @@ class _ShopCartPageState extends ConsumerState<ShopCartPage> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'Total:',
-                                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                              ),
-                              Text(
-                                'KSh ${cart.cartTotal.toStringAsFixed(0)}',
-                                style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.primaryGreen,
-                                ),
-                              ),
-                            ],
+                          Builder(
+                            builder: (context) {
+                              final totalSubtotal = cart.items.fold(0.0, (sum, item) => sum + item.subtotal);
+                              final totalVat = cart.items.fold(0.0, (sum, item) => sum + item.vat);
+                              final totalPlatformCharge = cart.items.fold(0.0, (sum, item) => sum + item.platformCharge);
+
+                              return Column(
+                                children: [
+                                  if (totalSubtotal > 0) ...[
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('Subtotal:', style: TextStyle(color: isDark ? Colors.white70 : Colors.black54)),
+                                        Text('KSh ${totalSubtotal.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('VAT:', style: TextStyle(color: isDark ? Colors.white70 : Colors.black54)),
+                                        Text('KSh ${totalVat.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text('Platform Charge:', style: TextStyle(color: isDark ? Colors.white70 : Colors.black54)),
+                                        Text('KSh ${totalPlatformCharge.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Divider(color: isDark ? Colors.white24 : Colors.grey.shade200),
+                                    const SizedBox(height: 12),
+                                  ],
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      const Text(
+                                        'Total:',
+                                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                      ),
+                                      Text(
+                                        'KSh ${cart.cartTotal.toStringAsFixed(0)}',
+                                        style: const TextStyle(
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.primaryGreen,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              );
+                            }
                           ),
                           const SizedBox(height: 16),
                           SizedBox(

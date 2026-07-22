@@ -1,30 +1,59 @@
+import 'dart:io';
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../theme/app_colors.dart';
 
-class CreatePost extends StatefulWidget {
-  final Map<String, Object> group;
+import '../models/community_models.dart';
+import '../providers/community_providers.dart';
+import '../repositories/community_repository.dart';
+import 'widgets/gif_picker_sheet.dart';
 
-  const CreatePost({super.key, required this.group});
+class CreatePost extends ConsumerStatefulWidget {
+  final CommunityGroup group;
+  final CommunityPost? existingPost;
+
+  const CreatePost({super.key, required this.group, this.existingPost});
 
   @override
-  State<CreatePost> createState() => _CreatePostState();
+  ConsumerState<CreatePost> createState() => _CreatePostState();
 }
 
-class _CreatePostState extends State<CreatePost> {
+class _CreatePostState extends ConsumerState<CreatePost> {
   final TextEditingController _textController = TextEditingController();
+  final TextEditingController _pollQuestionController = TextEditingController();
   final int _maxChars = 280;
-  bool _hasImage = true;
+  bool _hasImage = false;
+  XFile? _selectedMedia;
   bool _hasPoll = false;
   bool _hasLocation = false;
   String _selectedLocation = '';
   List<TextEditingController> _pollOptions = [
-    TextEditingController(text: 'Option 1'),
-    TextEditingController(text: 'Option 2'),
+    TextEditingController(text: ''),
+    TextEditingController(text: ''),
   ];
+  bool _isPublishing = false;
+  int? _selectedGifId;
+  String? _selectedGifUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.existingPost != null) {
+      _textController.text = widget.existingPost!.content;
+      // We are not loading existing media or polls for edit in this simple version,
+      // but you can expand this if you have the full data structure available locally.
+    }
+  }
 
   @override
   void dispose() {
     _textController.dispose();
+    _pollQuestionController.dispose();
     for (var c in _pollOptions) {
       c.dispose();
     }
@@ -32,7 +61,16 @@ class _CreatePostState extends State<CreatePost> {
   }
 
   int get _remainingChars => _maxChars - _textController.text.length;
-  bool get _canPost => _textController.text.trim().isNotEmpty;
+  bool get _canPost {
+    if (_hasPoll) {
+      final hasQuestion = _pollQuestionController.text.trim().isNotEmpty;
+      final validOptions = _pollOptions
+          .where((o) => o.text.trim().isNotEmpty)
+          .length;
+      return hasQuestion && validOptions >= 2;
+    }
+    return _textController.text.trim().isNotEmpty;
+  }
 
   double get _progressValue =>
       (_textController.text.length / _maxChars).clamp(0.0, 1.0);
@@ -117,86 +155,94 @@ class _CreatePostState extends State<CreatePost> {
   }
 
   void _showGifPicker() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (ctx) => Container(
-        height: MediaQuery.of(context).size.height * 0.5,
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.bgDark : AppColors.bgLight,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(2),
+      builder: (ctx) => GifPickerSheet(
+        onGifSelected: (id, url) {
+          setState(() {
+            _selectedGifId = id;
+            _selectedGifUrl = url;
+            _hasImage = false; // Mutually exclusive
+            _selectedMedia = null;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('GIF selected!'),
+              backgroundColor: AppColors.primaryGreen,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
               ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              'Select GIF',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: isDark ? AppColors.textOnDark : AppColors.textOnLight,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Expanded(
-              child: GridView.builder(
-                padding: const EdgeInsets.all(12),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                ),
-                itemCount: 6,
-                itemBuilder: (_, i) => GestureDetector(
-                  onTap: () {
-                    setState(() => _hasImage = true);
-                    Navigator.pop(ctx);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: const Text('GIF added!'),
-                        backgroundColor: AppColors.primaryGreen,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                    );
-                  },
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.08)
-                          : Colors.black.withValues(alpha: 0.06),
-                      child: Center(
-                        child: Text(
-                          'GIF ${i + 1}',
-                          style: TextStyle(
-                            color: AppColors.primaryGreen,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
+  }
+
+  Future<bool> _handleMediaPermission() async {
+    PermissionStatus photosStatus = await Permission.photos.status;
+    PermissionStatus storageStatus = await Permission.storage.status;
+
+    // If already granted, return true
+    if (photosStatus.isGranted ||
+        photosStatus.isLimited ||
+        storageStatus.isGranted ||
+        storageStatus.isLimited) {
+      return true;
+    }
+
+    // Now request the actual OS permission
+    if (Platform.isAndroid) {
+      photosStatus = await Permission.photos.request();
+      storageStatus = await Permission.storage.request();
+      if (photosStatus.isGranted ||
+          photosStatus.isLimited ||
+          storageStatus.isGranted ||
+          storageStatus.isLimited) {
+        return true;
+      }
+    } else {
+      photosStatus = await Permission.photos.request();
+      if (photosStatus.isGranted || photosStatus.isLimited) return true;
+    }
+
+    // If still denied (permanently), show settings dialog
+    if (photosStatus.isPermanentlyDenied || storageStatus.isPermanentlyDenied) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Permission Required'),
+            content: const Text(
+              'Please allow gallery access in your device settings to upload media.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: AppColors.primaryGreen),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  openAppSettings();
+                },
+                child: const Text(
+                  'Open Settings',
+                  style: TextStyle(color: AppColors.primaryGreen),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+    return false;
   }
 
   @override
@@ -224,28 +270,48 @@ class _CreatePostState extends State<CreatePost> {
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            child: AnimatedOpacity(
-              opacity: _canPost ? 1.0 : 0.5,
-              duration: const Duration(milliseconds: 200),
-              child: ElevatedButton(
-                onPressed: _canPost ? _publishPost : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryGreen,
-                  foregroundColor: Colors.white,
-                  disabledBackgroundColor: AppColors.primaryGreen.withValues(
-                    alpha: 0.5,
+            child: AnimatedBuilder(
+              animation: Listenable.merge([
+                _textController,
+                _pollQuestionController,
+                ..._pollOptions,
+              ]),
+              builder: (context, _) {
+                return AnimatedOpacity(
+                  opacity: _canPost ? 1.0 : 0.5,
+                  duration: const Duration(milliseconds: 200),
+                  child: ElevatedButton(
+                    onPressed: _canPost && !_isPublishing ? _publishPost : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primaryGreen,
+                      foregroundColor: Colors.white,
+                      disabledBackgroundColor: AppColors.primaryGreen
+                          .withValues(alpha: 0.5),
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: _isPublishing
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : Text(
+                            widget.existingPost != null ? 'Save' : 'Post',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  elevation: 0,
-                ),
-                child: const Text(
-                  'Post',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-                ),
-              ),
+                );
+              },
             ),
           ),
         ],
@@ -261,12 +327,13 @@ class _CreatePostState extends State<CreatePost> {
                   children: [
                     // Avatar
                     CircleAvatar(
-                      backgroundColor: (widget.group['color'] as Color)
-                          .withValues(alpha: 0.15),
+                      backgroundColor: AppColors.primaryGreen.withValues(
+                        alpha: 0.15,
+                      ),
                       radius: 22,
                       child: Icon(
                         Icons.person,
-                        color: widget.group['color'] as Color,
+                        color: AppColors.primaryGreen,
                         size: 22,
                       ),
                     ),
@@ -316,6 +383,46 @@ class _CreatePostState extends State<CreatePost> {
                           const SizedBox(height: 12),
                           // Image Attachment
                           if (_hasImage) _buildImageAttachment(isDark),
+                          // GIF Attachment
+                          if (_selectedGifUrl != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 12),
+                              child: Stack(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: Image.network(
+                                      _selectedGifUrl!,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 8,
+                                    right: 8,
+                                    child: GestureDetector(
+                                      onTap: () => setState(() {
+                                        _selectedGifId = null;
+                                        _selectedGifUrl = null;
+                                      }),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withValues(
+                                            alpha: 0.6,
+                                          ),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.close,
+                                          color: Colors.white,
+                                          size: 20,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           // Poll Section
                           if (_hasPoll) ...[
                             const SizedBox(height: 12),
@@ -360,31 +467,49 @@ class _CreatePostState extends State<CreatePost> {
         ),
         child: Stack(
           children: [
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.image_outlined,
-                    size: 52,
-                    color: isDark ? Colors.white24 : Colors.black26,
+            if (_selectedMedia != null)
+              Positioned.fill(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Image.file(
+                    File(_selectedMedia!.path),
+                    fit: BoxFit.cover,
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Image Preview',
-                    style: TextStyle(
-                      color: isDark ? Colors.white30 : Colors.black26,
-                      fontSize: 13,
+                ),
+              )
+            else
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.image_outlined,
+                      size: 52,
+                      color: isDark ? Colors.white24 : Colors.black26,
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 8),
+                    Text(
+                      'Image Preview',
+                      style: TextStyle(
+                        color: isDark ? Colors.white30 : Colors.black26,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
             Positioned(
               top: 10,
               right: 10,
               child: GestureDetector(
-                onTap: () => setState(() => _hasImage = false),
+                onTap: () {
+                  setState(() {
+                    _hasImage = false;
+                    _selectedMedia = null;
+                    _selectedGifId = null;
+                    _selectedGifUrl = null;
+                  });
+                },
                 child: CircleAvatar(
                   radius: 16,
                   backgroundColor: Colors.black.withValues(alpha: 0.65),
@@ -441,7 +566,57 @@ class _CreatePostState extends State<CreatePost> {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _pollQuestionController,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: isDark ? AppColors.textOnDark : AppColors.textOnLight,
+            ),
+            decoration: InputDecoration(
+              hintText: 'Ask a question...',
+              hintStyle: TextStyle(
+                color: isDark
+                    ? AppColors.textMutedDark
+                    : AppColors.textMutedLight,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.black.withValues(alpha: 0.1),
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.black.withValues(alpha: 0.1),
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: AppColors.primaryGreen),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Options',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: isDark ? Colors.white60 : Colors.black54,
+            ),
+          ),
+          const SizedBox(height: 8),
           ...List.generate(_pollOptions.length, (i) {
             return Padding(
               padding: const EdgeInsets.only(bottom: 8),
@@ -573,124 +748,217 @@ class _CreatePostState extends State<CreatePost> {
   }
 
   Widget _buildBottomToolbar(bool isDark) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            children: [
-              Icon(Icons.public, color: AppColors.primaryGreen, size: 16),
-              const SizedBox(width: 8),
-              Text(
-                'Everyone can reply',
-                style: TextStyle(
-                  color: AppColors.primaryGreen,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.bgCardDark : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
           ),
-        ),
-        Divider(
-          height: 1,
+        ],
+        border: Border.all(
           color: isDark
-              ? Colors.white.withValues(alpha: 0.1)
-              : Colors.black.withValues(alpha: 0.1),
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.05),
         ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          color: isDark ? AppColors.bgDark : AppColors.bgLight,
-          child: Row(
-            children: [
-              _buildToolbarButton(
-                icon: Icons.image_outlined,
-                label: 'Image',
-                onTap: () => setState(() => _hasImage = !_hasImage),
-                isActive: _hasImage,
-              ),
-              const SizedBox(width: 4),
-              _buildToolbarButton(
-                icon: Icons.gif_box_outlined,
-                label: 'GIF',
-                onTap: _showGifPicker,
-              ),
-              const SizedBox(width: 4),
-              _buildToolbarButton(
-                icon: Icons.poll_outlined,
-                label: 'Poll',
-                onTap: () => setState(() => _hasPoll = !_hasPoll),
-                isActive: _hasPoll,
-              ),
-              const SizedBox(width: 4),
-              _buildToolbarButton(
-                icon: Icons.location_on_outlined,
-                label: 'Location',
-                onTap: _showLocationPicker,
-                isActive: _hasLocation,
-              ),
-              const Spacer(),
-              // Character counter
-              ValueListenableBuilder(
-                valueListenable: _textController,
-                builder: (context, value, _) {
-                  return Row(
-                    children: [
-                      if (_remainingChars <= 20)
-                        Text(
-                          '$_remainingChars',
-                          style: TextStyle(
-                            color: _counterColor,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Icon(Icons.public, color: AppColors.primaryGreen, size: 16),
+                const SizedBox(width: 8),
+                Text(
+                  'Everyone can reply',
+                  style: TextStyle(
+                    color: AppColors.primaryGreen,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Divider(
+            height: 1,
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.1)
+                : Colors.black.withValues(alpha: 0.1),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              children: [
+                _buildToolbarButton(
+                  icon: Icons.image_outlined,
+                  label: 'Image',
+                  onTap: () async {
+                    bool hasPermission = await _handleMediaPermission();
+
+                    if (hasPermission) {
+                      final picker = ImagePicker();
+                      final picked = await picker.pickMedia();
+                      if (picked != null) {
+                        try {
+                          CroppedFile? croppedFile = await ImageCropper()
+                              .cropImage(
+                                sourcePath: picked.path,
+                                uiSettings: [
+                                  AndroidUiSettings(
+                                    toolbarTitle: 'Crop Image',
+                                    toolbarColor: AppColors.primaryGreen,
+                                    toolbarWidgetColor: Colors.white,
+                                    initAspectRatio:
+                                        CropAspectRatioPreset.square,
+                                    lockAspectRatio: false,
+                                    aspectRatioPresets: [
+                                      CropAspectRatioPreset.square,
+                                      CropAspectRatioPreset.ratio4x3,
+                                      CropAspectRatioPreset.ratio16x9,
+                                      CropAspectRatioPreset.original,
+                                    ],
+                                  ),
+                                  IOSUiSettings(
+                                    title: 'Crop Image',
+                                    aspectRatioPresets: [
+                                      CropAspectRatioPreset.square,
+                                      CropAspectRatioPreset.ratio4x3,
+                                      CropAspectRatioPreset.ratio16x9,
+                                      CropAspectRatioPreset.original,
+                                    ],
+                                  ),
+                                ],
+                              );
+
+                          if (croppedFile != null) {
+                            setState(() {
+                              _selectedMedia = XFile(croppedFile.path);
+                              _hasImage = true;
+                              _hasPoll = false;
+                              _selectedGifId = null;
+                              _selectedGifUrl = null;
+                            });
+                          }
+                        } on MissingPluginException catch (_) {
+                          setState(() {
+                            _selectedMedia = picked;
+                            _hasImage = true;
+                            _hasPoll = false;
+                            _selectedGifId = null;
+                            _selectedGifUrl = null;
+                          });
+                        } catch (e) {
+                          setState(() {
+                            _selectedMedia = picked;
+                            _hasImage = true;
+                            _hasPoll = false;
+                            _selectedGifId = null;
+                            _selectedGifUrl = null;
+                          });
+                        }
+                      }
+                    }
+                  },
+                  isActive: _hasImage,
+                ),
+                const SizedBox(width: 4),
+                _buildToolbarButton(
+                  icon: Icons.gif_box_outlined,
+                  label: 'GIF',
+                  onTap: _showGifPicker,
+                ),
+                const SizedBox(width: 4),
+                _buildToolbarButton(
+                  icon: Icons.poll_outlined,
+                  label: 'Poll',
+                  onTap: () => setState(() {
+                    _hasPoll = !_hasPoll;
+                    if (_hasPoll) {
+                      _hasImage = false;
+                      _selectedMedia = null;
+                      _selectedGifId = null;
+                      _selectedGifUrl = null;
+                    }
+                  }),
+                  isActive: _hasPoll,
+                ),
+                const SizedBox(width: 4),
+                _buildToolbarButton(
+                  icon: Icons.location_on_outlined,
+                  label: 'Location',
+                  onTap: _showLocationPicker,
+                  isActive: _hasLocation,
+                ),
+                const Spacer(),
+                // Character counter
+                ValueListenableBuilder(
+                  valueListenable: _textController,
+                  builder: (context, value, _) {
+                    return Row(
+                      children: [
+                        if (_remainingChars <= 20)
+                          Text(
+                            '$_remainingChars',
+                            style: TextStyle(
+                              color: _counterColor,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                      const SizedBox(width: 8),
-                      SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          value: _progressValue,
-                          strokeWidth: 2,
-                          backgroundColor: isDark
-                              ? Colors.white.withValues(alpha: 0.1)
-                              : Colors.black.withValues(alpha: 0.1),
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            _counterColor,
-                          ),
-                        ),
-                      ),
-                      Container(
-                        height: 24,
-                        width: 1,
-                        margin: const EdgeInsets.symmetric(horizontal: 12),
-                        color: isDark ? Colors.white24 : Colors.black26,
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: AppColors.primaryGreen.withValues(
-                              alpha: 0.5,
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            value: _progressValue,
+                            strokeWidth: 2,
+                            backgroundColor: isDark
+                                ? Colors.white.withValues(alpha: 0.1)
+                                : Colors.black.withValues(alpha: 0.1),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              _counterColor,
                             ),
                           ),
                         ),
-                        child: Icon(
-                          Icons.add,
-                          color: AppColors.primaryGreen,
-                          size: 16,
+                        Container(
+                          height: 24,
+                          width: 1,
+                          margin: const EdgeInsets.symmetric(horizontal: 12),
+                          color: isDark ? Colors.white24 : Colors.black26,
                         ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-            ],
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColors.primaryGreen.withValues(
+                                alpha: 0.5,
+                              ),
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.add,
+                            color: AppColors.primaryGreen,
+                            size: 16,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -700,51 +968,127 @@ class _CreatePostState extends State<CreatePost> {
     required VoidCallback onTap,
     bool isActive = false,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Tooltip(
-        message: label,
-        child: Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: isActive
-                ? AppColors.primaryGreen.withValues(alpha: 0.12)
-                : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(
-            icon,
-            color: isActive
-                ? AppColors.primaryGreen
-                : AppColors.primaryGreen.withValues(alpha: 0.7),
-            size: 24,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final inactiveColor = isDark ? Colors.white70 : Colors.black54;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Tooltip(
+          message: label,
+          child: Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: isActive
+                  ? AppColors.primaryGreen.withValues(alpha: 0.15)
+                  : Colors.transparent,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              icon,
+              color: isActive ? AppColors.primaryGreen : inactiveColor,
+              size: 26,
+            ),
           ),
         ),
       ),
     );
   }
 
-  void _publishPost() {
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle, color: Colors.white, size: 20),
-            const SizedBox(width: 10),
-            const Text(
-              'Post published successfully!',
-              style: TextStyle(fontWeight: FontWeight.w600),
+  Future<void> _publishPost() async {
+    setState(() {
+      _isPublishing = true;
+    });
+
+    try {
+      final repo = ref.read(communityRepositoryProvider);
+
+      if (_hasPoll) {
+        final options = _pollOptions
+            .map((e) => e.text.trim())
+            .where((t) => t.isNotEmpty)
+            .toList();
+        if (options.length < 2) {
+          throw Exception("A poll requires at least two options.");
+        }
+        await repo.createPoll(
+          widget.group.id,
+          _pollQuestionController.text.trim(),
+          options,
+          24,
+        );
+      } else {
+        // Normal post or Edit post
+        final List<CommunityMedia> media = [];
+        if (_hasImage && _selectedMedia != null) {
+          final uploadedMedia = await repo.uploadMedia(_selectedMedia!.path);
+          media.add(uploadedMedia);
+        }
+
+        if (widget.existingPost != null) {
+          await ref
+              .read(groupPostsProvider(widget.group.id).notifier)
+              .editPost(
+                widget.existingPost!.id,
+                _textController.text.trim(),
+                media: media,
+                gifId: _selectedGifId,
+              );
+        } else {
+          await repo.createPost(
+            widget.group.id,
+            _textController.text.trim(),
+            media,
+            gifId: _selectedGifId,
+          );
+        }
+      }
+
+      // Only refresh for new posts (edit already updates state directly)
+      if (widget.existingPost == null) {
+        ref.refresh(groupPostsProvider(widget.group.id));
+      }
+
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white, size: 20),
+                const SizedBox(width: 10),
+                const Text(
+                  'Post published successfully!',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ],
             ),
-          ],
-        ),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: AppColors.primaryGreen,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 3),
-      ),
-    );
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppColors.primaryGreen,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.all(16),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to publish post: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        setState(() {
+          _isPublishing = false;
+        });
+      }
+    }
   }
 
   void _showDiscardDialog() {
@@ -755,10 +1099,11 @@ class _CreatePostState extends State<CreatePost> {
         backgroundColor: isDark ? AppColors.bgDark : AppColors.bgLight,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
-          'Discard Post?',
+          widget.existingPost != null ? 'Edit Post' : 'Create Post',
           style: TextStyle(
             color: isDark ? AppColors.textOnDark : AppColors.textOnLight,
             fontWeight: FontWeight.bold,
+            fontSize: 18,
           ),
         ),
         content: Text(

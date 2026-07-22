@@ -108,6 +108,13 @@ class _ProfileHeader extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
+                    if (Navigator.canPop(context)) ...[
+                      _IconBtn(
+                        icon: Icons.arrow_back,
+                        onTap: () => Navigator.pop(context),
+                      ),
+                      const SizedBox(width: 12),
+                    ],
                     // Title
                     Expanded(
                       child: Text(
@@ -516,7 +523,16 @@ class _GuestView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const SizedBox(height: 60),
+            const SizedBox(height: 16),
+            if (Navigator.canPop(context))
+              Align(
+                alignment: Alignment.centerLeft,
+                child: _IconBtn(
+                  icon: Icons.arrow_back,
+                  onTap: () => Navigator.pop(context),
+                ),
+              ),
+            const SizedBox(height: 16),
 
             // Avatar placeholder
             Container(

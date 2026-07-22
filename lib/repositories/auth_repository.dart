@@ -115,7 +115,9 @@ class AuthRepository {
       if (response.data['status'] == 200 || response.data['success'] == true) {
         return MembershipDetails.fromJson(response.data['data']);
       } else {
-        throw Exception(response.data['message'] ?? 'Failed to fetch membership details.');
+        throw Exception(
+          response.data['message'] ?? 'Failed to fetch membership details.',
+        );
       }
     } on DioException catch (e) {
       final errorMessage =

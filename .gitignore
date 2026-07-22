@@ -65,3 +65,5 @@ coverage/
 
 # Local properties
 local.properties
+
+*.md

@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "378675941206",
-    "project_id": "eventapp-bd9cb",
-    "storage_bucket": "eventapp-bd9cb.firebasestorage.app"
+    "project_number": "503736580212",
+    "project_id": "footballstaging",
+    "storage_bucket": "footballstaging.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:378675941206:android:9e77e77ceb2ac0449cd0f7",
+        "mobilesdk_app_id": "1:503736580212:android:774577e44f756ba33af921",
         "android_client_info": {
-          "package_name": "com.example.eventsbooking"
+          "package_name": "FootBall.Ard1"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBzrcMvKSUbuWP_VzTEbFgx8Z_BIZPnzY4"
+          "current_key": "AIzaSyDq3FxVKVTn6IvXOB2q040uD-ZC7Y7t60I"
         }
       ],
       "services": {

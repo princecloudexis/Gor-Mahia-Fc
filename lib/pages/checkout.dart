@@ -1088,10 +1088,7 @@ class _OrderSummaryCard extends ConsumerWidget {
             }),
 
             // ✅ Always show Booking Fee row even if 0.00, as requested
-            _BookingFeeExpandable(
-              details: details,
-              bookingFee: bookingFee,
-            ),
+            _BookingFeeExpandable(details: details, bookingFee: bookingFee),
 
             if (state.promoStatus == PromoStatus.applied)
               _PriceRow(
@@ -1302,9 +1299,10 @@ class _BookingFeeExpandableState extends State<_BookingFeeExpandable>
       vsync: this,
       duration: const Duration(milliseconds: 220),
     );
-    _rotateAnim = Tween<double>(begin: 0, end: 0.5).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
-    );
+    _rotateAnim = Tween<double>(
+      begin: 0,
+      end: 0.5,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
   }
 
   @override
@@ -1427,10 +1425,7 @@ class _FeeDetailRow extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: TextStyle(fontSize: 11, color: color),
-          ),
+          Text(label, style: TextStyle(fontSize: 11, color: color)),
           Text(
             value,
             style: TextStyle(

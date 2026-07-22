@@ -6,6 +6,8 @@
 <string>We need your location to show relevant data</string>
 <key>NSLocationAlwaysUsageDescription</key>
 <string>We need your location for background tracking</string>
+<key>NSPhotoLibraryUsageDescription</key>
+<string>We need access to your photo library to allow you to upload images and videos to your posts.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

@@ -69,6 +69,11 @@ class AuthController extends StateNotifier<AuthState> {
             isGuest: false,
             token: token,
           );
+          
+          // Initialize FCM on startup if already logged in!
+          if (_userNotifier.state != null) {
+            _initFCMAfterLogin(token, _userNotifier.state!.id);
+          }
         } else {
           await _clearAuthData();
           state = const AuthState(status: AuthStatus.unauthenticated);

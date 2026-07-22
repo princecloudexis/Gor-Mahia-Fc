@@ -1,22 +1,66 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/app_colors.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:intl/intl.dart';
 
-class GroupInfo extends StatelessWidget {
-  final Map<String, Object> group;
+import '../models/community_models.dart';
+import '../providers/community_providers.dart';
+import '../api/api_client.dart';
+
+class GroupInfo extends ConsumerStatefulWidget {
+  final CommunityGroup group;
 
   const GroupInfo({super.key, required this.group});
 
   @override
+  ConsumerState<GroupInfo> createState() => _GroupInfoState();
+}
+
+class _GroupInfoState extends ConsumerState<GroupInfo> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      ref.read(groupMembersProvider(widget.group.id).notifier).fetchNextPage();
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final groupColor = group['color'] as Color? ?? AppColors.primaryGreen;
-    final groupName = group['name'] as String? ?? 'Group Name';
-    final membersStr = group['members'] as String? ?? '0 members';
-    
-    // Fallback data since it's not in the mock maps yet
-    final description = group['description'] as String? ?? 
+    final groupColor = AppColors.primaryGreen;
+    final groupName = widget.group.name;
+    final membersStr = '${widget.group.membersCount} members';
+    final storageBaseUrl = ref.watch(storageBaseUrlProvider);
+
+    final description =
+        widget.group.description ??
         'Welcome to the official branch of Gor Mahia fans! Here we discuss matchday events, share updates, and connect with other passionate supporters. Join us to be part of the vibrant community!';
-    final createdAt = group['createdAt'] as String? ?? 'Created October 12, 2024';
+
+    String createdAt = 'Created October 12, 2024';
+    if (widget.group.createdAt != null) {
+      try {
+        final date = DateTime.parse(widget.group.createdAt!);
+        createdAt = 'Created ${DateFormat('MMMM d, yyyy').format(date)}';
+      } catch (e) {
+        // Fallback if parsing fails
+      }
+    }
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -36,6 +80,7 @@ class GroupInfo extends StatelessWidget {
         centerTitle: true,
       ),
       body: SingleChildScrollView(
+        controller: _scrollController,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -44,11 +89,12 @@ class GroupInfo extends StatelessWidget {
             CircleAvatar(
               radius: 50,
               backgroundColor: groupColor.withValues(alpha: 0.2),
-              child: Icon(
-                Icons.groups,
-                size: 54,
-                color: groupColor,
-              ),
+              backgroundImage: widget.group.imageUrl != null
+                  ? CachedNetworkImageProvider(widget.group.getFullImageUrl(storageBaseUrl))
+                  : null,
+              child: widget.group.imageUrl == null
+                  ? Icon(Icons.groups, size: 54, color: groupColor)
+                  : null,
             ),
             const SizedBox(height: 16),
             // Group Name
@@ -66,10 +112,12 @@ class GroupInfo extends StatelessWidget {
               createdAt,
               style: TextStyle(
                 fontSize: 14,
-                color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
+                color: isDark
+                    ? AppColors.textMutedDark
+                    : AppColors.textMutedLight,
               ),
             ),
-            
+
             const SizedBox(height: 24),
             Divider(
               height: 1,
@@ -91,7 +139,9 @@ class GroupInfo extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: isDark ? AppColors.textOnDark : AppColors.textOnLight,
+                      color: isDark
+                          ? AppColors.textOnDark
+                          : AppColors.textOnLight,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -100,13 +150,15 @@ class GroupInfo extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 15,
                       height: 1.5,
-                      color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
+                      color: isDark
+                          ? AppColors.textMutedDark
+                          : AppColors.textMutedLight,
                     ),
                   ),
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 24),
             Divider(
               height: 1,
@@ -127,7 +179,9 @@ class GroupInfo extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: isDark ? AppColors.textOnDark : AppColors.textOnLight,
+                      color: isDark
+                          ? AppColors.textOnDark
+                          : AppColors.textOnLight,
                     ),
                   ),
                   const Spacer(),
@@ -135,49 +189,92 @@ class GroupInfo extends StatelessWidget {
                     membersStr,
                     style: TextStyle(
                       fontSize: 14,
-                      color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
+                      color: isDark
+                          ? AppColors.textMutedDark
+                          : AppColors.textMutedLight,
                     ),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 16),
-            
-            // Mock Member List
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              itemCount: 15, // Display 15 mock members
-              itemBuilder: (context, index) {
-                return ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: isDark 
-                        ? Colors.white.withValues(alpha: 0.1) 
-                        : Colors.black.withValues(alpha: 0.05),
-                    child: Icon(
-                      Icons.person,
-                      color: isDark ? Colors.white54 : Colors.black54,
-                    ),
-                  ),
-                  title: Text(
-                    index == 0 ? 'You' : 'Member $index',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? AppColors.textOnDark : AppColors.textOnLight,
-                    ),
-                  ),
-                  subtitle: Text(
-                    index == 0 ? 'Admin' : 'Fan',
-                    style: TextStyle(
-                      color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
-                      fontSize: 13,
-                    ),
-                  ),
+
+            // Real Member List from API
+            Builder(
+              builder: (context) {
+                final state = ref.watch(groupMembersProvider(widget.group.id));
+                if (state.isLoading && state.members.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(20.0),
+                    child: CircularProgressIndicator(),
+                  );
+                }
+                if (state.members.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(20.0),
+                    child: Text('No members found.'),
+                  );
+                }
+
+                return ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  itemCount: state.members.length,
+                  itemBuilder: (context, index) {
+                    final member = state.members[index];
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundColor: isDark
+                            ? Colors.white.withValues(alpha: 0.1)
+                            : Colors.black.withValues(alpha: 0.05),
+                        backgroundImage: member.avatarUrl != null
+                            ? NetworkImage(member.getFullAvatarUrl(storageBaseUrl))
+                            : null,
+                        child: member.avatarUrl == null
+                            ? Icon(
+                                Icons.person,
+                                color: isDark ? Colors.white54 : Colors.black54,
+                              )
+                            : null,
+                      ),
+                      title: Text(
+                        member.name,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: isDark
+                              ? AppColors.textOnDark
+                              : AppColors.textOnLight,
+                        ),
+                      ),
+                      subtitle: Text(
+                        member.role,
+                        style: TextStyle(
+                          color: isDark
+                              ? AppColors.textMutedDark
+                              : AppColors.textMutedLight,
+                          fontSize: 13,
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             ),
-            
+
+            Builder(
+              builder: (context) {
+                final state = ref.watch(groupMembersProvider(widget.group.id));
+                if (state.isLoading && state.members.isNotEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(16.0),
+                    child: CircularProgressIndicator(),
+                  );
+                }
+                return const SizedBox();
+              },
+            ),
+
             const SizedBox(height: 40),
           ],
         ),

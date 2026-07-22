@@ -292,28 +292,68 @@ class _OrderCard extends StatelessWidget {
             color: isDark ? Colors.white12 : Colors.black12,
           ),
           // Footer Total
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Total Amount',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    color: isDark ? Colors.white70 : Colors.black87,
-                  ),
+          Builder(
+            builder: (context) {
+              final totalSubtotal = order.items.fold(0.0, (sum, item) => sum + item.subtotal);
+              final totalVat = order.items.fold(0.0, (sum, item) => sum + item.vat);
+              final totalPlatformCharge = order.items.fold(0.0, (sum, item) => sum + item.platformCharge);
+
+              return Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    if (totalSubtotal > 0) ...[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Subtotal', style: TextStyle(color: isDark ? Colors.white70 : Colors.black54)),
+                          Text('KSh ${totalSubtotal.toStringAsFixed(0)}', style: TextStyle(fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black87)),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('VAT', style: TextStyle(color: isDark ? Colors.white70 : Colors.black54)),
+                          Text('KSh ${totalVat.toStringAsFixed(0)}', style: TextStyle(fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black87)),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Platform Charge', style: TextStyle(color: isDark ? Colors.white70 : Colors.black54)),
+                          Text('KSh ${totalPlatformCharge.toStringAsFixed(0)}', style: TextStyle(fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black87)),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Divider(color: isDark ? Colors.white12 : Colors.black12, height: 1),
+                      const SizedBox(height: 10),
+                    ],
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Total Amount',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: isDark ? Colors.white70 : Colors.black87,
+                          ),
+                        ),
+                        Text(
+                          'KSh ${order.totalAmount.toStringAsFixed(0)}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: isDark ? AppColors.greenLight : AppColors.primaryGreen,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-                Text(
-                  'KSh ${order.totalAmount.toStringAsFixed(0)}',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: isDark ? AppColors.greenLight : AppColors.primaryGreen,
-                  ),
-                ),
-              ],
-            ),
+              );
+            }
           ),
         ],
       ),

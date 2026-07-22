@@ -106,7 +106,7 @@ class _SearchSliverAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textColor = Theme.of(context).textTheme.bodyLarge?.color;
-    
+
     return SliverAppBar(
       pinned: true,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -115,10 +115,7 @@ class _SearchSliverAppBar extends StatelessWidget {
 
       title: Text(
         'Search Matches',
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          color: textColor,
-        ),
+        style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
       ),
       centerTitle: true,
       actions: [
@@ -171,8 +168,6 @@ class _SearchBarHeader extends StatelessWidget {
     return SliverPersistentHeader(pinned: true, delegate: _SearchBarDelegate());
   }
 }
-
-
 
 class _SearchResultsBody extends ConsumerWidget {
   const _SearchResultsBody();
@@ -250,7 +245,7 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
                     },
                     style: theme.textTheme.bodyLarge,
                     decoration: InputDecoration(
-                      hintText: 'Search for events, venues, artists...',
+                      hintText: 'Search here...',
                       hintStyle: TextStyle(
                         color: theme.hintColor.withOpacity(0.6),
                         fontSize: 15,
@@ -359,8 +354,6 @@ class _FilterSectionHeader extends StatelessWidget {
   }
 }
 
-
-
 // Reusable Filter Chip Widget - FIXED SIZE
 class _CustomFilterChip extends StatelessWidget {
   final String label;
@@ -385,9 +378,7 @@ class _CustomFilterChip extends StatelessWidget {
         height: 44, // Fixed height for chips
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 0),
         decoration: BoxDecoration(
-          gradient: isSelected
-              ? AppColors.primaryGradient
-              : null,
+          gradient: isSelected ? AppColors.primaryGradient : null,
           color: isSelected ? null : theme.cardColor,
           borderRadius: BorderRadius.circular(22),
           border: Border.all(

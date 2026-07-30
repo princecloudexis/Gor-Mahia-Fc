@@ -9,7 +9,10 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class MembershipSignup extends ConsumerStatefulWidget {
-  const MembershipSignup({super.key});
+  final bool isStandalone;
+  final bool isRenewal;
+
+  const MembershipSignup({super.key, this.isStandalone = false, this.isRenewal = false});
 
   @override
   ConsumerState<MembershipSignup> createState() => _MembershipSignupState();
@@ -102,7 +105,7 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
       body: SafeArea(
         child: Column(
           children: [
-            const BreadcrumbTabBar(activeStep: 3),
+            if (!widget.isStandalone) const BreadcrumbTabBar(activeStep: 3),
             Expanded(
               child: isLoading
                   ? const Center(
@@ -114,8 +117,8 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const SizedBox(height: 10),
-                          _buildCountryTextField(),
-                          const SizedBox(height: 16),
+                          if (!widget.isRenewal) _buildCountryTextField(),
+                          if (!widget.isRenewal) const SizedBox(height: 16),
                           if (state.data != null && state.data!.branches.isNotEmpty)
                             _buildDropdownField<int>(
                               label: 'Select Branch',
@@ -159,7 +162,7 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
                               }).toList(),
                             ),
                           const SizedBox(height: 48),
-                          _buildContinueButton(isSubmitting),
+                          _buildContinueButton(isSubmitting, widget.isStandalone),
                         ],
                       ),
                     ),
@@ -319,7 +322,7 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'KSh \${package.price} / \${package.type}',
+                  'KSh ${package.price} / ${package.type}',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: isDark ? Colors.white.withOpacity(0.7) : Colors.black54,
@@ -348,7 +351,7 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
         .slideY(begin: 0.1);
   }
 
-  Widget _buildContinueButton(bool isSubmitting) {
+  Widget _buildContinueButton(bool isSubmitting, bool isStandalone) {
     return Column(
       children: [
         SizedBox(
@@ -365,11 +368,18 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
                       return;
                     }
 
-                    ref.read(membershipControllerProvider.notifier).submitMembership(
-                          country: _countryController.text.trim().isNotEmpty ? _countryController.text.trim() : 'Kenya',
-                          branchId: selectedBranchId.toString(),
-                          packageId: selectedPackageId.toString(),
-                        );
+                    if (widget.isRenewal) {
+                      ref.read(membershipControllerProvider.notifier).renewMembership(
+                            branchId: selectedBranchId.toString(),
+                            packageId: selectedPackageId.toString(),
+                          );
+                    } else {
+                      ref.read(membershipControllerProvider.notifier).submitMembership(
+                            country: _countryController.text.trim().isNotEmpty ? _countryController.text.trim() : 'Kenya',
+                            branchId: selectedBranchId.toString(),
+                            packageId: selectedPackageId.toString(),
+                          );
+                    }
                   },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryGreen,
@@ -398,8 +408,9 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
                   ),
           ),
         ).animate().fadeIn(duration: 500.ms, delay: 600.ms),
-        const SizedBox(height: 16),
-        TextButton(
+        if (!isStandalone) ...[
+          const SizedBox(height: 16),
+          TextButton(
           onPressed: () {
             // Skip option directly to dashboard
             Navigator.pushAndRemoveUntil(
@@ -419,6 +430,7 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
             ),
           ),
         ).animate().fadeIn(duration: 500.ms, delay: 700.ms),
+        ]
       ],
     );
   }

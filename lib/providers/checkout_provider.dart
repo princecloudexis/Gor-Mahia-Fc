@@ -155,9 +155,9 @@ class CheckoutController extends StateNotifier<CheckoutState> {
     state = state.copyWith(ticketHolderInfo: currentInfo);
   }
 
-  Future<PaymentResult> processPaymentAndSubmit({
+  Future<PaymentResult> initiatePaystackPayment({
     required String streetAddress,
-    required String phoneNumber,
+    required String email,
   }) async {
     final details = state.checkoutDetails.valueOrNull;
     final eventSlug = details?.event.slug;
@@ -174,57 +174,70 @@ class CheckoutController extends StateNotifier<CheckoutState> {
     try {
       final grandTotal = _calculateGrandTotal();
 
-      // 1. Trigger M-Pesa STK Push
-      final paymentIntent = await _repository.createPaymentIntent(
+      final paystackData = await _repository.createPaystackPaymentIntent(
         amount: grandTotal,
         orderId: _orderId,
-        phoneNumber: phoneNumber,
-      );
-      
-      final checkoutRequestId = paymentIntent.checkoutRequestId;
-      
-      // 2. Wait / Poll for confirmation
-      if (checkoutRequestId != null && checkoutRequestId.isNotEmpty) {
-         bool isSuccess = false;
-         int attempts = 0;
-         const maxAttempts = 20; // 20 attempts * 3 seconds = 60 seconds total wait
-         
-         while (attempts < maxAttempts) {
-            await Future.delayed(const Duration(seconds: 3));
-            final status = await _repository.checkMpesaPaymentStatus(checkoutRequestId);
-            
-            if (status == 'success') {
-               isSuccess = true;
-               break;
-            } else if (status == 'failed') {
-               throw Exception("M-Pesa payment failed or was cancelled by the user.");
-            }
-            
-            attempts++;
-         }
-
-         if (!isSuccess) {
-            throw Exception("M-Pesa payment timed out. Please check your phone or try again.");
-         }
-      }
-
-      // 3. Confirm checkout
-      await _repository.checkoutSubmit(
-        orderId: _orderId,
-        phoneNumber: phoneNumber,
-        streetAddress: streetAddress,
         eventId: details.event.id,
-        checkoutRequestId: checkoutRequestId,
-        paymentIntentId: paymentIntent.paymentIntentId, // In case backend still uses it for something else
-        promoCode: state.appliedPromoCode,
-        ticketHolders: state.ticketHolderInfo,
+        streetAddress: streetAddress,
+        email: email,
       );
+      
+      final authUrl = paystackData['authorization_url']?.toString();
+      final reference = paystackData['reference']?.toString();
+      
+      if (authUrl == null || reference == null) {
+          throw Exception("Paystack authorization failed.");
+      }
+      
+      state = state.copyWith(isProcessingPayment: false);
+      return PaymentResult(
+          isSuccess: true, 
+          authorizationUrl: authUrl, 
+          reference: reference, 
+          eventSlug: eventSlug
+      );
+    } catch (e) {
+      state = state.copyWith(isProcessingPayment: false);
+      return PaymentResult(
+        isSuccess: false,
+        errorMessage: e.toString().replaceAll('Exception: ', ''),
+        eventSlug: eventSlug,
+      );
+    }
+  }
 
-      state = state.copyWith(
-        paymentSuccessful: true,
-        isProcessingPayment: false,
-      );
-      return PaymentResult(isSuccess: true);
+  Future<PaymentResult> verifyAndCompletePayment({
+    required String reference,
+    required String streetAddress,
+    required String phoneNumber,
+  }) async {
+    final details = state.checkoutDetails.valueOrNull;
+    final eventSlug = details?.event.slug;
+
+    state = state.copyWith(isProcessingPayment: true);
+    try {
+      final status = await _repository.checkPaystackPaymentStatus(reference);
+      
+      if (status == 'success') {
+          // Confirm checkout
+          await _repository.checkoutSubmit(
+            orderId: _orderId,
+            phoneNumber: phoneNumber,
+            streetAddress: streetAddress,
+            eventId: details!.event.id,
+            reference: reference,
+            promoCode: state.appliedPromoCode,
+            ticketHolders: state.ticketHolderInfo,
+          );
+
+          state = state.copyWith(
+            paymentSuccessful: true,
+            isProcessingPayment: false,
+          );
+          return PaymentResult(isSuccess: true, eventSlug: eventSlug);
+      } else {
+          throw Exception("Payment failed or was cancelled by the user.");
+      }
     } catch (e) {
       state = state.copyWith(isProcessingPayment: false);
       return PaymentResult(

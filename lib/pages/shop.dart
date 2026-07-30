@@ -12,6 +12,7 @@ import 'package:eventsbooking/pages/shop_orders.dart';
 import 'profile.dart';
 import 'search.dart';
 import '../widgets/top_action_btn.dart';
+import 'package:eventsbooking/pages/shop_all_products.dart';
 
 class Shop extends ConsumerStatefulWidget {
   const Shop({super.key});
@@ -136,9 +137,17 @@ class _ShopState extends ConsumerState<Shop> {
           const SizedBox(width: 12),
         ],
       ),
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: const AssetImage('assets/images/footballbg.png'),
+            fit: BoxFit.cover,
+            opacity: isDark ? 0.15 : 0.10,
+          ),
+        ),
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
           // Banner Section
           SliverToBoxAdapter(
             child: bannersAsync.when(
@@ -308,6 +317,7 @@ class _ShopState extends ConsumerState<Shop> {
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
+      ),
     );
   }
 
@@ -415,7 +425,17 @@ class _ShopState extends ConsumerState<Shop> {
                 ),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ShopAllProductsPage(
+                        title: 'New Arrivals',
+                        products: products,
+                      ),
+                    ),
+                  );
+                },
                 child: Text(
                   'Explore',
                   style: TextStyle(
@@ -466,7 +486,17 @@ class _ShopState extends ConsumerState<Shop> {
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ShopAllProductsPage(
+                        title: 'Top Picks',
+                        products: products,
+                      ),
+                    ),
+                  );
+                },
                 child: Text(
                   'View all',
                   style: TextStyle(
@@ -593,7 +623,15 @@ class _ShopState extends ConsumerState<Shop> {
               ),
               TextButton(
                 onPressed: () {
-                  // Navigate to full category list
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ShopAllProductsPage(
+                        title: categoryName,
+                        products: products,
+                      ),
+                    ),
+                  );
                 },
                 child: Text(
                   'View All',

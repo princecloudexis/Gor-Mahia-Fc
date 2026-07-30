@@ -39,7 +39,12 @@ class UserModel {
     const placeholder = 'PROTOCOL_PLACEHOLDER';
     String tempUrl = image!.replaceAll('://', placeholder);
     tempUrl = tempUrl.replaceAll(RegExp(r'//+'), '/');
-    return tempUrl.replaceAll(placeholder, '://');
+    final finalUrl = tempUrl.replaceAll(placeholder, '://');
+    
+    if (finalUrl.endsWith('/')) {
+      return null;
+    }
+    return finalUrl;
   }
 
   Map<String, dynamic> toJson() {

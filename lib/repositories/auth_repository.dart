@@ -270,12 +270,18 @@ class AuthRepository {
   }
 
   Future<void> logout() async {
+    // 1. Call the logout API FIRST while the token is still in SharedPreferences,
+    //    so the Bearer header is attached correctly by the Dio interceptor.
+    try {
+      await _apiClient.dio.post('/user/logout');
+    } catch (_) {
+      // Ignore errors — we always clear local data regardless of API result.
+    }
+
+    // 2. Only THEN remove the token and guest flag from local storage.
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('auth_token');
     await prefs.remove('is_guest');
-    try {
-      await _apiClient.dio.post('/user/logout');
-    } catch (_) {}
   }
 }
 

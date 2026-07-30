@@ -88,3 +88,47 @@ final contributionsProvider =
       final repo = ref.watch(contributionRepositoryProvider);
       return ContributionsNotifier(repo, tab);
     });
+
+class ContributionHistoryNotifier extends StateNotifier<AsyncValue<ContributionHistoryResponse>> {
+  final ContributionRepository _repo;
+
+  ContributionHistoryNotifier(this._repo) : super(const AsyncValue.loading()) {
+    fetch();
+  }
+
+  Future<void> fetch({int page = 1}) async {
+    state = const AsyncValue.loading();
+    try {
+      final res = await _repo.getContributionHistory(page);
+      state = AsyncValue.data(res);
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
+    }
+  }
+
+  Future<void> loadMore() async {
+    final currentState = state.valueOrNull;
+    if (currentState == null || !currentState.pagination.hasMorePages) return;
+
+    try {
+      final res = await _repo.getContributionHistory(
+        currentState.pagination.currentPage + 1,
+      );
+
+      state = AsyncValue.data(
+        ContributionHistoryResponse(
+          items: [...currentState.items, ...res.items],
+          pagination: res.pagination,
+        ),
+      );
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
+    }
+  }
+}
+
+final contributionHistoryProvider = StateNotifierProvider.autoDispose<
+    ContributionHistoryNotifier, AsyncValue<ContributionHistoryResponse>>((ref) {
+  final repo = ref.watch(contributionRepositoryProvider);
+  return ContributionHistoryNotifier(repo);
+});

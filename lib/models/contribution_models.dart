@@ -11,6 +11,11 @@ class Contribution {
   final String dueDate;
   final String? paidAt;
   final bool canPay;
+  final int totalAmount;
+  final int amountCollected;
+  final int remainingToTarget;
+  final int minimumAmount;
+  final bool isFullyFunded;
 
   Contribution({
     required this.participantId,
@@ -25,6 +30,11 @@ class Contribution {
     required this.dueDate,
     this.paidAt,
     required this.canPay,
+    required this.totalAmount,
+    required this.amountCollected,
+    required this.remainingToTarget,
+    required this.minimumAmount,
+    required this.isFullyFunded,
   });
 
   factory Contribution.fromJson(Map<String, dynamic> json) {
@@ -41,6 +51,11 @@ class Contribution {
       dueDate: json['due_date'] ?? '',
       paidAt: json['paid_at'],
       canPay: json['can_pay'] ?? false,
+      totalAmount: _toInt(json['total_amount']),
+      amountCollected: _toInt(json['amount_collected']),
+      remainingToTarget: _toInt(json['remaining_to_target']),
+      minimumAmount: _toInt(json['minimum_amount']),
+      isFullyFunded: json['is_fully_funded'] ?? false,
     );
   }
 
@@ -109,19 +124,28 @@ class ContributionResponse {
 }
 
 class PaymentResponse {
-  final String checkoutRequestId;
+  final String authorizationUrl;
+  final String reference;
+  final String accessCode;
+  final String publicKey;
   final int contributionPaymentId;
   final int amount;
 
   PaymentResponse({
-    required this.checkoutRequestId,
+    required this.authorizationUrl,
+    required this.reference,
+    required this.accessCode,
+    required this.publicKey,
     required this.contributionPaymentId,
     required this.amount,
   });
 
   factory PaymentResponse.fromJson(Map<String, dynamic> json) {
     return PaymentResponse(
-      checkoutRequestId: json['checkout_request_id'] ?? '',
+      authorizationUrl: json['authorization_url'] ?? '',
+      reference: json['reference'] ?? '',
+      accessCode: json['access_code'] ?? '',
+      publicKey: json['public_key'] ?? '',
       contributionPaymentId: json['contribution_payment_id'] ?? 0,
       amount: Contribution._toInt(json['amount']),
     );
@@ -155,20 +179,86 @@ class PaymentStatusResponse {
 
 class ContributionCount {
   final int totalContributed;
-  final int pending;
+  final int contributedThisMonth;
   final String currency;
 
   ContributionCount({
     required this.totalContributed,
-    required this.pending,
+    required this.contributedThisMonth,
     required this.currency,
   });
 
   factory ContributionCount.fromJson(Map<String, dynamic> json) {
     return ContributionCount(
       totalContributed: Contribution._toInt(json['total_contributed']),
-      pending: Contribution._toInt(json['pending']),
+      contributedThisMonth: Contribution._toInt(json['contributed_this_month']),
       currency: json['currency'] ?? 'KES',
+    );
+  }
+}
+
+class ContributionHistoryItem {
+  final int paymentId;
+  final int contributionId;
+  final String title;
+  final String currency;
+  final int amount;
+  final String paymentMethod;
+  final String status;
+  final String? paidAt;
+  final String createdAt;
+
+  ContributionHistoryItem({
+    required this.paymentId,
+    required this.contributionId,
+    required this.title,
+    required this.currency,
+    required this.amount,
+    required this.paymentMethod,
+    required this.status,
+    this.paidAt,
+    required this.createdAt,
+  });
+
+  factory ContributionHistoryItem.fromJson(Map<String, dynamic> json) {
+    return ContributionHistoryItem(
+      paymentId: json['payment_id'] ?? 0,
+      contributionId: json['contribution_id'] ?? 0,
+      title: json['title'] ?? '',
+      currency: json['currency'] ?? 'KES',
+      amount: Contribution._toInt(json['amount']),
+      paymentMethod: json['payment_method'] ?? '',
+      status: json['status'] ?? '',
+      paidAt: json['paid_at'],
+      createdAt: json['created_at'] ?? '',
+    );
+  }
+}
+
+class ContributionHistoryResponse {
+  final List<ContributionHistoryItem> items;
+  final ContributionPagination pagination;
+
+  ContributionHistoryResponse({
+    required this.items,
+    required this.pagination,
+  });
+
+  factory ContributionHistoryResponse.fromJson(Map<String, dynamic> json) {
+    return ContributionHistoryResponse(
+      items: (json['items'] as List?)
+              ?.map((e) => ContributionHistoryItem.fromJson(e))
+              .toList() ??
+          [],
+      pagination: json['pagination'] != null
+          ? ContributionPagination.fromJson(json['pagination'])
+          : ContributionPagination(
+              currentPage: 1,
+              perPage: 10,
+              total: 0,
+              lastPage: 1,
+              hasMorePages: false,
+            ),
     );
   }
 }

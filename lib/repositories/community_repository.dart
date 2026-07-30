@@ -108,6 +108,24 @@ class CommunityRepository {
     }
   }
 
+  // 1.5 Leave a Group
+  Future<String> leaveGroup(String groupId) async {
+    try {
+      final response = await _apiClient.dio.get('/v1/groups/$groupId/leave');
+      if (_isSuccess(response.data)) {
+        return response.data['message'] as String? ?? 'You have left the group';
+      }
+      throw Exception(response.data['message'] ?? 'Failed to leave group');
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        if (e.response!.data is Map && e.response!.data['message'] != null) {
+          throw Exception(e.response!.data['message']);
+        }
+      }
+      rethrow;
+    }
+  }
+
   // 2.1 Fetch Group Details
   Future<CommunityGroup> fetchGroupDetails(String groupId) async {
     try {
@@ -134,12 +152,16 @@ class CommunityRepository {
         '/v1/groups/$groupId/posts',
         queryParameters: {
           if (cursor != null) 'cursor': cursor,
+          if (cursor != null && int.tryParse(cursor) != null) 'page': cursor,
           'limit': limit,
         },
       );
       if (_isSuccess(response.data)) {
         return PaginatedResponse.fromJson(
-            response.data, (json) => CommunityPost.fromJson(json));
+          response.data,
+          (json) => CommunityPost.fromJson(json),
+          limit: limit,
+        );
       }
       throw Exception(response.data['message'] ?? 'Failed to fetch posts');
     } catch (e) {
@@ -160,12 +182,16 @@ class CommunityRepository {
         '/v1/groups/$groupId/members',
         queryParameters: {
           if (cursor != null) 'cursor': cursor,
+          if (cursor != null && int.tryParse(cursor) != null) 'page': cursor,
           'limit': limit,
         },
       );
       if (_isSuccess(response.data)) {
         return PaginatedResponse.fromJson(
-            response.data, (json) => CommunityMember.fromJson(json));
+          response.data,
+          (json) => CommunityMember.fromJson(json),
+          limit: limit,
+        );
       }
       throw Exception(response.data['message'] ?? 'Failed to fetch members');
     } catch (e) {

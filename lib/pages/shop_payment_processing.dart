@@ -6,12 +6,12 @@ import 'dart:async';
 import 'package:eventsbooking/pages/shop_order_success.dart';
 
 class ShopPaymentProcessingPage extends ConsumerStatefulWidget {
-  final String checkoutRequestId;
+  final String reference;
   final String orderNumber;
 
   const ShopPaymentProcessingPage({
     super.key,
-    required this.checkoutRequestId,
+    required this.reference,
     required this.orderNumber,
   });
 
@@ -22,14 +22,17 @@ class ShopPaymentProcessingPage extends ConsumerStatefulWidget {
 class _ShopPaymentProcessingPageState extends ConsumerState<ShopPaymentProcessingPage> {
   Timer? _timer;
   int _secondsPassed = 0;
-  final int _maxTimeout = 60; // 60 seconds timeout
+  final int _maxTimeout = 300; // 5 minutes timeout for card entry
   bool _isFinished = false;
-  String _statusMessage = 'Waiting for M-Pesa confirmation...';
+  String _statusMessage = 'Waiting for Paystack confirmation...';
 
   @override
   void initState() {
     super.initState();
-    _startPolling();
+    // Give the backend 4 seconds to process Paystack's webhook before first poll
+    Future.delayed(const Duration(seconds: 4), () {
+      if (mounted) _startPolling();
+    });
   }
 
   void _startPolling() {
@@ -50,12 +53,12 @@ class _ShopPaymentProcessingPageState extends ConsumerState<ShopPaymentProcessin
 
       try {
         final repository = ref.read(shopRepositoryProvider);
-        final statusResponse = await repository.checkMpesaStatus(widget.checkoutRequestId);
+        final statusResponse = await repository.checkPaystackStatus(widget.reference);
 
         // Debug log to trace what API returns
-        debugPrint('🛒 [ShopMpesa] Poll result → payment="${statusResponse.payment}", message="${statusResponse.message}"');
+        debugPrint('🛒 [ShopPaystack] Poll result → payment="${statusResponse.payment}", message="${statusResponse.message}"');
 
-        if (statusResponse.payment == 'success') {
+        if (statusResponse.payment == 'success' || statusResponse.payment.toLowerCase() == 'paid') {
           _handleSuccess();
         } else if (statusResponse.payment == 'failed') {
           _handleFailure(statusResponse.message.isNotEmpty
@@ -67,13 +70,13 @@ class _ShopPaymentProcessingPageState extends ConsumerState<ShopPaymentProcessin
             setState(() {
               _statusMessage = statusResponse.message.isNotEmpty
                   ? statusResponse.message
-                  : 'Still waiting for M-Pesa...';
+                  : 'Still waiting for Paystack...';
             });
           }
         }
       } catch (e) {
         // Silently ignore network errors while polling so it keeps trying
-        debugPrint('🛒 [ShopMpesa] Polling error: $e');
+        debugPrint('🛒 [ShopPaystack] Polling error: $e');
       }
     });
   }
@@ -168,29 +171,37 @@ class _ShopPaymentProcessingPageState extends ConsumerState<ShopPaymentProcessin
                   ),
                 ),
                 const SizedBox(height: 32),
-                const Text(
-                  'Processing Payment',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                  const Text(
+                    'Processing Payment',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Please check your phone and enter your M-Pesa PIN to complete the payment.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, height: 1.5),
-                ),
-                const SizedBox(height: 32),
-                Text(
-                  _statusMessage,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: isDark ? Colors.white54 : Colors.black54,
-                    fontStyle: FontStyle.italic,
+                  const SizedBox(height: 16),
+                  Text(
+                    'Order # ${widget.orderNumber}',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: isDark ? Colors.white70 : Colors.black54,
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 32),
+                  Text(
+                    _statusMessage,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: isDark ? Colors.white : Colors.black87,
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Please do not close this screen while we verify your payment with Paystack.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                  ),
                 const SizedBox(height: 40),
                 LinearProgressIndicator(
                   value: _secondsPassed / _maxTimeout,

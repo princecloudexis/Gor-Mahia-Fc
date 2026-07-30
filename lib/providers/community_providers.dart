@@ -208,6 +208,15 @@ class ExploreGroupsNotifier extends StateNotifier<ExploreGroupsState> {
       rethrow;
     }
   }
+
+  Future<String> leaveGroup(String groupId) async {
+    try {
+      final message = await repo.leaveGroup(groupId);
+      return message;
+    } catch (e) {
+      rethrow;
+    }
+  }
 }
 
 final exploreGroupsProvider =
@@ -257,11 +266,8 @@ class GroupPostsNotifier extends StateNotifier<GroupPostsState> {
   }
 
   Future<void> fetchInitial() async {
-    if (state.posts.isEmpty) {
-      state = GroupPostsState(isLoading: true);
-    } else {
-      state = state.copyWith(isLoading: true, nextCursor: null, hasNextPage: true);
-    }
+    // Reset to a clean loading state without prematurely setting hasNextPage
+    state = GroupPostsState(isLoading: true);
     try {
       final response = await repo.fetchGroupPosts(groupId);
       if (!mounted) return;
@@ -274,12 +280,17 @@ class GroupPostsNotifier extends StateNotifier<GroupPostsState> {
     } catch (e) {
       debugPrint('Error fetchInitial posts: $e');
       if (!mounted) return;
-      state = state.copyWith(isLoading: false);
+      state = state.copyWith(isLoading: false, hasNextPage: false);
     }
   }
 
   Future<void> fetchNextPage() async {
     if (state.isLoading || !state.hasNextPage) return;
+
+    if (state.nextCursor == null && state.posts.isNotEmpty) {
+      state = state.copyWith(hasNextPage: false);
+      return;
+    }
 
     state = state.copyWith(isLoading: true);
     try {
@@ -288,6 +299,15 @@ class GroupPostsNotifier extends StateNotifier<GroupPostsState> {
         cursor: state.nextCursor,
       );
       if (!mounted) return;
+
+      if (response.data.isEmpty || response.nextCursor == state.nextCursor) {
+        state = state.copyWith(
+          isLoading: false,
+          hasNextPage: false,
+        );
+        return;
+      }
+
       state = state.copyWith(
         posts: [...state.posts, ...response.data],
         isLoading: false,
@@ -297,7 +317,7 @@ class GroupPostsNotifier extends StateNotifier<GroupPostsState> {
     } catch (e) {
       debugPrint('Error fetchNextPage posts: $e');
       if (!mounted) return;
-      state = state.copyWith(isLoading: false);
+      state = state.copyWith(isLoading: false, hasNextPage: false);
     }
   }
 
@@ -582,12 +602,6 @@ class PostCommentsNotifier extends StateNotifier<PostCommentsState> {
         nextCursor: response.nextCursor,
         hasNextPage: response.hasNextPage,
       );
-      // Auto-fetch replies for comments that have replies
-      for (final comment in response.data) {
-        if (comment.repliesCount > 0) {
-          fetchReplies(comment.id);
-        }
-      }
     } catch (e) {
       debugPrint('Error fetchInitial comments: $e');
       if (!mounted) return;
@@ -672,17 +686,37 @@ class PostCommentsNotifier extends StateNotifier<PostCommentsState> {
   /// Always fetches fresh replies from the server (used on tap and auto-load).
   Future<void> fetchReplies(String commentId) async {
     try {
-      final response = await repo.fetchReplies(commentId, limit: 20);
+      // Find current cursor if any
+      String? currentCursor;
+      void findCursor(List<CommunityComment> list) {
+        for (var c in list) {
+          if (c.id == commentId) currentCursor = c.nextRepliesCursor;
+          if (c.replies != null) findCursor(c.replies!);
+        }
+      }
+      findCursor(state.comments);
+
+      final response = await repo.fetchReplies(commentId, cursor: currentCursor, limit: 20);
       if (!mounted) return;
 
       state = state.copyWith(
         comments: _updateCommentInTree(state.comments, commentId, (parent) {
+          final allReplies = [...(parent.replies ?? []), ...response.data];
+          final uniqueReplies = allReplies.fold<List<CommunityComment>>([], (list, current) {
+            if (!list.any((c) => c.id == current.id)) {
+              list.add(current);
+            }
+            return list;
+          });
+
           return parent.copyWith(
-            replies: response.data,
-            // Update count to match server truth
-            repliesCount: response.data.length > parent.repliesCount
-                ? response.data.length
+            replies: uniqueReplies,
+            repliesCount: uniqueReplies.length > parent.repliesCount
+                ? uniqueReplies.length
                 : parent.repliesCount,
+            hasMoreReplies: response.hasNextPage,
+            nextRepliesCount: response.nextCount,
+            nextRepliesCursor: response.nextCursor,
           );
         }),
       );

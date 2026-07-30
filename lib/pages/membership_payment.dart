@@ -1,4 +1,3 @@
-import 'package:eventsbooking/controllers/payment_controller.dart';
 import 'package:eventsbooking/pages/main_shell.dart';
 import 'package:eventsbooking/pages/payment_success.dart';
 import 'package:eventsbooking/theme/app_colors.dart';
@@ -6,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:eventsbooking/providers/user_providers.dart';
+import 'package:eventsbooking/repositories/membership_repository.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MembershipPayment extends ConsumerStatefulWidget {
   final String title;
@@ -27,135 +28,174 @@ class MembershipPayment extends ConsumerStatefulWidget {
   ConsumerState<MembershipPayment> createState() => _MembershipPaymentState();
 }
 
-class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
-  final _phoneController = TextEditingController();
+class _MembershipPaymentState extends ConsumerState<MembershipPayment> with WidgetsBindingObserver {
+  final _emailController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool _isInitiating = false;
+  bool _paymentLaunched = false;
+  bool _isCheckingStatus = false;
+  String? _currentPaymentReference;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
 
   @override
   void dispose() {
-    _phoneController.dispose();
+    WidgetsBinding.instance.removeObserver(this);
+    _emailController.dispose();
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) {
-    ref.listen<PaymentState>(paymentControllerProvider, (previous, next) {
-      if (next.status == PaymentStatus.error && next.errorMessage != null) {
-        // Close the dialog first if it was waiting
-        if (previous?.status == PaymentStatus.waitingForMpesa) {
-          if (Navigator.of(context, rootNavigator: true).canPop()) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
-        }
-        
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(next.errorMessage!),
-            backgroundColor: AppColors.error,
-          ),
-        );
-        ref.read(paymentControllerProvider.notifier).resetStatus();
-      } else if (next.status == PaymentStatus.success) {
-        ref.read(userProvider.notifier).fetchUser();
-        ref.invalidate(membershipDetailsProvider);
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _paymentLaunched && !_isCheckingStatus) {
+      _verifyPaymentStatus();
+    }
+  }
 
-        // Close the dialog if it was waiting
-        if (previous?.status == PaymentStatus.waitingForMpesa) {
-          if (Navigator.of(context, rootNavigator: true).canPop()) {
-            Navigator.of(context, rootNavigator: true).pop();
-          }
-        }
-
-        // Use Future.delayed to ensure the dialog's dismiss animation finishes 
-        // before attempting to push the new route, preventing Navigator lock exceptions.
-        Future.delayed(const Duration(milliseconds: 300), () {
-          if (mounted) {
-            final isDark = Theme.of(context).brightness == Brightness.dark;
-            showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (context) => Dialog(
-                backgroundColor: isDark ? AppColors.bgSurfaceDark : Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryGreen.withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.check_circle_rounded,
-                          color: AppColors.primaryGreen,
-                          size: 64,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        'Payment Confirmed!',
-                        style: TextStyle(
-                          color: isDark ? Colors.white : Colors.black87,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Your ${widget.title} membership has been successfully activated.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: isDark ? Colors.white.withOpacity(0.7) : Colors.black54,
-                          fontSize: 15,
-                          height: 1.4,
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute(builder: (_) => const MainShell()),
-                              (route) => false,
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primaryGreen,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            elevation: 0,
-                          ),
-                          child: const Text(
-                            'GO TO DASHBOARD',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1.0,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            );
-          }
-        });
-      }
+  Future<void> _verifyPaymentStatus() async {
+    setState(() {
+      _isCheckingStatus = true;
+      _paymentLaunched = false;
     });
 
-    final isInitiating =
-        ref.watch(paymentControllerProvider).status == PaymentStatus.initiating;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return const AlertDialog(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(color: AppColors.primaryGreen),
+              SizedBox(height: 16),
+              Text('Verifying payment status...'),
+            ],
+          ),
+        );
+      },
+    );
+
+    // Give backend a moment to process the webhook if any
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (_currentPaymentReference != null) {
+      try {
+        final repo = ref.read(membershipRepositoryProvider);
+        await repo.checkPaymentStatus(
+          reference: _currentPaymentReference!,
+          membershipId: widget.membershipId,
+          plan: widget.title,
+        );
+      } catch (e) {
+        debugPrint('Error checking payment status: $e');
+      }
+    }
+
+    await ref.read(userProvider.notifier).fetchUser();
+    ref.invalidate(membershipDetailsProvider);
+
+    if (!mounted) return;
+    Navigator.pop(context); // Close dialog
+
+    final user = ref.read(userProvider);
+    final isPaid = user != null &&
+                   user.membershipPlan != null &&
+                   user.membershipPlan!.toLowerCase() != 'free plan' &&
+                   user.membershipPlan!.toLowerCase() != 'none';
+
+    if (isPaid) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => PaymentSuccess(title: widget.title)),
+        (route) => false,
+      );
+    } else {
+      setState(() {
+        _isCheckingStatus = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Payment not completed or still processing.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
+
+  Future<void> _processPayment() async {
+    if (!_formKey.currentState!.validate()) return;
+    
+    setState(() => _isInitiating = true);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return const AlertDialog(
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(color: AppColors.primaryGreen),
+              SizedBox(height: 16),
+              Text('Initiating Paystack checkout...'),
+            ],
+          ),
+        );
+      },
+    );
+
+    try {
+      final repo = ref.read(membershipRepositoryProvider);
+      final response = await repo.initiatePayment(
+        email: _emailController.text.trim(),
+        membershipId: widget.membershipId,
+        amount: widget.rawAmount,
+        packageName: widget.title,
+      );
+
+      if (!mounted) return;
+      Navigator.pop(context); // Close dialog
+
+      _currentPaymentReference = response.reference;
+
+      final Uri url = Uri.parse(response.authorizationUrl);
+      if (await canLaunchUrl(url)) {
+        _paymentLaunched = true;
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        throw Exception('Could not launch payment page.');
+      }
+
+      // We no longer navigate away immediately.
+      // The didChangeAppLifecycleState will handle verification when the browser is closed.
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please complete the payment securely in your browser.'),
+          backgroundColor: AppColors.primaryGreen,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.pop(context); // Close dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceAll('Exception: ', '')),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isInitiating = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -186,38 +226,41 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildSectionTitle('ORDER SUMMARY'),
-              const SizedBox(height: 12),
-              _buildOrderSummary(),
-              const SizedBox(height: 32),
-              _buildSectionTitle('PAYMENT METHOD'),
-              const SizedBox(height: 12),
-              _buildPaymentMethod(),
-              const SizedBox(height: 32),
-              _buildSectionTitle('M-PESA DETAILS'),
-              const SizedBox(height: 12),
-              _buildMpesaForm(),
-              const SizedBox(height: 48),
-              _buildPayButton(isInitiating),
-              const SizedBox(height: 16),
-              Center(
-                child: TextButton(
-                  onPressed: () => Navigator.maybePop(context),
-                  child: Text(
-                    'Cancel',
-                    style: TextStyle(
-                      color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white
-                          : Colors.black54,
-                      fontSize: 14,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSectionTitle('ORDER SUMMARY'),
+                const SizedBox(height: 12),
+                _buildOrderSummary(),
+                const SizedBox(height: 32),
+                _buildSectionTitle('PAYMENT METHOD'),
+                const SizedBox(height: 12),
+                _buildPaymentMethod(),
+                const SizedBox(height: 32),
+                _buildSectionTitle('PAYSTACK DETAILS'),
+                const SizedBox(height: 12),
+                _buildPaystackForm(),
+                const SizedBox(height: 48),
+                _buildPayButton(_isInitiating),
+                const SizedBox(height: 16),
+                Center(
+                  child: TextButton(
+                    onPressed: () => Navigator.maybePop(context),
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white
+                            : Colors.black54,
+                        fontSize: 14,
+                      ),
                     ),
                   ),
-                ),
-              ).animate().fadeIn(duration: 500.ms, delay: 600.ms),
-            ],
+                ).animate().fadeIn(duration: 500.ms, delay: 600.ms),
+              ],
+            ),
           ),
         ),
       ),
@@ -351,7 +394,7 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(
-              Icons.phone_android,
+              Icons.credit_card,
               color: AppColors.primaryGreen,
             ),
           ),
@@ -361,7 +404,7 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'M-PESA',
+                  'PAYSTACK',
                   style: TextStyle(
                     color: isDark ? Colors.white : Colors.black87,
                     fontSize: 16,
@@ -370,7 +413,7 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Pay securely via M-PESA STK Push',
+                  'Pay securely via Card, Mobile Money or USSD',
                   style: TextStyle(
                     color: isDark
                         ? Colors.white.withOpacity(0.7)
@@ -391,7 +434,7 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
     ).animate().fadeIn(duration: 400.ms, delay: 200.ms).slideY(begin: 0.1);
   }
 
-  Widget _buildMpesaForm() {
+  Widget _buildPaystackForm() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -411,7 +454,7 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'M-PESA Phone Number',
+                'Email Address',
                 style: TextStyle(
                   color: isDark
                       ? AppColors.textSecondaryDark.withOpacity(0.7)
@@ -422,15 +465,20 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
               ),
               const SizedBox(height: 2),
               TextFormField(
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
+                controller: _emailController,
+                keyboardType: TextInputType.emailAddress,
                 style: TextStyle(
                   color: isDark ? Colors.white : Colors.black87,
                   fontSize: 16,
                 ),
+                validator: (val) {
+                  if (val == null || val.isEmpty) return 'Please enter your email';
+                  if (!val.contains('@')) return 'Please enter a valid email';
+                  return null;
+                },
                 decoration: InputDecoration(
                   filled: false,
-                  hintText: 'e.g. 254700000000',
+                  hintText: 'e.g. jimjacksports@gmail.com',
                   hintStyle: TextStyle(
                     color: isDark
                         ? Colors.white.withOpacity(0.2)
@@ -466,7 +514,7 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Instructions: Enter your M-PESA phone number above and tap Pay. A prompt will be sent to your phone. Enter your M-PESA PIN to complete the transaction.',
+                  'Instructions: Enter your email address and tap Pay. You will be redirected to the secure Paystack portal to complete the transaction.',
                   style: TextStyle(
                     color: isDark
                         ? Colors.white.withOpacity(0.8)
@@ -491,78 +539,7 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
       child: ElevatedButton(
         onPressed: isInitiating
             ? null
-            : () {
-                final phone = _phoneController.text.trim();
-                if (phone.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Please enter your phone number'),
-                    ),
-                  );
-                  return;
-                }
-
-                // Show the dialog immediately, the controller will pop it when status changes
-                showDialog(
-                  context: context,
-                  barrierDismissible: false,
-                  builder: (context) => Dialog(
-                    backgroundColor: isDark
-                        ? AppColors.bgSurfaceDark
-                        : Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      side: BorderSide(
-                        color: isDark
-                            ? Colors.white.withOpacity(0.05)
-                            : Colors.black12,
-                      ),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 32,
-                        horizontal: 24,
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const CircularProgressIndicator(
-                            color: AppColors.primaryGreen,
-                          ),
-                          const SizedBox(height: 24),
-                          Text(
-                            'Waiting for M-PESA...',
-                            style: TextStyle(
-                              color: isDark ? Colors.white : Colors.black87,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Please check your phone',
-                            style: TextStyle(
-                              color: isDark
-                                  ? Colors.white.withOpacity(0.6)
-                                  : Colors.black54,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-
-                ref
-                    .read(paymentControllerProvider.notifier)
-                    .initiatePayment(
-                      phone: phone,
-                      membershipId: widget.membershipId,
-                      amount: widget.rawAmount,
-                      packageName: widget.title,
-                    );
-              },
+            : () => _processPayment(),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primaryGreen,
           foregroundColor: Colors.white,

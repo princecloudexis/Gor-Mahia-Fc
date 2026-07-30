@@ -8,6 +8,8 @@ import 'community.dart';
 import 'monthly_contribution.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/community_providers.dart';
+import '../providers/navigation_providers.dart';
+import '../providers/contribution_providers.dart';
 
 class MainShell extends ConsumerStatefulWidget {
   const MainShell({super.key});
@@ -18,7 +20,6 @@ class MainShell extends ConsumerStatefulWidget {
 
 class _MainShellState extends ConsumerState<MainShell>
     with SingleTickerProviderStateMixin {
-  int _currentIndex = 0;
   late AnimationController _indicatorController;
 
   final List<Widget> _pages = const [
@@ -73,27 +74,36 @@ class _MainShellState extends ConsumerState<MainShell>
   }
 
   void _onTap(int index) {
-    if (_currentIndex == index) return;
-    HapticFeedback.lightImpact();
-
+    final currentIndex = ref.read(mainShellTabIndexProvider);
+    
     // Refresh community data if navigating to the Community tab (index 2)
     if (index == 2) {
       ref.invalidate(joinedGroupsProvider);
       ref.invalidate(exploreGroupsProvider);
     }
+    // Refresh contribution data if navigating to or clicking the Contributions tab (index 3)
+    else if (index == 3) {
+      ref.invalidate(contributionsProvider('pending'));
+      ref.invalidate(contributionsProvider('paid'));
+      ref.invalidate(contributionCountProvider);
+    }
 
-    setState(() => _currentIndex = index);
+    if (currentIndex == index) return;
+    HapticFeedback.lightImpact();
+
+    ref.read(mainShellTabIndexProvider.notifier).state = index;
   }
 
   @override
   Widget build(BuildContext context) {
+    final currentIndex = ref.watch(mainShellTabIndexProvider);
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       extendBody: true,
-      body: IndexedStack(index: _currentIndex, children: _pages),
+      body: IndexedStack(index: currentIndex, children: _pages),
       bottomNavigationBar: _GlassNavBar(
         items: _navItems,
-        currentIndex: _currentIndex,
+        currentIndex: currentIndex,
         onTap: _onTap,
       ),
     );

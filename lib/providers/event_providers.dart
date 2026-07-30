@@ -157,7 +157,7 @@ final homePageDataProvider = FutureProvider.autoDispose<HomePageData>((
       ? selectedCity!.toLowerCase().trim()
       : (location?.city != null && location!.city.isNotEmpty)
       ? location.city.toLowerCase().trim()
-      : 'ahmedabad';
+      : 'nairobi';
 
   debugPrint('🏙️ Loading home data for city: $cityName');
 

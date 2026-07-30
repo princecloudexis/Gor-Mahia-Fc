@@ -8,88 +8,126 @@ import 'profile.dart';
 import 'search.dart';
 import '../widgets/top_action_btn.dart';
 
-class Matches extends StatelessWidget {
+import '../providers/navigation_providers.dart';
+
+class Matches extends ConsumerStatefulWidget {
   const Matches({super.key});
+
+  @override
+  ConsumerState<Matches> createState() => _MatchesState();
+}
+
+class _MatchesState extends ConsumerState<Matches> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: ref.read(matchesTabIndexProvider),
+    );
+    _tabController.addListener(_handleTabSelection);
+  }
+
+  void _handleTabSelection() {
+    if (!_tabController.indexIsChanging) {
+      ref.read(matchesTabIndexProvider.notifier).state = _tabController.index;
+    }
+  }
+
+  @override
+  void dispose() {
+    _tabController.removeListener(_handleTabSelection);
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return DefaultTabController(
-      length: 3,
-      child: Scaffold(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        appBar: AppBar(
-          backgroundColor: isDark ? AppColors.bgDark : AppColors.bgLight,
-          elevation: 0,
-          title: Text(
-            'Matches',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-              letterSpacing: 1.2,
-              color: isDark ? AppColors.textOnDark : AppColors.textOnLight,
-            ),
-          ),
-          centerTitle: false,
-          actions: [
-            TopActionBtn(
-              icon: Icons.search_rounded,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const Search()),
-                );
-              },
-            ),
-            TopActionBtn(
-              icon: Icons.person_outline_rounded,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const Profile()),
-                );
-              },
-            ),
-            const SizedBox(width: 12),
-          ],
-          bottom: TabBar(
-            indicatorColor: AppColors.primaryGreen,
-            indicatorWeight: 3,
-            labelColor: AppColors.primaryGreen,
-            unselectedLabelColor: isDark
-                ? AppColors.textMutedDark
-                : AppColors.textMutedLight,
-            labelStyle: const TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 14,
-            ),
-            unselectedLabelStyle: const TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 14,
-            ),
-            tabs: const [
-              Tab(text: 'Fixtures'),
-              Tab(text: 'Live'),
-              Tab(text: 'Results'),
-            ],
+    ref.listen<int>(matchesTabIndexProvider, (previous, next) {
+      if (_tabController.index != next) {
+        _tabController.animateTo(next);
+      }
+    });
+
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      appBar: AppBar(
+        backgroundColor: isDark ? AppColors.bgDark : AppColors.bgLight,
+        elevation: 0,
+        title: Text(
+          'Matches',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            letterSpacing: 1.2,
+            color: isDark ? AppColors.textOnDark : AppColors.textOnLight,
           ),
         ),
-        body: Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: const AssetImage('assets/images/footballbg.png'),
-              fit: BoxFit.cover,
-              opacity: isDark ? 0.15 : 0.10,
-            ),
+        centerTitle: false,
+        actions: [
+          TopActionBtn(
+            icon: Icons.search_rounded,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const Search()),
+              );
+            },
           ),
-          child: TabBarView(
-            children: [
-              _FixturesTab(isDark: isDark),
-              _LiveTab(isDark: isDark),
-              _ResultsTab(isDark: isDark),
-            ],
+          TopActionBtn(
+            icon: Icons.person_outline_rounded,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const Profile()),
+              );
+            },
           ),
+          const SizedBox(width: 12),
+        ],
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: AppColors.primaryGreen,
+          indicatorWeight: 3,
+          labelColor: AppColors.primaryGreen,
+          unselectedLabelColor: isDark
+              ? AppColors.textMutedDark
+              : AppColors.textMutedLight,
+          labelStyle: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+          unselectedLabelStyle: const TextStyle(
+            fontWeight: FontWeight.w500,
+            fontSize: 14,
+          ),
+          tabs: const [
+            Tab(text: 'Fixtures'),
+            Tab(text: 'Live'),
+            Tab(text: 'Results'),
+          ],
+        ),
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: const AssetImage('assets/images/footballbg.png'),
+            fit: BoxFit.cover,
+            opacity: isDark ? 0.15 : 0.10,
+          ),
+        ),
+        child: TabBarView(
+          controller: _tabController,
+          children: [
+            _FixturesTab(isDark: isDark),
+            _LiveTab(isDark: isDark),
+            _ResultsTab(isDark: isDark),
+          ],
         ),
       ),
     );

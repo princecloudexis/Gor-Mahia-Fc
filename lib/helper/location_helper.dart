@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:eventsbooking/models/location_model.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
@@ -8,13 +9,13 @@ class LocationHelper {
   static const String _storageKey = 'saved_user_location';
   static const String _permissionAskedKey = 'location_permission_asked';
 
-  // DEFAULT = Ahmedabad
+  // DEFAULT = Nairobi
   final LocationModel _defaultLocation = LocationModel(
-    city: 'Ahmedabad',
-    state: 'Gujarat',
-    country: 'India',
-    latitude: 23.0225,
-    longitude: 72.5714,
+    city: 'Nairobi',
+    state: 'Nairobi County',
+    country: 'Kenya',
+    latitude: -1.2921,
+    longitude: 36.8219,
   );
 
   // GET SAVED OR DEFAULT
@@ -23,7 +24,12 @@ class LocationHelper {
       final prefs = await SharedPreferences.getInstance();
       final String? stored = prefs.getString(_storageKey);
       if (stored != null && stored.isNotEmpty) {
-        return LocationModel.fromJson(stored);
+        final loc = LocationModel.fromJson(stored);
+        // Automatically overwrite old cached "Ahmedabad" for users
+        if (loc.city.toLowerCase() == 'ahmedabad') {
+          return _defaultLocation;
+        }
+        return loc;
       }
     } catch (e) {
       debugPrint("Storage Error: $e");
@@ -86,16 +92,40 @@ class LocationHelper {
       debugPrint('❌ Geocoding city error: $e');
     }
 
-    // Return with Ahmedabad coords as fallback
-    debugPrint('⚠️ Geocoding failed for ${location.city}, using Ahmedabad fallback');
+    // Return with Nairobi coords as fallback
+    debugPrint('⚠️ Geocoding failed for ${location.city}, using Nairobi fallback');
     return LocationModel(
       city: location.city,
       state: location.state,
       country: location.country,
       subLocality: location.subLocality,
-      latitude: 23.0225,
-      longitude: 72.5714,
+      latitude: -1.2921,
+      longitude: 36.8219,
     );
+  }
+
+
+  // FETCH LOCATION FROM IP API IF PERMISSION DENIED
+  Future<LocationModel?> getIpBasedLocation() async {
+    try {
+      final response = await Dio().get('http://ip-api.com/json');
+      if (response.statusCode == 200) {
+        final data = response.data;
+        if (data['status'] == 'success') {
+          debugPrint('🌍 IP Location Success: ${data['city']}');
+          return LocationModel(
+            city: data['city'] ?? 'Unknown',
+            state: data['regionName'] ?? '',
+            country: data['country'] ?? '',
+            latitude: (data['lat'] as num?)?.toDouble(),
+            longitude: (data['lon'] as num?)?.toDouble(),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('❌ IP Location Error: $e');
+    }
+    return _defaultLocation;
   }
 
   // GET LIVE GPS
@@ -104,7 +134,7 @@ class LocationHelper {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         if (userInteracted) await Geolocator.openLocationSettings();
-        return null;
+        return await getIpBasedLocation();
       }
 
       LocationPermission permission = await Geolocator.checkPermission();

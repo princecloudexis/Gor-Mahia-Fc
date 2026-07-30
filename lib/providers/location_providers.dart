@@ -12,7 +12,7 @@ class LocationController extends StateNotifier<AsyncValue<LocationModel>> {
 
   Future<void> initializeLocation() async {
     try {
-      // Get saved or default (Ahmedabad with coords)
+      // Get saved or default (cityname with coords)
       final cachedOrDefault = await _locationHelper.getSavedOrDefault();
       state = AsyncValue.data(cachedOrDefault);
 

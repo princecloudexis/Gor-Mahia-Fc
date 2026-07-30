@@ -71,7 +71,7 @@ class _AuthenticatedView extends ConsumerWidget {
       ),
       slivers: [
         _ProfileHeader(user: user),
-        _StatsRow(user: user),
+        // _StatsRow(user: user), // Hidden because ticket booking is not implemented yet
         _MenuSection(),
         // Extra bottom padding so content clears the floating glass nav bar
         SliverToBoxAdapter(
@@ -376,11 +376,11 @@ class _MenuSection extends StatelessWidget {
       title: 'My Orders',
       destination: const ShopOrdersPage(),
     ),
-    MenuItem(
-      icon: Icons.confirmation_number_outlined,
-      title: 'Your Tickets',
-      destination: const Tickets(),
-    ),
+    // MenuItem(
+    //   icon: Icons.confirmation_number_outlined,
+    //   title: 'Your Tickets',
+    //   destination: const Tickets(),
+    // ),
     MenuItem(
       icon: Icons.settings_outlined,
       title: 'Settings',
@@ -413,7 +413,7 @@ class _MenuSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.only(left: 20, right: 20, top: 24),
         child: Container(
           decoration: BoxDecoration(
             color: Theme.of(context).cardColor,

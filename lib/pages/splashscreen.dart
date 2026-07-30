@@ -406,8 +406,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       _buildClubName(),
                       const SizedBox(height: 26),
                       _buildDivider(),
-                      const SizedBox(height: 52),
-                      _buildLoadingIndicator(),
+                      const SizedBox(height: 42),
+                      _buildBranchBadge(),
                     ],
                   ),
                 ),
@@ -680,82 +680,75 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     ),
   );
 
-  // ── Loading indicator ─────────────────────────────────────────────────────
-  Widget _buildLoadingIndicator() {
-    return Column(
-          children: [
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                // Outer ring — green
-                SizedBox(
-                  width: 38,
-                  height: 38,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 1.5,
-                    backgroundColor: AppColors.greenDark.withValues(alpha: 0.3),
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      AppColors.greenMedium.withValues(alpha: 0.7),
-                    ),
-                  ),
+  // ── Branch Badge ────────────────────────────────────────────────────────
+  Widget _buildBranchBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.black.withOpacity(0.15),
+        border: Border.all(
+          color: AppColors.gold.withOpacity(0.4),
+          width: 0.8,
+        ),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Image.asset(
+            'assets/images/branch-logo.png',
+            width: 48,
+            height: 48,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) =>
+                const Icon(Icons.shield, color: Colors.white54, size: 48),
+          ),
+          const SizedBox(width: 18),
+          Container(
+            width: 1,
+            height: 38,
+            color: Colors.white.withOpacity(0.2),
+          ),
+          const SizedBox(width: 18),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'MACHAKOS',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 2.5,
+                  fontFamily: 'Manrope',
                 ),
-                // Inner ring — blue
-                SizedBox(
-                  width: 26,
-                  height: 26,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2.2,
-                    backgroundColor: Colors.transparent,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      AppColors.blueLight.withValues(alpha: 0.9),
-                    ),
-                  ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'BRANCH',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white70,
+                  letterSpacing: 3.5,
+                  fontFamily: 'Manrope',
                 ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            // Shimmer loading text
-            AnimatedBuilder(
-              animation: _shimmerController,
-              builder: (_, __) {
-                final double s = _shimmerController.value;
-                return ShaderMask(
-                  shaderCallback: (bounds) => LinearGradient(
-                    colors: [
-                      Colors.white.withValues(alpha: 0.20),
-                      Colors.white.withValues(alpha: 0.60),
-                      Colors.white.withValues(alpha: 0.20),
-                    ],
-                    stops: [
-                      (s - 0.4).clamp(0.0, 1.0),
-                      s.clamp(0.0, 1.0),
-                      (s + 0.4).clamp(0.0, 1.0),
-                    ],
-                  ).createShader(bounds),
-                  child: const Text(
-                    'LOADING',
-                    style: TextStyle(
-                      fontSize: 9.5,
-                      color: Colors.white,
-                      letterSpacing: 3.5,
-                      fontWeight: FontWeight.w700,
-                      fontFamily: 'Manrope',
-                    ),
-                  ),
-                );
-              },
-            ),
-          ],
-        )
-        .animate()
-        .fadeIn(duration: 500.ms, delay: 1100.ms)
-        .scale(
-          begin: const Offset(0.7, 0.7),
-          end: const Offset(1.0, 1.0),
-          duration: 500.ms,
-          delay: 1100.ms,
-          curve: Curves.easeOutBack,
-        );
+              ),
+            ],
+          ),
+        ],
+      ),
+    )
+    .animate()
+    .fadeIn(duration: 500.ms, delay: 1100.ms)
+    .scale(
+      begin: const Offset(0.9, 0.9),
+      end: const Offset(1.0, 1.0),
+      duration: 500.ms,
+      delay: 1100.ms,
+      curve: Curves.easeOutBack,
+    );
   }
 
   // ── Footer ────────────────────────────────────────────────────────────────

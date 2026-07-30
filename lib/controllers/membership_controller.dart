@@ -89,6 +89,38 @@ class MembershipController extends StateNotifier<MembershipState> {
     }
   }
   
+  Future<void> renewMembership({
+    required String packageId,
+    required String branchId,
+  }) async {
+    final user = _ref.read(userProvider);
+    if (user == null) {
+      state = state.copyWith(
+        status: MembershipStatus.error,
+        errorMessage: 'You must be logged in to renew your membership.',
+      );
+      return;
+    }
+
+    state = state.copyWith(status: MembershipStatus.submitting, errorMessage: null);
+    try {
+      final response = await _repository.renewMembership(
+        packageId: packageId,
+        branchId: branchId,
+      );
+      state = state.copyWith(
+        status: MembershipStatus.success,
+        submitResponse: response,
+        errorMessage: null,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        status: MembershipStatus.error,
+        errorMessage: e.toString().replaceFirst('Exception: ', ''),
+      );
+    }
+  }
+
   void resetStatus() {
     state = state.copyWith(status: MembershipStatus.loaded, errorMessage: null);
   }
@@ -98,4 +130,9 @@ final membershipControllerProvider =
     StateNotifierProvider<MembershipController, MembershipState>((ref) {
   final repository = ref.watch(membershipRepositoryProvider);
   return MembershipController(repository, ref);
+});
+
+final membershipRenewalStatusProvider = FutureProvider.autoDispose<MembershipRenewalStatus>((ref) async {
+  final repo = ref.watch(membershipRepositoryProvider);
+  return repo.getRenewalStatus();
 });

@@ -864,6 +864,54 @@ class EventRepository {
     }
   }
 
+  Future<Map<String, dynamic>> createPaystackPaymentIntent({
+    required double amount,
+    required String orderId,
+    required int eventId,
+    required String streetAddress,
+    required String email,
+  }) async {
+    try {
+      final response = await _apiClient.dio.post(
+        '/user/payment/intent',
+        data: {
+          'amount': amount.toString(),
+          'event_id': eventId.toString(),
+          'street_address': streetAddress,
+          'order_id': orderId,
+          'email': email,
+          'callback_url': 'gormahiafc://payment-callback',
+        },
+      );
+
+      if (response.data is! Map<String, dynamic>) {
+        throw Exception('Invalid response format from Paystack API.');
+      }
+      return response.data as Map<String, dynamic>;
+    } on DioException catch (e) {
+      throw AppException.fromDioException(e);
+    }
+  }
+
+  Future<String> checkPaystackPaymentStatus(String reference) async {
+    try {
+      final response = await _apiClient.dio.get('/user/payment/paystack/status/$reference');
+      if (response.data is Map) {
+        final data = response.data as Map<String, dynamic>;
+        if (data['status'] == true && data['payment'] != 'failed') {
+          return 'success';
+        }
+        if (data['payment'] == 'failed') {
+          return 'failed';
+        }
+      }
+      return 'pending';
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) return 'pending';
+      throw AppException.fromDioException(e);
+    }
+  }
+
   Future<void> checkoutSubmit({
     required String orderId,
     required String phoneNumber,
@@ -871,6 +919,7 @@ class EventRepository {
     required int eventId,
     String? paymentIntentId,
     String? checkoutRequestId,
+    String? reference,
     String? promoCode,
     required Map<String, TicketHolderInfoModel> ticketHolders,
   }) async {
@@ -888,8 +937,13 @@ class EventRepository {
         data['checkoutRequestId'] = checkoutRequestId;
         data['CheckoutRequestID'] = checkoutRequestId; // send both just in case
       }
+      if (reference != null && reference.isNotEmpty) {
+        data['reference'] = reference;
+      }
+      
       if (!data.containsKey('paymentIntentId') &&
-          !data.containsKey('checkoutRequestId')) {
+          !data.containsKey('checkoutRequestId') &&
+          !data.containsKey('reference')) {
         throw Exception('No payment confirmation details were provided.');
       }
 

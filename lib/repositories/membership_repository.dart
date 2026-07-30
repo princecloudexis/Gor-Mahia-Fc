@@ -51,18 +51,18 @@ class MembershipRepository {
       throw Exception(e.toString());
     }
   }
-  Future<PaymentInitiateResponse> initiatePayment({
-    required String phone,
+  Future<MembershipPaystackResponse> initiatePayment({
+    required String email,
     required String membershipId,
     required String amount,
     required String packageName,
   }) async {
     try {
-      debugPrint('💳 [MembershipPay] POST /user/pay → phone=$phone, membershipId=$membershipId, amount=$amount');
+      debugPrint('💳 [MembershipPay] POST /user/pay → email=$email, membershipId=$membershipId, amount=$amount');
       final response = await _apiClient.dio.post(
         '/user/pay',
         data: {
-          'phone': phone,
+          'email': email,
           'payment_status': 'pending',
           'membership_id': membershipId,
           'amount': amount,
@@ -72,7 +72,7 @@ class MembershipRepository {
       debugPrint('💳 [MembershipPay] /user/pay RAW RESPONSE: ${response.data}');
 
       if (response.data != null && response.data['success'] == true) {
-        return PaymentInitiateResponse.fromJson(response.data);
+        return MembershipPaystackResponse.fromJson(response.data);
       }
       throw Exception(response.data['message'] ?? 'Failed to initiate payment');
     } on DioException catch (e) {
@@ -84,7 +84,7 @@ class MembershipRepository {
   }
 
   Future<PaymentStatusResponse> checkPaymentStatus({
-    required String checkoutRequestId,
+    required String reference,
     required String membershipId,
     required String plan,
   }) async {
@@ -92,11 +92,11 @@ class MembershipRepository {
       // NOTE: We do NOT send 'payment_status' here — we are ASKING for the status,
       // not telling the backend what it is. Sending 'pending' was causing the API
       // to always respond with pending.
-      debugPrint('💳 [MembershipPay] POST /user/status → checkoutRequestId=$checkoutRequestId, membershipId=$membershipId');
+      debugPrint('💳 [MembershipPay] POST /user/status → reference=$reference, membershipId=$membershipId');
       final response = await _apiClient.dio.post(
         '/user/status',
         data: {
-          'checkout_request_id': checkoutRequestId,
+          'reference': reference,
           'membership_id': membershipId,
           'plan': plan,
         },
@@ -110,6 +110,61 @@ class MembershipRepository {
       throw Exception(response.data['message'] ?? 'Failed to check payment status');
     } on DioException catch (e) {
       debugPrint('💳 [MembershipPay] /user/status ERROR: ${e.response?.data}');
+      throw AppException.fromDioException(e);
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
+  Future<MembershipRenewalStatus> getRenewalStatus() async {
+    try {
+      final response = await _apiClient.dio.get('/user/membership/renewal-status');
+      if (response.data != null && response.data['success'] == true) {
+        return MembershipRenewalStatus.fromJson(response.data['data']);
+      }
+      throw Exception(response.data['message'] ?? 'Failed to fetch renewal status');
+    } on DioException catch (e) {
+      throw AppException.fromDioException(e);
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
+  Future<MembershipSubmitResponse> renewMembership({
+    required String packageId,
+    required String branchId,
+  }) async {
+    try {
+      final response = await _apiClient.dio.post(
+        '/user/membership/renew',
+        data: {
+          'package_type_id': packageId,
+          'branch_id': branchId,
+        },
+      );
+
+      if (response.data != null && response.data['success'] == true) {
+        return MembershipSubmitResponse.fromJson(response.data['data']);
+      }
+      throw Exception(response.data['message'] ?? 'Failed to start renewal');
+    } on DioException catch (e) {
+      throw AppException.fromDioException(e);
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
+  Future<MembershipHistoryResponse> getMembershipHistory({int page = 1}) async {
+    try {
+      final response = await _apiClient.dio.get(
+        '/user/membership/history',
+        queryParameters: {'page': page},
+      );
+      if (response.statusCode == 200) {
+        return MembershipHistoryResponse.fromJson(response.data);
+      }
+      throw Exception(response.data['message'] ?? 'Failed to fetch membership history');
+    } on DioException catch (e) {
       throw AppException.fromDioException(e);
     } catch (e) {
       throw Exception(e.toString());

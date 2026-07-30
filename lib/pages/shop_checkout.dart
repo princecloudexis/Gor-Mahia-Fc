@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:eventsbooking/theme/app_colors.dart';
 import 'package:eventsbooking/providers/shop_providers.dart';
+import 'package:eventsbooking/providers/user_providers.dart';
 import 'package:eventsbooking/pages/shop_payment_processing.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ShopCheckoutPage extends ConsumerStatefulWidget {
   final double cartTotal;
@@ -13,9 +15,10 @@ class ShopCheckoutPage extends ConsumerStatefulWidget {
   ConsumerState<ShopCheckoutPage> createState() => _ShopCheckoutPageState();
 }
 
-class _ShopCheckoutPageState extends ConsumerState<ShopCheckoutPage> {
+class _ShopCheckoutPageState extends ConsumerState<ShopCheckoutPage> with WidgetsBindingObserver {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
   final _notesController = TextEditingController();
@@ -23,14 +26,62 @@ class _ShopCheckoutPageState extends ConsumerState<ShopCheckoutPage> {
   bool _isProcessing = false;
   int? _createdOrderId;
   String? _createdOrderNumber;
+  
+  bool _paymentLaunched = false;
+  String? _currentReference;
+  
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    
+    final user = ref.read(userProvider);
+    if (user != null) {
+      _nameController.text = user.fullName;
+      _emailController.text = user.email;
+      _phoneController.text = user.phoneNumber;
+    }
+  }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _nameController.dispose();
+    _emailController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
     _notesController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed && _paymentLaunched) {
+      _paymentLaunched = false;
+      if (_currentReference != null && _createdOrderNumber != null) {
+        _proceedToProcessingPage(_currentReference!, _createdOrderNumber!);
+      }
+    }
+  }
+
+  void _proceedToProcessingPage(String reference, String orderNumber) {
+    // Clear cart since order was placed successfully
+    final repository = ref.read(shopRepositoryProvider);
+    repository.clearCart().catchError((_) {});
+    ref.invalidate(shopCartProvider);
+
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ShopPaymentProcessingPage(
+            reference: reference,
+            orderNumber: orderNumber,
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> _processCheckout() async {
@@ -47,7 +98,7 @@ class _ShopCheckoutPageState extends ConsumerState<ShopCheckoutPage> {
           deliveryName: _nameController.text.trim(),
           deliveryPhone: _phoneController.text.trim(),
           deliveryAddress: _addressController.text.trim(),
-          paymentMethod: 'mpesa',
+          paymentMethod: 'paystack',
           notes: _notesController.text.trim(),
         );
         _createdOrderId = orderResponse.orderId;
@@ -57,28 +108,25 @@ class _ShopCheckoutPageState extends ConsumerState<ShopCheckoutPage> {
         ref.invalidate(shopCartProvider);
       }
 
-      // 2. Initiate M-Pesa STK Push
-      final pushResponse = await repository.initiateMpesaPayment(
+      // 2. Initiate Paystack checkout
+      final paystackResponse = await repository.initializePaystackPayment(
         orderId: _createdOrderId!,
-        phone: _phoneController.text.trim(),
+        email: _emailController.text.trim(),
       );
 
-      // 3. Clear cart since order was placed successfully
-      repository.clearCart().catchError((_) {});
-      ref.invalidate(shopCartProvider);
-
-      // 4. Navigate to Processing Screen
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ShopPaymentProcessingPage(
-              checkoutRequestId: pushResponse.checkoutRequestId,
-              orderNumber: _createdOrderNumber!,
-            ),
-          ),
-        );
+      // 3. Launch Paystack checkout URL
+      final Uri url = Uri.parse(paystackResponse.authorizationUrl);
+      if (await canLaunchUrl(url)) {
+        setState(() {
+          _paymentLaunched = true;
+          _currentReference = paystackResponse.reference;
+        });
+        await launchUrl(url, mode: LaunchMode.externalApplication);
+      } else {
+        throw Exception('Could not launch payment page.');
       }
+      
+      // We do NOT navigate here. We wait for the app to resume from the browser!
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -198,12 +246,32 @@ class _ShopCheckoutPageState extends ConsumerState<ShopCheckoutPage> {
                         ),
                         const SizedBox(height: 16),
 
+                        // Email Field
+                        TextFormField(
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: InputDecoration(
+                            labelText: 'Email Address',
+                            prefixIcon: const Icon(Icons.email_outlined),
+                          ),
+                          validator: (val) {
+                            if (val == null || val.isEmpty) {
+                              return 'Please enter your email';
+                            }
+                            if (!val.contains('@')) {
+                              return 'Please enter a valid email';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+
                         // Phone Field
                         TextFormField(
                           controller: _phoneController,
                           keyboardType: TextInputType.phone,
                           decoration: InputDecoration(
-                            labelText: 'M-Pesa Phone Number',
+                            labelText: 'Delivery Phone Number',
                             prefixIcon: const Icon(Icons.phone_iphone),
                           ),
                           validator: (val) {

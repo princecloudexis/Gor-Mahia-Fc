@@ -207,6 +207,7 @@ class ShopCartItem {
   final double vatRate;
   final double platformCharge;
   final double platformChargeRate;
+  final double total;
 
   ShopCartItem({
     required this.id,
@@ -219,6 +220,7 @@ class ShopCartItem {
     this.vatRate = 0.0,
     this.platformCharge = 0.0,
     this.platformChargeRate = 0.0,
+    this.total = 0.0,
   });
 
   factory ShopCartItem.fromJson(Map<String, dynamic> json) {
@@ -233,6 +235,7 @@ class ShopCartItem {
       vatRate: double.tryParse(json['vat_rate']?.toString() ?? '0') ?? 0.0,
       platformCharge: double.tryParse(json['platform_charge']?.toString() ?? '0') ?? 0.0,
       platformChargeRate: double.tryParse(json['platform_charge_rate']?.toString() ?? '0') ?? 0.0,
+      total: double.tryParse(json['total']?.toString() ?? '0') ?? 0.0,
     );
   }
 }
@@ -246,16 +249,19 @@ class ShopCart {
 
   factory ShopCart.fromJson(Map<String, dynamic> json) {
     var itemsList = <ShopCartItem>[];
+    double calculatedTotal = 0.0;
     if (json['items'] != null) {
       json['items'].forEach((v) {
-        itemsList.add(ShopCartItem.fromJson(v));
+        final item = ShopCartItem.fromJson(v);
+        itemsList.add(item);
+        calculatedTotal += item.total;
       });
     }
 
     return ShopCart(
       id: json['cart_id'] ?? json['id'] ?? 0,
       items: itemsList,
-      cartTotal: double.tryParse((json['total_price'] ?? json['cart_total'])?.toString() ?? '0') ?? 0.0,
+      cartTotal: double.tryParse((json['total_price'] ?? json['cart_total'])?.toString() ?? '') ?? calculatedTotal,
     );
   }
 }
@@ -285,9 +291,38 @@ class MpesaStkPushResponse {
 
   factory MpesaStkPushResponse.fromJson(Map<String, dynamic> json) {
     return MpesaStkPushResponse(
-      checkoutRequestId: json['checkout_request_id'] ?? '',
+      checkoutRequestId: json['checkout_request_id'] ?? json['CheckoutRequestID'] ?? '',
       orderId: json['order_id']?.toString() ?? '',
       amount: double.tryParse(json['amount']?.toString() ?? '0') ?? 0.0,
+    );
+  }
+}
+
+class ShopPaystackResponse {
+  final String reference;
+  final String accessCode;
+  final String authorizationUrl;
+  final String publicKey;
+  final int shopOrderId;
+  final int amount;
+
+  ShopPaystackResponse({
+    required this.reference,
+    required this.accessCode,
+    required this.authorizationUrl,
+    required this.publicKey,
+    required this.shopOrderId,
+    required this.amount,
+  });
+
+  factory ShopPaystackResponse.fromJson(Map<String, dynamic> json) {
+    return ShopPaystackResponse(
+      reference: json['reference'] ?? '',
+      accessCode: json['access_code'] ?? '',
+      authorizationUrl: json['authorization_url'] ?? '',
+      publicKey: json['public_key'] ?? '',
+      shopOrderId: json['shop_order_id'] ?? 0,
+      amount: json['amount'] != null ? int.tryParse(json['amount'].toString()) ?? 0 : 0,
     );
   }
 }
@@ -327,6 +362,14 @@ class MpesaStatusResponse {
       parsedStatus = 'success';
     } else if (parsedStatus == 'cancelled' || parsedStatus == 'canceled') {
       parsedStatus = 'failed';
+    }
+    
+    // Handle the case where the API returns {status: true, payment: 'pending'}
+    // but the 'payment' field is not the actual Paystack status — 
+    // the general endpoint returns status:true (bool) when payment is confirmed
+    // and payment field is absent or set to something other than 'failed'
+    if (parsedStatus == 'pending' && json['status'] == true && json['payment'] == null) {
+      parsedStatus = 'success';
     }
 
     return MpesaStatusResponse(

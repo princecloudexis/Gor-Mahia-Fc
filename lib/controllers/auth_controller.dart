@@ -1,8 +1,10 @@
 import 'package:eventsbooking/providers/user_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../api/api_client.dart';
 import '../providers/event_providers.dart';
 import '../providers/fcm_providers.dart';
+import '../providers/shop_providers.dart';
 import '../repositories/auth_repository.dart';
 
 enum AuthStatus {
@@ -250,15 +252,25 @@ class AuthController extends StateNotifier<AuthState> {
 
   /// Logout
   Future<void> logout() async {
+    // Call API + clear token in SharedPreferences (inside repository)
     try {
       await _authRepository.logout();
     } catch (_) {}
 
+    // Clear the Dio interceptor's cached prefs so it re-reads on next request
+    _ref.read(apiClientProvider).clearCache();
+
     await _clearAuthData();
     _userNotifier.clearUser();
-    // ✅ Clear favorites cache on logout so the next user doesn't see
-    //    the previous user's favorites list.
-    _ref.invalidate(favoritesProvider);
+
+    // ✅ Invalidate ALL user-specific cached providers so account 2
+    //    never sees stale data from account 1 after switching users.
+    _ref.invalidate(membershipDetailsProvider);
+    _ref.invalidate(shopCartProvider);
+    _ref.invalidate(shopFavoritesProvider);
+    _ref.invalidate(shopOrdersProvider);
+    _ref.invalidate(favoritesProvider); // event favorites
+
     state = const AuthState(status: AuthStatus.unauthenticated);
     print('Logged out');
   }

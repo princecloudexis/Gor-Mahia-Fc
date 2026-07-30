@@ -23,10 +23,7 @@ import '../models/category_model.dart';
 import '../theme/apptheme.dart';
 import '../theme/app_colors.dart';
 import '../providers/user_providers.dart';
-import 'home_dashboard_sections.dart';
-import '../providers/match_providers.dart';
-import '../providers/community_providers.dart';
-import '../providers/shop_providers.dart';
+
 final selectedCategoryProvider = StateProvider<CategoryModel?>((ref) => null);
 final currentBannerIndexProvider = StateProvider<int>((ref) => 0);
 
@@ -43,58 +40,63 @@ class _HomeState extends ConsumerState<Home> {
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: RefreshIndicator(
-        onRefresh: () async {
-          ref.read(favoritesProvider.notifier).refresh();
-          ref.invalidate(matchFixturesProvider);
-          ref.invalidate(exploreGroupsProvider);
-          ref.invalidate(shopTopPicksProvider);
-        },
-        child: CustomScrollView(
-          physics: const ClampingScrollPhysics(
-            parent: AlwaysScrollableScrollPhysics(),
+      body: mainDataProvider.when(
+        loading: () => const _HomeContentShimmer(),
+        error: (error, stack) => Center(
+          child: ErrorDisplayWidget(
+            message: 'Failed to load data. Please try again.',
+            onRetry: () => ref.invalidate(homePageDataProvider),
           ),
-          slivers: [
-            _buildAppBar(context, ref),
-            _buildGreeting(context),
-            const SliverToBoxAdapter(child: SizedBox(height: 16)),
-            mainDataProvider.when(
-              data: (data) {
-                if (data.recentEvents.isNotEmpty) {
-                  return _buildBannerSection(ref, data.recentEvents);
-                }
-                return const SliverToBoxAdapter(child: SizedBox.shrink());
-              },
-              loading: () => const SliverToBoxAdapter(child: ShimmerBox(height: 180, margin: EdgeInsets.symmetric(horizontal: 20, vertical: 20))),
-              error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+        ),
+        data: (homePageData) => _FootballRefreshIndicator(
+          onRefresh: () async {
+            ref.read(favoritesProvider.notifier).refresh();
+            ref.invalidate(nearYouEventsProvider);
+            await ref.refresh(homePageDataProvider.future);
+          },
+          child: CustomScrollView(
+            physics: const ClampingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
             ),
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
-            const SliverToBoxAdapter(child: LiveNowSection()),
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
-            const SliverToBoxAdapter(child: QuickAccessSection()),
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
-            mainDataProvider.when(
-              data: (data) => data.discoverThisWeekEvents.isNotEmpty 
-                  ? _buildSectionHeader('Hot Fixtures This Week', context)
-                  : const SliverToBoxAdapter(child: SizedBox.shrink()),
-              loading: () => const SliverToBoxAdapter(child: ShimmerBox(height: 30, margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10))),
-              error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
-            ),
-            mainDataProvider.when(
-              data: (data) => data.discoverThisWeekEvents.isNotEmpty 
-                  ? _buildDiscoverThisWeek(data.discoverThisWeekEvents)
-                  : const SliverToBoxAdapter(child: SizedBox.shrink()),
-              loading: () => const SliverToBoxAdapter(child: ShimmerBox(height: 240, margin: EdgeInsets.symmetric(horizontal: 20))),
-              error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
-            const SliverToBoxAdapter(child: CommunityGroupsSection()),
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
-            const SliverToBoxAdapter(child: SupportBannerSection()),
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
-            const SliverToBoxAdapter(child: FanShopSection()),
-            const SliverToBoxAdapter(child: SizedBox(height: 120)),
-          ],
+            slivers: [
+              _buildAppBar(context, ref),
+              _buildGreeting(context),
+              if (homePageData.recentEvents.isNotEmpty)
+                _buildBannerSection(ref, homePageData.recentEvents),
+              _buildCategoriesHeader(context),
+              _buildCategories(context, ref, homePageData.categories),
+
+              _buildSectionHeader('Hot Fixtures This Week', context),
+              _buildDiscoverThisWeek(homePageData.discoverThisWeekEvents),
+              if (homePageData.eventsByCity.isNotEmpty) ...[
+                _buildSectionHeader('Matches Near Your City', context),
+                _buildHorizontalEvents(homePageData.eventsByCity),
+              ] else ...[
+                _buildSectionHeader('Matches Near Your City', context),
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 160,
+                    child: const EmptyContentWidget(
+                      message: 'No fixtures scheduled\nfor your city yet.',
+                      icon: Icons.sports_soccer_outlined,
+                    ),
+                  ),
+                ),
+              ],
+              _buildUpcomingHeader(context),
+
+              const SliverToBoxAdapter(child: SizedBox(height: 8)),
+              _buildUpcomingEvents(homePageData.upcomingEvents),
+
+              _buildSectionHeader('Kick-Offs Near You', context),
+              _buildNearbyEvents(ref),
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: MediaQuery.of(context).padding.bottom + 30,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -143,77 +145,62 @@ class _HomeState extends ConsumerState<Home> {
         ),
         child: Row(
           children: [
+            // Avatar
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.grey.shade800,
+                border: Border.all(color: AppColors.primaryGreen, width: 2),
+              ),
+              child: ClipOval(
+                child: (user?.cleanedImageUrl != null)
+                    ? CachedNetworkImage(
+                        imageUrl: user!.cleanedImageUrl!,
+                        fit: BoxFit.cover,
+                        errorWidget: (context, error, stackTrace) =>
+                            const Icon(Icons.person, color: Colors.grey),
+                      )
+                    : const Icon(Icons.person, color: Colors.white54),
+              ),
+            ),
+            const SizedBox(width: 16),
+            // Details
             Expanded(
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const Profile()),
-                  );
-                },
-                child: Row(
-                  children: [
-                    // Avatar
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.grey.shade800,
-                        border: Border.all(color: AppColors.primaryGreen, width: 2),
-                      ),
-                      child: ClipOval(
-                        child: (user?.cleanedImageUrl != null)
-                            ? CachedNetworkImage(
-                                imageUrl: user!.cleanedImageUrl!,
-                                fit: BoxFit.cover,
-                                errorWidget: (context, error, stackTrace) =>
-                                    const Icon(Icons.person, color: Colors.grey),
-                              )
-                            : const Icon(Icons.person, color: Colors.white54),
-                      ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Hello, ${user?.firstName ?? "Guest"} ${user?.lastName ?? ""}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
                     ),
-                    const SizedBox(width: 16),
-                    // Details
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Hello, ${user?.firstName ?? "Guest"} ${user?.lastName ?? ""}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              Text(
-                                user?.membershipPlan ?? "Free Plan",
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.7),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              const Icon(
-                                Icons.verified,
-                                color: AppColors.primaryGreen,
-                                size: 14,
-                              ),
-                            ],
-                          ),
-                        ],
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(
+                        user?.membershipPlan ?? "Free Plan",
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.7),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
+                      const SizedBox(width: 4),
+                      const Icon(
+                        Icons.verified,
+                        color: AppColors.primaryGreen,
+                        size: 14,
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
             // Location
@@ -255,76 +242,35 @@ class _HomeState extends ConsumerState<Home> {
       floating: true,
       elevation: 0,
       backgroundColor: AppColors.bgDark,
-      toolbarHeight: 65,
+      toolbarHeight: 60,
       titleSpacing: 20,
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
+      title: Row(
         children: [
-          Row(
-            children: [
-              Image.asset(
-                'assets/images/Gor-Mahia-FC-logo.png',
-                height: 28,
-                width: 28,
-              ),
-              const SizedBox(width: 8),
-              RichText(
-                text: const TextSpan(
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
-                    fontStyle: FontStyle.italic,
-                    letterSpacing: 0.5,
-                  ),
-                  children: [
-                    TextSpan(
-                      text: "K'OGALO ",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    TextSpan(
-                      text: "FAN HUB",
-                      style: TextStyle(color: AppColors.greenLight),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          Image.asset(
+            'assets/images/Gor-Mahia-FC-logo.png',
+            height: 34,
+            width: 34,
           ),
-          const SizedBox(height: 3),
-          Row(
-            children: [
-              const SizedBox(width: 36), // Aligns with text above (28 icon + 8 padding)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: AppColors.gold.withOpacity(0.3), width: 0.5),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Image.asset(
-                      'assets/images/branch-logo.png',
-                      height: 12,
-                      width: 12,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      'MACHAKOS BRANCH',
-                      style: TextStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white.withOpacity(0.85),
-                        letterSpacing: 1.0,
-                        fontFamily: 'Manrope',
-                      ),
-                    ),
-                  ],
-                ),
+          const SizedBox(width: 8),
+          RichText(
+            text: const TextSpan(
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                fontStyle: FontStyle.italic,
+                letterSpacing: 0.5,
               ),
-            ],
+              children: [
+                TextSpan(
+                  text: "K'OGALO ",
+                  style: TextStyle(color: Colors.white),
+                ),
+                TextSpan(
+                  text: "FAN HUB",
+                  style: TextStyle(color: AppColors.greenLight),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -345,10 +291,13 @@ class _HomeState extends ConsumerState<Home> {
   Widget _buildSectionHeader(String title, BuildContext context) {
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.only(left: 20, right: 20, bottom: 16),
+        padding: const EdgeInsets.fromLTRB(20, 28, 20, 14),
         child: Text(
           title,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+          ),
         ),
       ),
     );
@@ -838,7 +787,7 @@ class _BannerSectionState extends ConsumerState<_BannerSection> {
               margin: const EdgeInsets.symmetric(horizontal: 3),
               decoration: BoxDecoration(
                 color: isActive
-                    ? AppColors.primaryGreen
+                    ? AppColors.primaryBlue
                     : Theme.of(context).dividerColor,
                 borderRadius: BorderRadius.circular(3),
               ),

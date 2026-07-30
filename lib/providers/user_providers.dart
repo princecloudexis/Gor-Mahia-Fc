@@ -75,6 +75,6 @@ final hasUserProvider = Provider<bool>((ref) {
   return ref.watch(userProvider) != null;
 });
 
-final membershipDetailsProvider = FutureProvider<MembershipDetails>((ref) {
+final membershipDetailsProvider = FutureProvider.autoDispose<MembershipDetails>((ref) {
   return ref.watch(authRepositoryProvider).getMembershipDetails();
 });

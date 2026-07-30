@@ -43,6 +43,7 @@ class GroupDetails extends ConsumerStatefulWidget {
 class _GroupDetailsState extends ConsumerState<GroupDetails> {
   late bool _hasJoined;
   bool _isJoining = false;
+  bool _isLeaving = false;
   final ScrollController _scrollController = ScrollController();
   bool _didAutoOpenComments = false;
 
@@ -140,6 +141,125 @@ class _GroupDetailsState extends ConsumerState<GroupDetails> {
     );
   }
 
+  Future<void> _showLeaveConfirmationDialog() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogCtx) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF1E2126) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.12),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.exit_to_app_rounded, color: Colors.red, size: 24),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'Leave Group',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to leave "${widget.group.name}"? You will lose access to group posts and activities.',
+          style: TextStyle(
+            fontSize: 14,
+            height: 1.5,
+            color: isDark ? Colors.white70 : Colors.black54,
+          ),
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(dialogCtx, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: const Text(
+                    'Leave Group',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogCtx, false),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                      color: isDark ? Colors.white70 : Colors.black54,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+    if (!mounted) return;
+
+    setState(() => _isLeaving = true);
+    try {
+      final message = await ref
+          .read(communityRepositoryProvider)
+          .leaveGroup(widget.group.id);
+      if (!mounted) return;
+      // Refresh lists so My Groups tab updates
+      ref.invalidate(joinedGroupsProvider);
+      ref.invalidate(exploreGroupsProvider);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: AppColors.primaryGreen,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _isLeaving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to leave: $e'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
   @override
   void dispose() {
     _scrollController.removeListener(_onScroll);
@@ -175,7 +295,8 @@ class _GroupDetailsState extends ConsumerState<GroupDetails> {
                 elevation: 0,
                 iconTheme: const IconThemeData(color: Colors.white),
                 flexibleSpace: FlexibleSpaceBar(
-                  titlePadding: const EdgeInsets.only(left: 48, bottom: 16),
+                  titlePadding: const EdgeInsets.only(left: 16, bottom: 16, right: 48),
+                  centerTitle: false,
                   title: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -287,17 +408,75 @@ class _GroupDetailsState extends ConsumerState<GroupDetails> {
                   ),
                 ),
                 actions: [
-                  IconButton(
-                    icon: const Icon(Icons.info_outline),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => GroupInfo(group: widget.group),
-                        ),
-                      );
-                    },
-                  ),
+                  if (_hasJoined)
+                    _isLeaving
+                        ? const Padding(
+                            padding: EdgeInsets.all(14.0),
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            ),
+                          )
+                        : PopupMenuButton<String>(
+                            icon: const Icon(Icons.more_vert, color: Colors.white),
+                            color: Theme.of(context).brightness == Brightness.dark
+                                ? const Color(0xFF1E2126)
+                                : Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            onSelected: (value) {
+                              if (value == 'info') {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => GroupInfo(group: widget.group),
+                                  ),
+                                );
+                              } else if (value == 'leave') {
+                                _showLeaveConfirmationDialog();
+                              }
+                            },
+                            itemBuilder: (context) => [
+                              const PopupMenuItem(
+                                value: 'info',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.info_outline, size: 20),
+                                    SizedBox(width: 12),
+                                    Text('Group Info'),
+                                  ],
+                                ),
+                              ),
+                              const PopupMenuDivider(),
+                              const PopupMenuItem(
+                                value: 'leave',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.exit_to_app_rounded, size: 20, color: Colors.red),
+                                    SizedBox(width: 12),
+                                    Text('Leave Group', style: TextStyle(color: Colors.red)),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          )
+                  else
+                    IconButton(
+                      icon: const Icon(Icons.info_outline),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => GroupInfo(group: widget.group),
+                          ),
+                        );
+                      },
+                    ),
                 ],
               ),
             ];
@@ -351,6 +530,7 @@ class _GroupDetailsState extends ConsumerState<GroupDetails> {
                               });
                               ref.refresh(joinedGroupsProvider);
                               ref.invalidate(exploreGroupsProvider);
+                              ref.read(groupPostsProvider(widget.group.id).notifier).fetchInitial();
 
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
@@ -510,7 +690,7 @@ class _GroupDetailsState extends ConsumerState<GroupDetails> {
       padding: const EdgeInsets.only(top: 8, bottom: 80),
       itemCount:
           state.posts.length +
-          ((!_hasJoined && state.posts.isNotEmpty) || state.hasNextPage
+          ((!_hasJoined && state.posts.isNotEmpty) || (state.hasNextPage && state.isLoading)
               ? 1
               : 0),
       separatorBuilder: (context, index) => Divider(

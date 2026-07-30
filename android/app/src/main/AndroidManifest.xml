@@ -77,6 +77,14 @@
                     android:scheme="http" 
                     android:host="yourapp.com" />
             </intent-filter>
+
+            <!-- Deep Link for Payment Callback -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="gormahiafc" />
+            </intent-filter>
             
             <!-- Deep Links - SEND action (for sharing) -->
             <intent-filter>

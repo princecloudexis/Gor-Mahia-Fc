@@ -45,7 +45,7 @@ class PaymentController extends StateNotifier<PaymentState> {
   }
 
   Future<void> initiatePayment({
-    required String phone,
+    required String email,
     required String membershipId,
     required String amount,
     required String packageName,
@@ -56,14 +56,14 @@ class PaymentController extends StateNotifier<PaymentState> {
     );
     try {
       final response = await _repository.initiatePayment(
-        phone: phone,
+        email: email,
         membershipId: membershipId,
         amount: amount,
         packageName: packageName,
       );
 
       state = state.copyWith(status: PaymentStatus.waitingForMpesa);
-      _startPolling(response.checkoutRequestId, membershipId);
+      _startPolling(response.reference, membershipId);
     } catch (e) {
       state = state.copyWith(
         status: PaymentStatus.error,
@@ -89,7 +89,7 @@ class PaymentController extends StateNotifier<PaymentState> {
 
       try {
         final statusResponse = await _repository.checkPaymentStatus(
-          checkoutRequestId: checkoutRequestId,
+          reference: checkoutRequestId,
           membershipId: membershipId,
           plan: 'paid',
         );

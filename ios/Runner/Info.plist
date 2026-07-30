@@ -15,7 +15,7 @@
 			<string>Editor</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>eventsbooking</string>
+				<string>gormahiafc</string>
 			</array>
 		</dict>
 	</array>

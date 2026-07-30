@@ -503,15 +503,22 @@ class _PostCommentsSheetState extends ConsumerState<PostCommentsSheet> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(
-                radius: isReply ? 12 : 16,
-                backgroundColor: AppColors.primaryGreen.withOpacity(0.15),
-                child: Icon(
-                  Icons.person,
-                  size: isReply ? 16 : 20,
-                  color: AppColors.primaryGreen,
+              if (comment.userImage != null && comment.userImage!.isNotEmpty)
+                CircleAvatar(
+                  radius: isReply ? 12 : 16,
+                  backgroundImage: CachedNetworkImageProvider(comment.userImage!),
+                  backgroundColor: Colors.transparent,
+                )
+              else
+                CircleAvatar(
+                  radius: isReply ? 12 : 16,
+                  backgroundColor: AppColors.primaryGreen.withOpacity(0.15),
+                  child: Icon(
+                    Icons.person,
+                    size: isReply ? 16 : 20,
+                    color: AppColors.primaryGreen,
+                  ),
                 ),
-              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -532,11 +539,26 @@ class _PostCommentsSheetState extends ConsumerState<PostCommentsSheet> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               Flexible(
-                                child: Text(
-                                  comment.userName,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
+                                child: Text.rich(
+                                  TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: comment.userName,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      if (comment.replyingToUserName != null && comment.replyingToUserName!.isNotEmpty)
+                                        TextSpan(
+                                          text: ' ▶ ${comment.replyingToUserName}',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 12,
+                                            color: isDark ? AppColors.textMutedDark : AppColors.textMutedLight,
+                                          ),
+                                        ),
+                                    ],
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -621,7 +643,7 @@ class _PostCommentsSheetState extends ConsumerState<PostCommentsSheet> {
                             ),
                           ),
                           const SizedBox(width: 16),
-                          if (comment.repliesCount > 0)
+                          if ((comment.replies?.length ?? 0) < comment.repliesCount)
                             GestureDetector(
                               onTap: () {
                                 ref
@@ -633,9 +655,9 @@ class _PostCommentsSheetState extends ConsumerState<PostCommentsSheet> {
                                     .fetchReplies(comment.id);
                               },
                               child: Text(
-                                (comment.replies != null && comment.replies!.isNotEmpty)
-                                    ? '↻ ${comment.repliesCount} ${comment.repliesCount == 1 ? 'reply' : 'replies'}'
-                                    : 'View ${comment.repliesCount} ${comment.repliesCount == 1 ? 'reply' : 'replies'}',
+                                (comment.replies == null || comment.replies!.isEmpty)
+                                    ? 'View ${comment.repliesCount} ${comment.repliesCount == 1 ? 'reply' : 'replies'}'
+                                    : 'Load more replies',
                                 style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,

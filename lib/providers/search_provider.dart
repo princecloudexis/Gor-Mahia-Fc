@@ -15,7 +15,7 @@ class SearchState {
   final List<CategoryModel> availableCategories;
   final bool areCategoriesLoading;
   final String selectedDateFilter;
-  final int? selectedCategoryId; 
+  final int? selectedCategoryId;
 
   SearchState({
     this.status = SearchStatus.initial,
@@ -23,9 +23,9 @@ class SearchState {
     this.errorMessage,
     this.currentQuery = '',
     this.availableCategories = const [],
-    this.areCategoriesLoading = true, 
+    this.areCategoriesLoading = true,
     this.selectedDateFilter = 'all',
-    this.selectedCategoryId, 
+    this.selectedCategoryId,
   });
 
   bool get hasActiveFilters {
@@ -41,7 +41,7 @@ class SearchState {
     bool? areCategoriesLoading,
     String? selectedDateFilter,
     int? selectedCategoryId,
-    bool clearSelectedCategory = false, 
+    bool clearSelectedCategory = false,
   }) {
     return SearchState(
       status: status ?? this.status,
@@ -75,7 +75,7 @@ class SearchNotifier extends StateNotifier<SearchState> {
       );
       state = state.copyWith(
         availableCategories: response.availableCategories,
-        areCategoriesLoading: false, 
+        areCategoriesLoading: false,
       );
     } catch (e) {
       print('Error loading categories: $e');
@@ -95,8 +95,9 @@ class SearchNotifier extends StateNotifier<SearchState> {
   Future<void> _performSearch() async {
     state = state.copyWith(status: SearchStatus.loading);
     try {
-      final categoryIdList =
-          state.selectedCategoryId == null ? <int>[] : [state.selectedCategoryId!];
+      final categoryIdList = state.selectedCategoryId == null
+          ? <int>[]
+          : [state.selectedCategoryId!];
 
       final response = await _eventRepository.searchAndFilterEvents(
         query: state.currentQuery,
@@ -104,9 +105,17 @@ class SearchNotifier extends StateNotifier<SearchState> {
         categoryIds: categoryIdList,
       );
 
-      state = state.copyWith(status: SearchStatus.success, results: response.events);
+      if (!mounted) return;
+      state = state.copyWith(
+        status: SearchStatus.success,
+        results: response.events,
+      );
     } catch (e) {
-      state = state.copyWith(status: SearchStatus.error, errorMessage: e.toString());
+      if (!mounted) return;
+      state = state.copyWith(
+        status: SearchStatus.error,
+        errorMessage: e.toString(),
+      );
     }
   }
 
@@ -151,7 +160,7 @@ class SearchNotifier extends StateNotifier<SearchState> {
     state = SearchState(
       status: SearchStatus.initial,
       availableCategories: categories,
-      areCategoriesLoading: false, 
+      areCategoriesLoading: false,
     );
   }
 
@@ -168,6 +177,6 @@ class SearchNotifier extends StateNotifier<SearchState> {
 
 final searchProvider =
     StateNotifierProvider.autoDispose<SearchNotifier, SearchState>((ref) {
-  final eventRepository = ref.watch(eventRepositoryProvider);
-  return SearchNotifier(eventRepository);
-});
+      final eventRepository = ref.watch(eventRepositoryProvider);
+      return SearchNotifier(eventRepository);
+    });

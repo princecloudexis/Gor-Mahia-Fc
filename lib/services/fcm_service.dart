@@ -53,15 +53,22 @@ class FcmService {
     required String? userAuthToken,
     required int? userId,
   }) async {
-    final fcmToken = await _firebaseMessaging.getToken();
+    String? fcmToken;
+    try {
+      fcmToken = await _firebaseMessaging.getToken();
+    } catch (e) {
+      print("Warning: Failed to get FCM token. This is expected on iOS Simulators without APNs configured. Error: $e");
+    }
 
-    print("Attempting to send FCM token to server...");
-    await _sendTokenToBackend(
-      token: fcmToken,
-      userAuthToken: userAuthToken,
-      userId: userId,
-    );
-    print("FCM token sent to server. Token: $fcmToken");
+    if (fcmToken != null) {
+      print("Attempting to send FCM token to server...");
+      await _sendTokenToBackend(
+        token: fcmToken,
+        userAuthToken: userAuthToken,
+        userId: userId,
+      );
+      print("FCM token sent to server. Token: $fcmToken");
+    }
     _firebaseMessaging.onTokenRefresh.listen((newToken) {
       final currentAuthState = _ref.read(authControllerProvider);
       final currentUser = _ref.read(userProvider);

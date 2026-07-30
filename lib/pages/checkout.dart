@@ -12,6 +12,8 @@ import 'package:intl/intl.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';
 import 'package:eventsbooking/models/checkout_model.dart';
 import 'package:eventsbooking/providers/checkout_provider.dart';
+import 'package:eventsbooking/providers/user_providers.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class Checkout extends ConsumerStatefulWidget {
   final String orderId;
@@ -20,7 +22,7 @@ class Checkout extends ConsumerStatefulWidget {
   ConsumerState<Checkout> createState() => _CheckoutState();
 }
 
-class _CheckoutState extends ConsumerState<Checkout> {
+class _CheckoutState extends ConsumerState<Checkout> with WidgetsBindingObserver {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _promoController;
   late final TextEditingController _addressController;
@@ -31,6 +33,10 @@ class _CheckoutState extends ConsumerState<Checkout> {
   final GlobalKey<FormFieldState> _phoneKey = GlobalKey<FormFieldState>();
   final Map<String, GlobalKey<FormFieldState>> _attendeeFieldKeys = {};
 
+  bool _paymentLaunched = false;
+  bool _isCheckingStatus = false;
+  String? _currentReference;
+
   @override
   void initState() {
     super.initState();
@@ -38,10 +44,12 @@ class _CheckoutState extends ConsumerState<Checkout> {
     _addressController = TextEditingController();
     _phoneController = TextEditingController();
     _scrollController = ScrollController();
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _promoController.dispose();
     _addressController.dispose();
     _phoneController.dispose();
@@ -94,6 +102,66 @@ class _CheckoutState extends ConsumerState<Checkout> {
     }
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed && _paymentLaunched) {
+      _paymentLaunched = false;
+      if (_currentReference != null) {
+        _verifyPaymentStatus();
+      }
+    }
+  }
+
+  Future<void> _verifyPaymentStatus() async {
+    if (_isCheckingStatus || _currentReference == null) return;
+    
+    setState(() {
+      _isCheckingStatus = true;
+    });
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const _ProcessingPaymentDialog(), // Use the same loader
+    );
+
+    // Call verifyAndCompletePayment
+    final PaymentResult result = await ref
+        .read(checkoutControllerProvider(widget.orderId).notifier)
+        .verifyAndCompletePayment(
+          reference: _currentReference!,
+          streetAddress: _addressController.text.trim(),
+          phoneNumber: _phoneController.text.trim(),
+        );
+
+    if (!mounted) return;
+    Navigator.of(context).pop(); // dismiss loading dialog
+    
+    setState(() {
+      _isCheckingStatus = false;
+      _currentReference = null;
+    });
+
+    if (result.isSuccess) {
+      _handleCancelAndCleanup(context, shouldPop: false);
+      ref.invalidate(ticketsProvider('upcoming'));
+      ref.invalidate(ticketsProvider('past'));
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const PaymentSuccess()),
+        (route) => false,
+      );
+    } else {
+      // Payment failed or still pending, backend verification didn't pass
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(result.errorMessage ?? 'Payment not completed or still processing.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
   void _processPayment() async {
     FocusScope.of(context).unfocus();
     await Future.delayed(const Duration(milliseconds: 100));
@@ -105,24 +173,30 @@ class _CheckoutState extends ConsumerState<Checkout> {
         builder: (context) => const _ProcessingPaymentDialog(),
       );
 
+      final user = ref.read(userProvider);
       final PaymentResult result = await ref
           .read(checkoutControllerProvider(widget.orderId).notifier)
-          .processPaymentAndSubmit(
+          .initiatePaystackPayment(
             streetAddress: _addressController.text.trim(),
-            phoneNumber: _phoneController.text.trim(),
+            email: user?.email ?? '',
           );
 
       if (!mounted) return;
       Navigator.of(context).pop();
 
-      if (result.isSuccess) {
-        _handleCancelAndCleanup(context, shouldPop: false);
-        ref.invalidate(ticketsProvider('upcoming'));
-        ref.invalidate(ticketsProvider('past'));
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const PaymentSuccess()),
-          (route) => false,
-        );
+      if (result.isSuccess && result.authorizationUrl != null) {
+        final Uri url = Uri.parse(result.authorizationUrl!);
+        if (await canLaunchUrl(url)) {
+           setState(() {
+             _paymentLaunched = true;
+             _currentReference = result.reference;
+           });
+           await launchUrl(url, mode: LaunchMode.externalApplication);
+        } else {
+           ScaffoldMessenger.of(context).showSnackBar(
+             const SnackBar(content: Text('Could not launch payment URL'), backgroundColor: AppColors.error),
+           );
+        }
       } else if (result.errorMessage != null) {
         _handleCancelAndCleanup(context, shouldPop: false);
         Navigator.of(context).pushAndRemoveUntil(

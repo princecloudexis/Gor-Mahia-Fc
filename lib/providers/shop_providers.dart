@@ -36,16 +36,16 @@ final shopProductDetailsProvider = FutureProvider.family<ShopProduct, int>((ref,
 final selectedShopCategoryProvider = StateProvider<int?>((ref) => null);
 
 // Cart Provider
-final shopCartProvider = FutureProvider<ShopCart>((ref) {
+final shopCartProvider = FutureProvider.autoDispose<ShopCart>((ref) {
   return ref.watch(shopRepositoryProvider).getCart();
 });
 
 // Favorites Provider
-final shopFavoritesProvider = FutureProvider<List<ShopProduct>>((ref) {
+final shopFavoritesProvider = FutureProvider.autoDispose<List<ShopProduct>>((ref) {
   return ref.watch(shopRepositoryProvider).getFavorites();
 });
 
 // Orders Provider
-final shopOrdersProvider = FutureProvider<List<ShopOrder>>((ref) {
+final shopOrdersProvider = FutureProvider.autoDispose<List<ShopOrder>>((ref) {
   return ref.watch(shopRepositoryProvider).getOrders();
 });

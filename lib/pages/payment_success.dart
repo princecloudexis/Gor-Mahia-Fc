@@ -2,18 +2,21 @@ import 'dart:math';
 import 'package:eventsbooking/pages/main_shell.dart';
 import 'package:eventsbooking/theme/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:eventsbooking/providers/user_providers.dart';
+import 'package:eventsbooking/providers/navigation_providers.dart';
+import 'package:eventsbooking/pages/my_membership.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-
-class PaymentSuccess extends StatefulWidget {
+class PaymentSuccess extends ConsumerStatefulWidget {
   final String title;
 
   const PaymentSuccess({super.key, required this.title});
 
   @override
-  State<PaymentSuccess> createState() => _PaymentSuccessState();
+  ConsumerState<PaymentSuccess> createState() => _PaymentSuccessState();
 }
 
-class _PaymentSuccessState extends State<PaymentSuccess>
+class _PaymentSuccessState extends ConsumerState<PaymentSuccess>
     with TickerProviderStateMixin {
   late AnimationController _confettiController;
   final List<_ConfettiParticle> _particles = [];
@@ -186,6 +189,8 @@ class _PaymentSuccessState extends State<PaymentSuccess>
   }
 
   Widget _buildDigitalCard() {
+    final membershipAsync = ref.watch(membershipDetailsProvider);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -222,87 +227,101 @@ class _PaymentSuccessState extends State<PaymentSuccess>
             ],
           ),
           padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
+          child: membershipAsync.when(
+            data: (details) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.all(4),
+                      child: Image.asset(
+                        'assets/images/Gor-Mahia-FC-logo.png',
+                        fit: BoxFit.contain,
+                      ),
                     ),
-                    padding: const EdgeInsets.all(4),
-                    child: Image.asset(
-                      'assets/images/Gor-Mahia-FC-logo.png',
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "JOHN OCHIENG'",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            details.memberName.toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          widget.title,
-                          style: TextStyle(
-                            color: AppColors.greenLight.withOpacity(0.9),
-                            fontSize: 13,
+                          const SizedBox(height: 4),
+                          Text(
+                            details.membershipType,
+                            style: TextStyle(
+                              color: AppColors.greenLight.withOpacity(0.9),
+                              fontSize: 13,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Divider(color: Colors.white.withOpacity(0.08)),
+                const SizedBox(height: 16),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _cardLabel('Member ID'),
+                          const SizedBox(height: 4),
+                          _cardValue(details.memberId ?? 'N/A'),
+                          const SizedBox(height: 16),
+                          _cardLabel('Valid Until'),
+                          const SizedBox(height: 4),
+                          _cardValue(details.validUntil ?? 'N/A'),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      width: 68,
+                      height: 68,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      padding: const EdgeInsets.all(4),
+                      child: const Icon(
+                        Icons.qr_code_2,
+                        color: Colors.black,
+                        size: 60,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            loading: () => const Center(
+              child: Padding(
+                padding: EdgeInsets.all(32.0),
+                child: CircularProgressIndicator(color: AppColors.primaryGreen),
               ),
-              const SizedBox(height: 24),
-              Divider(color: Colors.white.withOpacity(0.08)),
-              const SizedBox(height: 16),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _cardLabel('Member ID'),
-                        const SizedBox(height: 4),
-                        _cardValue('GM1968-000123'),
-                        const SizedBox(height: 16),
-                        _cardLabel('Valid Until'),
-                        const SizedBox(height: 4),
-                        _cardValue('31 MAY 2025'),
-                      ],
-                    ),
-                  ),
-                  Container(
-                    width: 68,
-                    height: 68,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: const EdgeInsets.all(4),
-                    child: const Icon(
-                      Icons.qr_code_2,
-                      color: Colors.black,
-                      size: 60,
-                    ),
-                  ),
-                ],
+            ),
+            error: (e, s) => Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: Text('Error loading card', style: TextStyle(color: Colors.white.withOpacity(0.5))),
               ),
-            ],
+            ),
           ),
         ).animate().fadeIn(duration: 600.ms, delay: 700.ms).slideY(begin: 0.15),
       ],
@@ -329,7 +348,12 @@ class _PaymentSuccessState extends State<PaymentSuccess>
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const MyMembership()),
+              );
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryGreen,
               foregroundColor: Colors.white,
@@ -350,6 +374,8 @@ class _PaymentSuccessState extends State<PaymentSuccess>
           width: double.infinity,
           child: OutlinedButton(
             onPressed: () {
+              // Reset tab to Home (index 0) before navigating back
+              ref.read(mainShellTabIndexProvider.notifier).state = 0;
               Navigator.pushAndRemoveUntil(
                 context,
                 MaterialPageRoute(builder: (_) => const MainShell()),

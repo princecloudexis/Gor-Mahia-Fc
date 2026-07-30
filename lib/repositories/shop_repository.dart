@@ -399,12 +399,41 @@ class ShopRepository {
     }
   }
 
+  Future<ShopPaystackResponse> initializePaystackPayment({
+    required int orderId,
+    required String email,
+  }) async {
+    const endpoint = '/user/shop/paystack/initialize';
+    debugPrint('🛒 [ShopPaystack] POST $endpoint → orderId=$orderId, email=$email');
+    try {
+      final response = await _apiClient.dio.post(
+        endpoint,
+        data: {
+          'shop_order_id': orderId,
+          'email': email,
+        },
+      );
+      debugPrint('🛒 [ShopPaystack] ✅ POST $endpoint RAW RESPONSE: ${response.data}');
+      if (response.statusCode == 200) {
+        final payload = response.data['data'] ?? response.data;
+        return ShopPaystackResponse.fromJson(payload);
+      }
+      throw Exception(response.data['message'] ?? 'Failed to initiate payment');
+    } on DioException catch (e) {
+      debugPrint('🛒 [ShopPaystack] ❌ POST $endpoint → ${e.response?.statusCode}');
+      debugPrint('🛒 [ShopPaystack] Error: ${e.response?.data}');
+      final errorMessage = e.response?.data?['message'] ?? 'Failed to initiate payment.';
+      throw Exception(errorMessage);
+    } catch (e) {
+      throw Exception('An unknown error occurred: ${e.toString()}');
+    }
+  }
+
   Future<MpesaStatusResponse> checkMpesaStatus(String checkoutRequestId) async {
     final endpoint = '/user/shop/mpesa/status/$checkoutRequestId';
     debugPrint('🛒 [ShopMpesa] GET $endpoint');
     try {
       final response = await _apiClient.dio.get(endpoint);
-      // Log the FULL raw response — this is what we parse for success/failed/pending
       debugPrint('🛒 [ShopMpesa] RAW STATUS RESPONSE: ${response.data}');
       if (response.statusCode == 200) {
         return MpesaStatusResponse.fromJson(response.data);
@@ -413,6 +442,47 @@ class ShopRepository {
     } on DioException catch (e) {
       debugPrint('🛒 [ShopMpesa] ❌ GET $endpoint → ${e.response?.statusCode}');
       debugPrint('🛒 [ShopMpesa] Error: ${e.response?.data}');
+      final errorMessage = e.response?.data?['message'] ?? 'Failed to check status.';
+      throw Exception(errorMessage);
+    } catch (e) {
+      throw Exception('An unknown error occurred: ${e.toString()}');
+    }
+  }
+
+  Future<MpesaStatusResponse> checkPaystackStatus(String reference) async {
+    final shopEndpoint = '/user/shop/paystack/status/$reference';
+    final generalEndpoint = '/user/payment/paystack/status/$reference';
+    debugPrint('🛒 [ShopPaystack] GET $shopEndpoint');
+    try {
+      // First try the shop-specific status endpoint
+      final response = await _apiClient.dio.get(shopEndpoint);
+      debugPrint('🛒 [ShopPaystack] RAW STATUS RESPONSE: ${response.data}');
+      if (response.statusCode == 200) {
+        final shopStatus = MpesaStatusResponse.fromJson(response.data);
+        if (shopStatus.payment == 'success') {
+          return shopStatus;
+        }
+        // Shop says pending — try the general endpoint to force Paystack verification
+        debugPrint('🛒 [ShopPaystack] Shop status pending, trying general verify endpoint...');
+        try {
+          final generalResponse = await _apiClient.dio.get(generalEndpoint);
+          debugPrint('🛒 [ShopPaystack] General verify response: ${generalResponse.data}');
+          if (generalResponse.statusCode == 200) {
+            final generalStatus = MpesaStatusResponse.fromJson(generalResponse.data);
+            if (generalStatus.payment == 'success') return generalStatus;
+          }
+        } catch (_) {
+          // ignore error from general endpoint, return shop status
+        }
+        return shopStatus;
+      }
+      throw Exception(response.data['message'] ?? 'Failed to check status');
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) {
+        return MpesaStatusResponse(payment: 'pending', message: 'Waiting for confirmation...');
+      }
+      debugPrint('🛒 [ShopPaystack] ❌ GET $shopEndpoint → ${e.response?.statusCode}');
+      debugPrint('🛒 [ShopPaystack] Error: ${e.response?.data}');
       final errorMessage = e.response?.data?['message'] ?? 'Failed to check status.';
       throw Exception(errorMessage);
     } catch (e) {

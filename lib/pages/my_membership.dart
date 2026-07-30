@@ -7,8 +7,9 @@ import 'package:eventsbooking/theme/apptheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:eventsbooking/pages/coming_soon.dart';
 import 'package:eventsbooking/pages/membership_signup.dart';
+import 'package:eventsbooking/pages/membership_history.dart';
+import 'package:eventsbooking/controllers/membership_controller.dart';
 
 class MyMembership extends ConsumerWidget {
   const MyMembership({super.key});
@@ -105,7 +106,7 @@ class MyMembership extends ConsumerWidget {
               TextButton(
                 onPressed: () => ref.invalidate(membershipDetailsProvider),
                 child: const Text('Try Again'),
-              )
+              ),
             ],
           ),
         ),
@@ -185,7 +186,9 @@ class _MembershipCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    details.memberName.isNotEmpty ? details.memberName : user.fullName,
+                    details.memberName.isNotEmpty
+                        ? details.memberName
+                        : user.fullName,
                     style: TextStyle(
                       color: isDark ? Colors.white : Colors.black87,
                       fontSize: 18,
@@ -205,7 +208,9 @@ class _MembershipCard extends StatelessWidget {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  if (details.memberId != null && details.memberId!.isNotEmpty && details.memberId != 'null') ...[
+                  if (details.memberId != null &&
+                      details.memberId!.isNotEmpty &&
+                      details.memberId != 'null') ...[
                     const SizedBox(height: 8),
                     Text(
                       'Member ID: ${details.memberId}',
@@ -217,7 +222,9 @@ class _MembershipCard extends StatelessWidget {
                       ),
                     ),
                   ],
-                  if (details.since != null && details.since!.isNotEmpty && details.since != 'null') ...[
+                  if (details.since != null &&
+                      details.since!.isNotEmpty &&
+                      details.since != 'null') ...[
                     const SizedBox(height: 2),
                     Text(
                       'Since: ${details.since}',
@@ -316,7 +323,9 @@ class _MembershipDetails extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             _buildDetailRow(context, 'Membership Type', details.membershipType),
-            if (details.validUntil != null && details.validUntil!.isNotEmpty && details.validUntil != 'null') ...[
+            if (details.validUntil != null &&
+                details.validUntil!.isNotEmpty &&
+                details.validUntil != 'null') ...[
               const SizedBox(height: 16),
               Divider(
                 height: 1,
@@ -326,7 +335,9 @@ class _MembershipDetails extends StatelessWidget {
               const SizedBox(height: 16),
               _buildDetailRow(context, 'Valid Until', details.validUntil!),
             ],
-            if (details.branch != null && details.branch!.isNotEmpty && details.branch != 'null') ...[
+            if (details.branch != null &&
+                details.branch!.isNotEmpty &&
+                details.branch != 'null') ...[
               const SizedBox(height: 16),
               Divider(
                 height: 1,
@@ -336,7 +347,9 @@ class _MembershipDetails extends StatelessWidget {
               const SizedBox(height: 16),
               _buildDetailRow(context, 'Branch', details.branch!),
             ],
-            if (details.status != null && details.status!.isNotEmpty && details.status != 'null') ...[
+            if (details.status != null &&
+                details.status!.isNotEmpty &&
+                details.status != 'null') ...[
               const SizedBox(height: 16),
               Divider(
                 height: 1,
@@ -403,17 +416,20 @@ class _MembershipDetails extends StatelessWidget {
 // ─────────────────────────────────────────────
 // QUICK ACTIONS
 // ─────────────────────────────────────────────
-class _QuickActions extends StatelessWidget {
+class _QuickActions extends ConsumerWidget {
   final MembershipDetails details;
   const _QuickActions({required this.details});
 
   @override
-  Widget build(BuildContext context) {
-    final isFreePlan = details.memberId == null ||
-                       details.memberId!.isEmpty ||
-                       details.memberId == 'null' ||
-                       details.status == null ||
-                       details.status!.toLowerCase() != 'active';
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isFreePlan =
+        details.memberId == null ||
+        details.memberId!.isEmpty ||
+        details.memberId == 'null' ||
+        details.status == null ||
+        details.status!.toLowerCase() != 'active';
+
+    final renewalStatusAsync = ref.watch(membershipRenewalStatusProvider);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -451,7 +467,8 @@ class _QuickActions extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const MembershipSignup(),
+                          builder: (context) =>
+                              const MembershipSignup(isStandalone: true),
                         ),
                       );
                     },
@@ -473,9 +490,7 @@ class _QuickActions extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const ComingSoonPage(
-                          title: 'Monthly Contributions',
-                        ),
+                        builder: (context) => const MonthlyContribution(),
                       ),
                     );
                   },
@@ -491,38 +506,84 @@ class _QuickActions extends StatelessWidget {
                   icon: Icons.receipt_long_outlined,
                   title: 'Payment History',
                   subtitle: 'View all payments and receipts',
+                  isLast: isFreePlan,
                   onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) =>
-                            const ComingSoonPage(title: 'Payment History'),
+                        builder: (context) => const MembershipHistoryPage(),
                       ),
                     );
                   },
                 ),
-                Divider(
-                  height: 1,
-                  thickness: 0.5,
-                  indent: 64,
-                  color: Theme.of(context).dividerColor,
-                ),
-                _buildActionTile(
-                  context,
-                  icon: Icons.autorenew_outlined,
-                  title: 'Membership Renewal',
-                  subtitle: 'Renew your membership',
-                  isLast: true,
-                  onTap: () {
-                    Navigator.push(
+                if (!isFreePlan) ...[
+                  Divider(
+                    height: 1,
+                    thickness: 0.5,
+                    indent: 64,
+                    color: Theme.of(context).dividerColor,
+                  ),
+                  renewalStatusAsync.when(
+                    data: (status) {
+                      String subtitle = 'Renew your membership';
+                      if (status.needsRenewal) {
+                        subtitle =
+                            'Needs Renewal! Expired ${status.validUntil}';
+                      } else if (status.daysRemaining != null) {
+                        subtitle =
+                            'Valid until ${status.validUntil} (${status.daysRemaining} days left)';
+                      } else if (status.validUntil != null) {
+                        subtitle = 'Valid until ${status.validUntil}';
+                      }
+
+                      return _buildActionTile(
+                        context,
+                        icon: Icons.autorenew_outlined,
+                        title: 'Membership Renewal',
+                        subtitle: subtitle,
+                        isLast: true,
+                        onTap: () {
+                          if (status.needsRenewal ||
+                              (status.daysRemaining != null &&
+                                  status.daysRemaining! <=
+                                      (status.renewalWindowDays ?? 7))) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const MembershipSignup(
+                                  isStandalone: true,
+                                  isRenewal: true,
+                                ),
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Your membership is active and does not require renewal right now.',
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                      );
+                    },
+                    loading: () => _buildActionTile(
                       context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            const ComingSoonPage(title: 'Membership Renewal'),
-                      ),
-                    );
-                  },
-                ),
+                      icon: Icons.autorenew_outlined,
+                      title: 'Membership Renewal',
+                      subtitle: 'Loading status...',
+                      isLast: true,
+                    ),
+                    error: (err, stack) => _buildActionTile(
+                      context,
+                      icon: Icons.autorenew_outlined,
+                      title: 'Membership Renewal',
+                      subtitle: 'Failed to load status',
+                      isLast: true,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

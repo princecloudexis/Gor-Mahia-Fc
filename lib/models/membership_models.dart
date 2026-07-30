@@ -72,20 +72,32 @@ class MembershipSubmitResponse {
   }
 }
 
-class PaymentInitiateResponse {
-  final String checkoutRequestId;
+class MembershipPaystackResponse {
+  final String reference;
+  final String accessCode;
+  final String authorizationUrl;
+  final String publicKey;
   final String membershipId;
+  final int amount;
 
-  PaymentInitiateResponse({
-    required this.checkoutRequestId,
+  MembershipPaystackResponse({
+    required this.reference,
+    required this.accessCode,
+    required this.authorizationUrl,
+    required this.publicKey,
     required this.membershipId,
+    required this.amount,
   });
 
-  factory PaymentInitiateResponse.fromJson(Map<String, dynamic> json) {
-    final data = json['data'];
-    return PaymentInitiateResponse(
-      checkoutRequestId: (data is Map && data['checkout_request_id'] != null) ? data['checkout_request_id'].toString() : '',
-      membershipId: (data is Map && data['membership_id'] != null) ? data['membership_id'].toString() : '',
+  factory MembershipPaystackResponse.fromJson(Map<String, dynamic> json) {
+    final data = json['data'] ?? json;
+    return MembershipPaystackResponse(
+      reference: data['reference'] ?? '',
+      accessCode: data['access_code'] ?? '',
+      authorizationUrl: data['authorization_url'] ?? '',
+      publicKey: data['public_key'] ?? '',
+      membershipId: data['membership_id']?.toString() ?? '',
+      amount: data['amount'] != null ? int.tryParse(data['amount'].toString()) ?? 0 : 0,
     );
   }
 }
@@ -149,6 +161,128 @@ class PaymentStatusResponse {
       mpesaReceipt: (data is Map && data['mpesa_receipt'] != null)
           ? data['mpesa_receipt'].toString()
           : '',
+    );
+  }
+}
+
+class MembershipRenewalStatus {
+  final bool needsRenewal;
+  final String? validUntil;
+  final int? daysRemaining;
+  final int? renewalWindowDays;
+
+  MembershipRenewalStatus({
+    required this.needsRenewal,
+    this.validUntil,
+    this.daysRemaining,
+    this.renewalWindowDays,
+  });
+
+  factory MembershipRenewalStatus.fromJson(Map<String, dynamic> json) {
+    return MembershipRenewalStatus(
+      needsRenewal: json['needs_renewal'] == true || json['needs_renewal'] == 'true',
+      validUntil: json['valid_until']?.toString(),
+      daysRemaining: json['days_remaining'] != null ? int.tryParse(json['days_remaining'].toString()) : null,
+      renewalWindowDays: json['renewal_window_days'] != null ? int.tryParse(json['renewal_window_days'].toString()) : null,
+    );
+  }
+}
+
+class Pagination {
+  final int currentPage;
+  final bool hasMorePages;
+
+  Pagination({
+    required this.currentPage,
+    required this.hasMorePages,
+  });
+
+  factory Pagination.fromJson(Map<String, dynamic> json) {
+    return Pagination(
+      currentPage: json['current_page'] ?? 1,
+      hasMorePages: json['has_more_pages'] == true,
+    );
+  }
+}
+
+class MembershipHistoryItem {
+  final String packageName;
+  final String amount;
+  final String paymentStatus;
+  final String plan;
+  final String createdAt;
+  final String? startDate;
+  final String? endDate;
+
+  MembershipHistoryItem({
+    required this.packageName,
+    required this.amount,
+    required this.paymentStatus,
+    required this.plan,
+    required this.createdAt,
+    this.startDate,
+    this.endDate,
+  });
+
+  factory MembershipHistoryItem.fromJson(Map<String, dynamic> json) {
+    return MembershipHistoryItem(
+      packageName: json['package_name']?.toString() ?? '',
+      amount: json['amount']?.toString() ?? '0',
+      paymentStatus: json['payment_status']?.toString() ?? 'pending',
+      plan: json['plan']?.toString() ?? '',
+      createdAt: json['created_at']?.toString() ?? '',
+      startDate: json['start_date']?.toString(),
+      endDate: json['end_date']?.toString(),
+    );
+  }
+}
+
+class MembershipHistoryResponse {
+  final List<MembershipHistoryItem> items;
+  final Pagination pagination;
+
+  MembershipHistoryResponse({
+    required this.items,
+    required this.pagination,
+  });
+
+  factory MembershipHistoryResponse.fromJson(Map<String, dynamic> json) {
+    final data = json['data'];
+    if (data == null) {
+      return MembershipHistoryResponse(
+        items: [],
+        pagination: Pagination(currentPage: 1, hasMorePages: false),
+      );
+    }
+    
+    List<dynamic> itemsList = [];
+    if (data is List) {
+      itemsList = data;
+    } else if (data is Map && data['data'] is List) {
+      itemsList = data['data']; 
+    } else if (data is Map && data['items'] is List) {
+      itemsList = data['items'];
+    }
+
+    int currentPage = 1;
+    bool hasMorePages = false;
+
+    if (data is Map) {
+      if (data['pagination'] is Map) {
+        currentPage = data['pagination']['current_page'] != null 
+            ? int.tryParse(data['pagination']['current_page'].toString()) ?? 1 
+            : 1;
+        hasMorePages = data['pagination']['has_more_pages'] == true;
+      } else if (data['current_page'] != null) {
+        currentPage = int.tryParse(data['current_page'].toString()) ?? 1;
+        final lastPage = data['last_page'] != null ? int.tryParse(data['last_page'].toString()) ?? currentPage : currentPage;
+        hasMorePages = currentPage < lastPage;
+      }
+    }
+
+    return MembershipHistoryResponse(
+      items: itemsList.map((e) => MembershipHistoryItem.fromJson(e as Map<String, dynamic>)).toList(),
+      pagination: Pagination(currentPage: currentPage, hasMorePages: hasMorePages),
     );
   }
 }

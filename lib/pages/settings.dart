@@ -54,65 +54,72 @@ class Settings extends ConsumerWidget {
     ThemeModeOption currentTheme,
     bool isDark,
   ) {
-    return Container(
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Material(
         color: isDark ? AppTheme.cardColorDark : Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              'Appearance',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: isDark ? AppTheme.textDarkInDarkMode : AppTheme.textDark,
+        clipBehavior: Clip.antiAlias,
+        elevation: 0,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
-            ),
+            ],
           ),
-          const Divider(height: 1),
-          _buildThemeOption(
-            context: context,
-            ref: ref,
-            title: 'Light',
-            subtitle: 'Always use light theme',
-            icon: Icons.light_mode,
-            value: ThemeModeOption.light,
-            groupValue: currentTheme,
-            isDark: isDark,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Appearance',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? AppTheme.textDarkInDarkMode : AppTheme.textDark,
+                  ),
+                ),
+              ),
+              const Divider(height: 1),
+              _buildThemeOption(
+                context: context,
+                ref: ref,
+                title: 'Light',
+                subtitle: 'Always use light theme',
+                icon: Icons.light_mode,
+                value: ThemeModeOption.light,
+                groupValue: currentTheme,
+                isDark: isDark,
+              ),
+              _buildThemeOption(
+                context: context,
+                ref: ref,
+                title: 'Dark',
+                subtitle: 'Always use dark theme',
+                icon: Icons.dark_mode,
+                value: ThemeModeOption.dark,
+                groupValue: currentTheme,
+                isDark: isDark,
+              ),
+              _buildThemeOption(
+                context: context,
+                ref: ref,
+                title: 'System Default',
+                subtitle: 'Follow system settings',
+                icon: Icons.settings_brightness,
+                value: ThemeModeOption.system,
+                groupValue: currentTheme,
+                isDark: isDark,
+              ),
+            ],
           ),
-          _buildThemeOption(
-            context: context,
-            ref: ref,
-            title: 'Dark',
-            subtitle: 'Always use dark theme',
-            icon: Icons.dark_mode,
-            value: ThemeModeOption.dark,
-            groupValue: currentTheme,
-            isDark: isDark,
-          ),
-          _buildThemeOption(
-            context: context,
-            ref: ref,
-            title: 'System Default',
-            subtitle: 'Follow system settings',
-            icon: Icons.settings_brightness,
-            value: ThemeModeOption.system,
-            groupValue: currentTheme,
-            isDark: isDark,
-          ),
-        ],
+        ),
       ),
     );
   }

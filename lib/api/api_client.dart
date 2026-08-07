@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:eventsbooking/utils/app_exception.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -64,13 +65,45 @@ class ApiClient {
     assert(() {
       dio.interceptors.add(
         LogInterceptor(
-          responseBody: true,
-          requestBody: true,
+          responseBody: false,  // Don't log full response body — saves memory
+          requestBody: false,
           logPrint: (obj) => print('📝 $obj'),
         ),
       );
       return true;
     }());
+
+    // ── Retry interceptor ──────────────────────────────────────────────────
+    // Retries up to 2× with 1-second delay on network/timeout errors.
+    // Essential for mobile networks where single requests may drop.
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onError: (DioException e, handler) async {
+          final isNetworkError = e.type == DioExceptionType.connectionTimeout ||
+              e.type == DioExceptionType.receiveTimeout ||
+              e.type == DioExceptionType.connectionError ||
+              e.type == DioExceptionType.sendTimeout;
+
+          // Only retry non-upload (GET) requests automatically.
+          final isIdempotent = e.requestOptions.method == 'GET';
+
+          final retryCount =
+              (e.requestOptions.extra['retryCount'] as int?) ?? 0;
+
+          if (isNetworkError && isIdempotent && retryCount < 2) {
+            e.requestOptions.extra['retryCount'] = retryCount + 1;
+            await Future.delayed(const Duration(seconds: 1));
+            try {
+              final response = await dio.fetch(e.requestOptions);
+              return handler.resolve(response);
+            } catch (retryError) {
+              // Let it fall through to the normal error handler below.
+            }
+          }
+          return handler.next(e);
+        },
+      ),
+    );
   }
 
   String get storageBaseUrl {

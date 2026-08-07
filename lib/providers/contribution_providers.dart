@@ -23,8 +23,10 @@ class ContributionsNotifier
     state = const AsyncValue.loading();
     try {
       final res = await _repo.getContributions(tab, page);
+      if (!mounted) return;
       state = AsyncValue.data(res);
     } catch (e, stackTrace) {
+      if (!mounted) return;
       state = AsyncValue.error(e, stackTrace);
     }
   }
@@ -39,6 +41,7 @@ class ContributionsNotifier
         currentState.pagination.currentPage + 1,
       );
 
+      if (!mounted) return;
       state = AsyncValue.data(
         ContributionResponse(
           tab: res.tab,
@@ -47,6 +50,7 @@ class ContributionsNotifier
         ),
       );
     } catch (e, stackTrace) {
+      if (!mounted) return;
       state = AsyncValue.error(e, stackTrace);
     }
   }
@@ -100,8 +104,10 @@ class ContributionHistoryNotifier extends StateNotifier<AsyncValue<ContributionH
     state = const AsyncValue.loading();
     try {
       final res = await _repo.getContributionHistory(page);
+      if (!mounted) return;
       state = AsyncValue.data(res);
     } catch (e, stackTrace) {
+      if (!mounted) return;
       state = AsyncValue.error(e, stackTrace);
     }
   }
@@ -115,6 +121,7 @@ class ContributionHistoryNotifier extends StateNotifier<AsyncValue<ContributionH
         currentState.pagination.currentPage + 1,
       );
 
+      if (!mounted) return;
       state = AsyncValue.data(
         ContributionHistoryResponse(
           items: [...currentState.items, ...res.items],
@@ -122,6 +129,7 @@ class ContributionHistoryNotifier extends StateNotifier<AsyncValue<ContributionH
         ),
       );
     } catch (e, stackTrace) {
+      if (!mounted) return;
       state = AsyncValue.error(e, stackTrace);
     }
   }

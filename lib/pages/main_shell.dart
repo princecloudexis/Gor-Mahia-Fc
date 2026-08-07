@@ -7,9 +7,12 @@ import 'shop.dart';
 import 'community.dart';
 import 'monthly_contribution.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/foundation.dart';
+import 'reels/reels_feed.dart';
 import '../providers/community_providers.dart';
 import '../providers/navigation_providers.dart';
 import '../providers/contribution_providers.dart';
+import '../providers/reels_providers.dart';
 
 class MainShell extends ConsumerStatefulWidget {
   const MainShell({super.key});
@@ -22,39 +25,39 @@ class _MainShellState extends ConsumerState<MainShell>
     with SingleTickerProviderStateMixin {
   late AnimationController _indicatorController;
 
-  final List<Widget> _pages = const [
-    Home(),
-    Matches(),
-    Community(),
-    MonthlyContribution(),
-    Shop(),
+  final List<Widget> _pages = [
+    const Home(),
+    ReelsFeed(key: reelsFeedKey),
+    const Community(),
+    const MonthlyContribution(),
+    const Matches(),
   ];
 
-  final List<_NavItem> _navItems = const [
-    _NavItem(
+  final List<_NavItem> _navItems = [
+    const _NavItem(
       icon: Icons.stadium_outlined,
       activeIcon: Icons.stadium_rounded,
       label: 'Home',
     ),
-    _NavItem(
-      icon: Icons.sports_soccer_outlined,
-      activeIcon: Icons.sports_soccer_rounded,
-      label: 'Matches',
+    const _NavItem(
+      icon: Icons.play_circle_outline,
+      activeIcon: Icons.play_circle_filled,
+      label: 'Reels',
     ),
-    _NavItem(
+    const _NavItem(
       icon: Icons.groups_outlined,
       activeIcon: Icons.groups_rounded,
       label: 'Community',
     ),
-    _NavItem(
+    const _NavItem(
       icon: Icons.account_balance_wallet_outlined,
       activeIcon: Icons.account_balance_wallet_rounded,
       label: 'Contributions',
     ),
-    _NavItem(
-      icon: Icons.shopping_bag_outlined,
-      activeIcon: Icons.shopping_bag_rounded,
-      label: 'Shop',
+    const _NavItem(
+      icon: Icons.sports_soccer_outlined,
+      activeIcon: Icons.sports_soccer_rounded,
+      label: 'Matches',
     ),
   ];
 
@@ -74,8 +77,9 @@ class _MainShellState extends ConsumerState<MainShell>
   }
 
   void _onTap(int index) {
+
     final currentIndex = ref.read(mainShellTabIndexProvider);
-    
+
     // Refresh community data if navigating to the Community tab (index 2)
     if (index == 2) {
       ref.invalidate(joinedGroupsProvider);
@@ -86,6 +90,10 @@ class _MainShellState extends ConsumerState<MainShell>
       ref.invalidate(contributionsProvider('pending'));
       ref.invalidate(contributionsProvider('paid'));
       ref.invalidate(contributionCountProvider);
+    }
+    // Refresh reels data ONLY if already on the Reels tab and clicking it again
+    else if (index == 1 && currentIndex == 1) {
+      reelsFeedKey.currentState?.scrollToTopAndRefresh();
     }
 
     if (currentIndex == index) return;
@@ -130,10 +138,12 @@ class _GlassNavBar extends StatelessWidget {
     final size = MediaQuery.of(context).size;
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
+    // Make it float very close to the bottom edge
+    final bottomMargin = bottomPadding == 0 ? 18.0 : 16.0;
+
     // Calculate approximate center of the nav bar for accurate magnification
     final centerX = size.width / 2;
-    final centerY =
-        size.height - (bottomPadding == 0 ? 24 : bottomPadding + 8) - 30;
+    final centerY = size.height - bottomMargin - 30;
 
     final matrix = Matrix4.identity()
       ..translate(centerX, centerY)
@@ -141,28 +151,24 @@ class _GlassNavBar extends StatelessWidget {
       ..translate(-centerX, -centerY);
 
     return Padding(
-      padding: EdgeInsets.only(
-        left: 12,
-        right: 12,
-        bottom: bottomPadding == 0 ? 24 : bottomPadding + 8,
-      ),
+      padding: EdgeInsets.only(left: 12, right: 12, bottom: bottomMargin),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(40),
         child: BackdropFilter(
           filter: ImageFilter.compose(
-            inner: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+            inner: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
             outer: ImageFilter.matrix(matrix.storage),
           ),
           child: Container(
             decoration: BoxDecoration(
               color: isDark
-                  ? Colors.black.withValues(alpha: 0.05)
-                  : Colors.white.withValues(alpha: 0.12),
+                  ? Colors.black.withValues(alpha: 0.55)
+                  : Colors.white.withValues(alpha: 0.70),
               borderRadius: BorderRadius.circular(40),
               border: Border.all(
                 color: isDark
-                    ? Colors.white.withValues(alpha: 0.15)
-                    : Colors.black.withValues(alpha: 0.10),
+                    ? Colors.white.withValues(alpha: 0.18)
+                    : Colors.black.withValues(alpha: 0.12),
                 width: 1,
               ),
             ),

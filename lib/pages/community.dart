@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:eventsbooking/pages/search.dart';
+import 'package:eventsbooking/pages/shop.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';
@@ -38,12 +40,13 @@ class Community extends StatelessWidget {
           ),
           centerTitle: false,
           actions: [
+
             TopActionBtn(
-              icon: Icons.search_rounded,
+              icon: Icons.shopping_bag_outlined,
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const Search()),
+                  MaterialPageRoute(builder: (context) => const Shop()),
                 );
               },
             ),

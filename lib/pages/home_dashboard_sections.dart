@@ -416,7 +416,10 @@ class QuickAccessSection extends ConsumerWidget {
                 icon: Icons.shopping_bag_outlined,
                 label: 'Shop',
                 onTap: () {
-                  ref.read(mainShellTabIndexProvider.notifier).state = 4;
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const Shop()),
+                  );
                 },
               ),
             ],

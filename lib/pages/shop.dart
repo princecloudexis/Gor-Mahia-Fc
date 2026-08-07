@@ -116,15 +116,7 @@ class _ShopState extends ConsumerState<Shop> {
               );
             },
           ),
-          TopActionBtn(
-            icon: Icons.search_rounded,
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const Search()),
-              );
-            },
-          ),
+
           TopActionBtn(
             icon: Icons.person_outline_rounded,
             onTap: () {

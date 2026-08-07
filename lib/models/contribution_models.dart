@@ -107,7 +107,8 @@ class ContributionResponse {
   factory ContributionResponse.fromJson(Map<String, dynamic> json) {
     return ContributionResponse(
       tab: json['tab'] ?? '',
-      items: (json['items'] as List?)
+      items:
+          (json['items'] as List?)
               ?.map((e) => Contribution.fromJson(e))
               .toList() ??
           [],
@@ -118,7 +119,8 @@ class ContributionResponse {
               perPage: 10,
               total: 0,
               lastPage: 1,
-              hasMorePages: false),
+              hasMorePages: false,
+            ),
     );
   }
 }
@@ -239,14 +241,12 @@ class ContributionHistoryResponse {
   final List<ContributionHistoryItem> items;
   final ContributionPagination pagination;
 
-  ContributionHistoryResponse({
-    required this.items,
-    required this.pagination,
-  });
+  ContributionHistoryResponse({required this.items, required this.pagination});
 
   factory ContributionHistoryResponse.fromJson(Map<String, dynamic> json) {
     return ContributionHistoryResponse(
-      items: (json['items'] as List?)
+      items:
+          (json['items'] as List?)
               ?.map((e) => ContributionHistoryItem.fromJson(e))
               .toList() ??
           [],

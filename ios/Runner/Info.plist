@@ -8,6 +8,10 @@
 <string>We need your location for background tracking</string>
 <key>NSPhotoLibraryUsageDescription</key>
 <string>We need access to your photo library to allow you to upload images and videos to your posts.</string>
+<key>NSCameraUsageDescription</key>
+<string>We need access to your camera so you can record and share videos to Reels.</string>
+<key>NSMicrophoneUsageDescription</key>
+<string>We need access to your microphone to record audio with your video Reels.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

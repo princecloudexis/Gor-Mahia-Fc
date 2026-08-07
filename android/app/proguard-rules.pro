@@ -41,3 +41,13 @@
 -keepclasseswithmembers class * {
     public void onPayment*(...);
 }
+
+# uCrop / OkHttp3 rules (fixes missing class okhttp3.Call, etc.)
+-dontwarn com.yalantis.ucrop**
+-keep class com.yalantis.ucrop** { *; }
+-keep interface com.yalantis.ucrop** { *; }
+
+-dontwarn okhttp3.**
+-keep class okhttp3.** { *; }
+-keep interface okhttp3.** { *; }
+-dontwarn okio.**

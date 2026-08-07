@@ -55,3 +55,8 @@ class NotificationsNotifier extends StateNotifier<List<NotificationModel>> {
 }
 
 final isNotificationsPageVisibleProvider = StateProvider.autoDispose<bool>((ref) => false);
+
+final hasUnreadNotificationsProvider = Provider<bool>((ref) {
+  final notifications = ref.watch(notificationsProvider);
+  return notifications.any((n) => !n.isRead);
+});

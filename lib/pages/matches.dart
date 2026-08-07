@@ -6,6 +6,7 @@ import '../providers/match_providers.dart';
 import 'match_center.dart';
 import 'profile.dart';
 import 'search.dart';
+import 'shop.dart';
 import '../widgets/top_action_btn.dart';
 
 import '../providers/navigation_providers.dart';
@@ -70,12 +71,13 @@ class _MatchesState extends ConsumerState<Matches> with SingleTickerProviderStat
         ),
         centerTitle: false,
         actions: [
+
           TopActionBtn(
-            icon: Icons.search_rounded,
+            icon: Icons.shopping_bag_outlined,
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const Search()),
+                MaterialPageRoute(builder: (context) => const Shop()),
               );
             },
           ),

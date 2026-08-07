@@ -271,28 +271,7 @@ class _AppBar extends ConsumerWidget {
             ),
           ),
 
-          // Search Button
-          InkWell(
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const Search()),
-            ),
-            borderRadius: BorderRadius.circular(10),
-            child: Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                color: Theme.of(context).cardColor,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Theme.of(context).dividerColor),
-              ),
-              child: Icon(
-                Icons.search_rounded,
-                size: 18,
-                color: Theme.of(context).textTheme.bodyLarge?.color,
-              ),
-            ),
-          ),
+
         ],
       ),
       bottom: PreferredSize(

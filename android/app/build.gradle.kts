@@ -49,7 +49,7 @@ android {
 
     defaultConfig {
         applicationId = "FootBall.Ard1"
-        minSdk = flutterMinSdkVersion.toInt()
+        minSdk = 24
         targetSdk = flutterTargetSdkVersion.toInt()
         versionCode = flutterVersionCode.toInt()
         versionName = flutterVersionName

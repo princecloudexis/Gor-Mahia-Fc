@@ -12,6 +12,7 @@ import 'package:eventsbooking/pages/settings.dart';
 import 'package:eventsbooking/pages/signup.dart';
 import 'package:eventsbooking/pages/tickets.dart';
 import 'package:eventsbooking/pages/shop_orders.dart';
+import 'package:eventsbooking/pages/reels/my_reels_page.dart';
 import 'package:eventsbooking/providers/policy_provider.dart';
 import 'package:eventsbooking/providers/user_providers.dart';
 import 'package:eventsbooking/theme/app_colors.dart';
@@ -361,6 +362,11 @@ class _StatPill extends StatelessWidget {
 // ─────────────────────────────────────────────
 class _MenuSection extends StatelessWidget {
   static final _menuItems = [
+    MenuItem(
+      icon: Icons.video_library_outlined,
+      title: 'My Reels',
+      destination: const MyReelsPage(),
+    ),
     MenuItem(
       icon: Icons.card_membership_outlined,
       title: 'My Membership',

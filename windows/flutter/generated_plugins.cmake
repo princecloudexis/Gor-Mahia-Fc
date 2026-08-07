@@ -4,8 +4,10 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   connectivity_plus
+  ffmpeg_kit_flutter_new_min_gpl
   file_selector_windows
   firebase_core
+  gal
   geolocator_windows
   permission_handler_windows
   share_plus

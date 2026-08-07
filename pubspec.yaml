@@ -61,9 +61,14 @@ dependencies:
   flutter_svg: ^2.2.1
   share_plus: ^12.0.1
   path_provider: ^2.1.5
-  video_player: ^2.10.1
-  image_cropper: ^12.2.1
+  video_player: ^2.13.0
+  image_cropper: ^11.0.0
   web_socket_channel: ^3.0.3
+  video_editor: ^3.0.0
+  ffmpeg_kit_flutter_new_min_gpl: ^2.6.2
+  camera: ^0.12.0+2
+  file_picker: ^11.0.2
+  gal: ^2.3.3
 
 dev_dependencies:
   flutter_test:
@@ -100,6 +105,7 @@ flutter:
   assets:
     - assets/images/
     - assets/fonts/
+    - assets/videos/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

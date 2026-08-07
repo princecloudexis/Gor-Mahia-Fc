@@ -9,6 +9,7 @@ import 'package:eventsbooking/pages/details.dart';
 import 'package:eventsbooking/pages/notifications.dart';
 import 'package:eventsbooking/pages/profile.dart';
 import 'package:eventsbooking/pages/search.dart';
+import 'package:eventsbooking/pages/shop.dart';
 import 'package:eventsbooking/providers/location_providers.dart';
 import 'package:eventsbooking/widgets/safe_svg_network.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +24,7 @@ import '../models/category_model.dart';
 import '../theme/apptheme.dart';
 import '../theme/app_colors.dart';
 import '../providers/user_providers.dart';
+import '../providers/notifications_providers.dart';
 import 'home_dashboard_sections.dart';
 import '../providers/match_providers.dart';
 import '../providers/community_providers.dart';
@@ -250,6 +252,7 @@ class _HomeState extends ConsumerState<Home> {
 
   // ─── APP BAR ───────────────────────────────
   Widget _buildAppBar(BuildContext context, WidgetRef ref) {
+    final hasUnreadNotifications = ref.watch(hasUnreadNotificationsProvider);
     return SliverAppBar(
       pinned: true,
       floating: true,
@@ -331,11 +334,13 @@ class _HomeState extends ConsumerState<Home> {
       actions: [
         _TopIconBtn(
           icon: Icons.notifications_none_rounded,
+          showBadge: hasUnreadNotifications,
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const Notifications()),
           ),
         ),
+
         const SizedBox(width: 12),
       ],
     );
@@ -609,7 +614,8 @@ class _LocationWidget extends ConsumerWidget {
 class _TopIconBtn extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
-  const _TopIconBtn({required this.icon, required this.onTap});
+  final bool showBadge;
+  const _TopIconBtn({required this.icon, required this.onTap, this.showBadge = false});
 
   @override
   Widget build(BuildContext context) {
@@ -626,10 +632,28 @@ class _TopIconBtn extends StatelessWidget {
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: Theme.of(context).dividerColor),
           ),
-          child: Icon(
-            icon,
-            size: 18,
-            color: Theme.of(context).textTheme.bodyLarge?.color,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 18,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
+              ),
+              if (showBadge)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
       ),

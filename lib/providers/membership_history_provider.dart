@@ -1,5 +1,5 @@
-import 'package:eventsbooking/models/membership_models.dart';
-import 'package:eventsbooking/repositories/membership_repository.dart';
+import 'package:gormahiafc/models/membership_models.dart';
+import 'package:gormahiafc/repositories/membership_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class MembershipHistoryNotifier extends StateNotifier<AsyncValue<MembershipHistoryResponse>> {

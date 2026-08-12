@@ -1,5 +1,5 @@
-import 'package:eventsbooking/models/policy_model.dart';
-import 'package:eventsbooking/theme/apptheme.dart';
+import 'package:gormahiafc/models/policy_model.dart';
+import 'package:gormahiafc/theme/apptheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

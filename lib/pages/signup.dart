@@ -1,8 +1,8 @@
-import 'package:eventsbooking/pages/login.dart';
-import 'package:eventsbooking/pages/otp.dart';
-import 'package:eventsbooking/theme/apptheme.dart';
-import 'package:eventsbooking/theme/app_colors.dart';
-import 'package:eventsbooking/widgets/breadcrumb_tab_bar.dart';
+import 'package:gormahiafc/pages/login.dart';
+import 'package:gormahiafc/pages/otp.dart';
+import 'package:gormahiafc/theme/apptheme.dart';
+import 'package:gormahiafc/theme/app_colors.dart';
+import 'package:gormahiafc/widgets/breadcrumb_tab_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

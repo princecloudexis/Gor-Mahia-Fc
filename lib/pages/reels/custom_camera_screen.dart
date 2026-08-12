@@ -32,7 +32,10 @@ class _CustomCameraScreenState extends State<CustomCameraScreen> {
     var micStatus = await Permission.microphone.status;
 
     if (!cameraStatus.isGranted || !micStatus.isGranted) {
-      final statuses = await [Permission.camera, Permission.microphone].request();
+      final statuses = await [
+        Permission.camera,
+        Permission.microphone,
+      ].request();
       cameraStatus = statuses[Permission.camera] ?? cameraStatus;
       micStatus = statuses[Permission.microphone] ?? micStatus;
     }
@@ -167,7 +170,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen> {
   Future<void> _processVideo(String path) async {
     // Navigate to VideoEditorScreen
     if (!mounted) return;
-    
+
     // Stop camera temporarily if needed or just push screen
     final result = await Navigator.push(
       context,
@@ -177,7 +180,7 @@ class _CustomCameraScreenState extends State<CustomCameraScreen> {
     );
 
     if (!mounted) return;
-    
+
     // If we have a valid result from the editor, pop and pass it back
     if (result != null) {
       Navigator.pop(context, result);
@@ -201,10 +204,16 @@ class _CustomCameraScreenState extends State<CustomCameraScreen> {
           children: [
             // Camera Preview or Blank Screen
             if (_isInitializing)
-              const Center(child: CircularProgressIndicator(color: Colors.white))
-            else if (_isCameraPermissionGranted && _controller != null && _controller!.value.isInitialized)
+              const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              )
+            else if (_isCameraPermissionGranted &&
+                _controller != null &&
+                _controller!.value.isInitialized)
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(bottom: Radius.circular(30)),
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(30),
+                ),
                 child: CameraPreview(_controller!),
               )
             else
@@ -249,7 +258,10 @@ class _CustomCameraScreenState extends State<CustomCameraScreen> {
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(color: Colors.white, width: 2),
                         ),
-                        child: const Icon(Icons.photo_library, color: Colors.white),
+                        child: const Icon(
+                          Icons.photo_library,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
 
@@ -291,7 +303,10 @@ class _CustomCameraScreenState extends State<CustomCameraScreen> {
                           color: Colors.black.withOpacity(0.5),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.flip_camera_ios, color: Colors.white),
+                        child: const Icon(
+                          Icons.flip_camera_ios,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ],

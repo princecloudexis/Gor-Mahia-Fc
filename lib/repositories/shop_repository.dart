@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:eventsbooking/api/api_client.dart';
-import 'package:eventsbooking/models/shop_models.dart';
+import 'package:gormahiafc/api/api_client.dart';
+import 'package:gormahiafc/models/shop_models.dart';
 import 'package:flutter/foundation.dart';
 
 class ShopRepository {

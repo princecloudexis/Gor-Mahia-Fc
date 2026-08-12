@@ -2,16 +2,16 @@ import 'dart:async';
 import 'dart:ui';
 import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:eventsbooking/api/api_client.dart';
-import 'package:eventsbooking/pages/location.dart';
-import 'package:eventsbooking/pages/categoryevents.dart';
-import 'package:eventsbooking/pages/details.dart';
-import 'package:eventsbooking/pages/notifications.dart';
-import 'package:eventsbooking/pages/profile.dart';
-import 'package:eventsbooking/pages/search.dart';
-import 'package:eventsbooking/pages/shop.dart';
-import 'package:eventsbooking/providers/location_providers.dart';
-import 'package:eventsbooking/widgets/safe_svg_network.dart';
+import 'package:gormahiafc/api/api_client.dart';
+import 'package:gormahiafc/pages/location.dart';
+import 'package:gormahiafc/pages/categoryevents.dart';
+import 'package:gormahiafc/pages/details.dart';
+import 'package:gormahiafc/pages/notifications.dart';
+import 'package:gormahiafc/pages/profile.dart';
+import 'package:gormahiafc/pages/search.dart';
+import 'package:gormahiafc/pages/shop.dart';
+import 'package:gormahiafc/providers/location_providers.dart';
+import 'package:gormahiafc/widgets/safe_svg_network.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -29,6 +29,7 @@ import 'home_dashboard_sections.dart';
 import '../providers/match_providers.dart';
 import '../providers/community_providers.dart';
 import '../providers/shop_providers.dart';
+
 final selectedCategoryProvider = StateProvider<CategoryModel?>((ref) => null);
 final currentBannerIndexProvider = StateProvider<int>((ref) => 0);
 
@@ -60,36 +61,12 @@ class _HomeState extends ConsumerState<Home> {
             _buildAppBar(context, ref),
             _buildGreeting(context),
             const SliverToBoxAdapter(child: SizedBox(height: 16)),
-            mainDataProvider.when(
-              data: (data) {
-                if (data.recentEvents.isNotEmpty) {
-                  return _buildBannerSection(ref, data.recentEvents);
-                }
-                return const SliverToBoxAdapter(child: SizedBox.shrink());
-              },
-              loading: () => const SliverToBoxAdapter(child: ShimmerBox(height: 180, margin: EdgeInsets.symmetric(horizontal: 20, vertical: 20))),
-              error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+
             const SliverToBoxAdapter(child: LiveNowSection()),
             const SliverToBoxAdapter(child: SizedBox(height: 24)),
             const SliverToBoxAdapter(child: QuickAccessSection()),
             const SliverToBoxAdapter(child: SizedBox(height: 24)),
-            mainDataProvider.when(
-              data: (data) => data.discoverThisWeekEvents.isNotEmpty 
-                  ? _buildSectionHeader('Hot Fixtures This Week', context)
-                  : const SliverToBoxAdapter(child: SizedBox.shrink()),
-              loading: () => const SliverToBoxAdapter(child: ShimmerBox(height: 30, margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10))),
-              error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
-            ),
-            mainDataProvider.when(
-              data: (data) => data.discoverThisWeekEvents.isNotEmpty 
-                  ? _buildDiscoverThisWeek(data.discoverThisWeekEvents)
-                  : const SliverToBoxAdapter(child: SizedBox.shrink()),
-              loading: () => const SliverToBoxAdapter(child: ShimmerBox(height: 240, margin: EdgeInsets.symmetric(horizontal: 20))),
-              error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+
             const SliverToBoxAdapter(child: CommunityGroupsSection()),
             const SliverToBoxAdapter(child: SizedBox(height: 24)),
             const SliverToBoxAdapter(child: SupportBannerSection()),
@@ -163,7 +140,10 @@ class _HomeState extends ConsumerState<Home> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.grey.shade800,
-                        border: Border.all(color: AppColors.primaryGreen, width: 2),
+                        border: Border.all(
+                          color: AppColors.primaryGreen,
+                          width: 2,
+                        ),
                       ),
                       child: ClipOval(
                         child: (user?.cleanedImageUrl != null)
@@ -171,7 +151,10 @@ class _HomeState extends ConsumerState<Home> {
                                 imageUrl: user!.cleanedImageUrl!,
                                 fit: BoxFit.cover,
                                 errorWidget: (context, error, stackTrace) =>
-                                    const Icon(Icons.person, color: Colors.grey),
+                                    const Icon(
+                                      Icons.person,
+                                      color: Colors.grey,
+                                    ),
                               )
                             : const Icon(Icons.person, color: Colors.white54),
                       ),
@@ -297,13 +280,18 @@ class _HomeState extends ConsumerState<Home> {
           const SizedBox(height: 3),
           Row(
             children: [
-              const SizedBox(width: 36), // Aligns with text above (28 icon + 8 padding)
+              const SizedBox(
+                width: 36,
+              ), // Aligns with text above (28 icon + 8 padding)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: AppColors.gold.withOpacity(0.3), width: 0.5),
+                  border: Border.all(
+                    color: AppColors.gold.withOpacity(0.3),
+                    width: 0.5,
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -572,16 +560,21 @@ class _LocationWidget extends ConsumerWidget {
               const SizedBox(width: 4),
               Flexible(
                 child: locationAsync.when(
-                  data: (location) => Text(
-                    location?.displayAddress ?? 'Location',
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
-                      fontWeight: FontWeight.w600,
-                      fontSize: 12,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  data: (location) {
+                    final cityName = location?.city.isNotEmpty == true
+                        ? location!.city
+                        : (location?.displayAddress ?? 'Location');
+                    return Text(
+                      cityName,
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.9),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    );
+                  },
                   loading: () => Text(
                     'Finding...',
                     style: TextStyle(
@@ -599,7 +592,9 @@ class _LocationWidget extends ConsumerWidget {
           ),
           const SizedBox(height: 2),
           Text(
-            'Tap to change',
+            locationAsync.value?.country.isNotEmpty == true
+                ? locationAsync.value!.country
+                : 'Tap to change',
             style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 9),
           ),
         ],
@@ -615,7 +610,11 @@ class _TopIconBtn extends StatelessWidget {
   final IconData icon;
   final VoidCallback onTap;
   final bool showBadge;
-  const _TopIconBtn({required this.icon, required this.onTap, this.showBadge = false});
+  const _TopIconBtn({
+    required this.icon,
+    required this.onTap,
+    this.showBadge = false,
+  });
 
   @override
   Widget build(BuildContext context) {

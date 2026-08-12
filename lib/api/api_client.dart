@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:dio/dio.dart';
-import 'package:eventsbooking/utils/app_exception.dart';
+import 'package:gormahiafc/utils/app_exception.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -42,6 +42,10 @@ class ApiClient {
         },
         onError: (DioException e, handler) async {
           print('❌ [${e.response?.statusCode}] ${e.requestOptions.path}');
+          
+          if (e.response?.statusCode == 422) {
+            print('🛑 422 VALIDATION ERROR: ${e.response?.data}');
+          }
 
           if (e.response?.statusCode == 401) {
             _prefs ??= await SharedPreferences.getInstance();
@@ -65,8 +69,8 @@ class ApiClient {
     assert(() {
       dio.interceptors.add(
         LogInterceptor(
-          responseBody: false,  // Don't log full response body — saves memory
-          requestBody: false,
+          responseBody: true,  
+          requestBody: true,
           logPrint: (obj) => print('📝 $obj'),
         ),
       );

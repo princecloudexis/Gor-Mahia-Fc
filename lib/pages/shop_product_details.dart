@@ -1,9 +1,9 @@
-import 'package:eventsbooking/theme/app_colors.dart';
+import 'package:gormahiafc/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:eventsbooking/models/shop_models.dart';
-import 'package:eventsbooking/providers/shop_providers.dart';
-import 'package:eventsbooking/pages/shop_cart.dart';
+import 'package:gormahiafc/models/shop_models.dart';
+import 'package:gormahiafc/providers/shop_providers.dart';
+import 'package:gormahiafc/pages/shop_cart.dart';
 
 class ProductDetailsPage extends ConsumerStatefulWidget {
   final ShopProduct product;
@@ -415,6 +415,7 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
                                 '${widget.product.name} added to cart!',
                               ),
                               backgroundColor: AppColors.primaryGreen,
+                              duration: const Duration(seconds: 1),
                             ),
                           );
                         }

@@ -1,4 +1,4 @@
-import 'package:eventsbooking/theme/app_colors.dart';
+import 'package:gormahiafc/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class BreadcrumbTabBar extends StatelessWidget {

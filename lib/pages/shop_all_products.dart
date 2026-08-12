@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:eventsbooking/theme/app_colors.dart';
-import 'package:eventsbooking/models/shop_models.dart';
-import 'package:eventsbooking/pages/shop_product_details.dart';
+import 'package:gormahiafc/theme/app_colors.dart';
+import 'package:gormahiafc/models/shop_models.dart';
+import 'package:gormahiafc/pages/shop_product_details.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class ShopAllProductsPage extends ConsumerWidget {

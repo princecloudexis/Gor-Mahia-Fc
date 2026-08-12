@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:eventsbooking/api/api_client.dart';
+import 'package:gormahiafc/api/api_client.dart';
 import '../models/reels_model.dart';
 
 class ReelsRepository {
@@ -27,11 +27,15 @@ class ReelsRepository {
     return false;
   }
 
-  Future<ReelResponse> fetchReels({String? cursor, int limit = 10}) async {
+  Future<ReelResponse> fetchReels({String? cursor, int? position, int limit = 10}) async {
     try {
       final response = await _apiClient.dio.get(
         '/v1/reels',
-        queryParameters: {if (cursor != null) 'cursor': cursor, 'limit': limit},
+        queryParameters: {
+          if (cursor != null) 'cursor': cursor,
+          if (position != null) 'position': position,
+          'limit': limit
+        },
       );
       if (_isSuccess(response.data)) {
         // 🔍 DEBUG: Only runs in debug builds — removed from production.
@@ -119,6 +123,32 @@ class ReelsRepository {
     }
   }
 
+  Future<Map<String, dynamic>> markNotInterested(String reelId) async {
+    try {
+      final response = await _apiClient.dio.post('/v1/reels/$reelId/not-interested');
+      if (!_isSuccess(response.data)) {
+        throw Exception(response.data['message'] ?? 'Failed to mark not interested');
+      }
+      return response.data;
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        final responseData = e.response!.data;
+        if (responseData is Map) {
+          final message = responseData['message'] ?? '';
+          final exception = responseData['exception'] ?? '';
+          final file = responseData['file'] ?? '';
+          final line = responseData['line'] ?? '';
+          
+          if (message.toString().isNotEmpty || exception.toString().isNotEmpty) {
+            throw Exception('Server Error: $message\nException: $exception\nFile: $file:$line');
+          }
+        }
+        throw Exception('Server Error: ${e.response!.data}');
+      }
+      rethrow;
+    }
+  }
+
   Future<String> uploadReelMedia(
     String filePath, {
     ProgressCallback? onSendProgress,
@@ -148,14 +178,27 @@ class ReelsRepository {
     }
   }
 
-  Future<Reel> createReel(String videoUrl, String caption) async {
+  Future<Reel> createReel(
+    String videoUrl,
+    String caption, {
+    int durationSeconds = 0,
+    double? latitude,
+    double? longitude,
+    String? city,
+    String? country,
+  }) async {
     try {
       final response = await _apiClient.dio.post(
         '/v1/reels',
         data: {
           'videoUrl': videoUrl,
           'caption': caption,
+          'durationSeconds': durationSeconds,
           'visibility': 'public',
+          if (latitude != null) 'latitude': latitude,
+          if (longitude != null) 'longitude': longitude,
+          if (city != null) 'city': city,
+          if (country != null) 'country': country,
         },
       );
       if (_isSuccess(response.data)) {
@@ -224,6 +267,10 @@ class ReelsRepository {
     required String eventType,
     required double watchedPercentage,
     required int watchedSeconds,
+    double? latitude,
+    double? longitude,
+    String? city,
+    String? country,
   }) async {
     try {
       // Try to parse reelId to int if the backend strictly requires an integer
@@ -245,6 +292,10 @@ class ReelsRepository {
           'watchedSeconds': watchedSeconds,
           'metadata': {'quality': 'auto'},
           'occurredAt': dateStr,
+          if (latitude != null) 'latitude': latitude,
+          if (longitude != null) 'longitude': longitude,
+          if (city != null) 'city': city,
+          if (country != null) 'country': country,
         },
       );
       if (!_isSuccess(response.data)) {
@@ -353,11 +404,19 @@ class ReelsRepository {
     String reelId, {
     String? caption,
     String? visibility,
+    double? latitude,
+    double? longitude,
+    String? city,
+    String? country,
   }) async {
     try {
       final data = <String, dynamic>{};
       if (caption != null) data['caption'] = caption;
       if (visibility != null) data['visibility'] = visibility;
+      if (latitude != null) data['latitude'] = latitude;
+      if (longitude != null) data['longitude'] = longitude;
+      if (city != null) data['city'] = city;
+      if (country != null) data['country'] = country;
 
       final response = await _apiClient.dio.put(
         '/v1/reels/$reelId',

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:eventsbooking/theme/app_colors.dart';
-import 'package:eventsbooking/models/shop_models.dart';
-import 'package:eventsbooking/providers/shop_providers.dart';
+import 'package:gormahiafc/theme/app_colors.dart';
+import 'package:gormahiafc/models/shop_models.dart';
+import 'package:gormahiafc/providers/shop_providers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:eventsbooking/pages/shop_checkout.dart';
+import 'package:gormahiafc/pages/shop_checkout.dart';
 
 class ShopCartPage extends ConsumerStatefulWidget {
   const ShopCartPage({super.key});

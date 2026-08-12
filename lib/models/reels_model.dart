@@ -13,6 +13,18 @@ class Reel {
   final int sharesCount;
   final bool isLikedByMe;
   final DateTime? timestamp;
+  // Location fields
+  final double? latitude;
+  final double? longitude;
+  final String? city;
+  final String? country;
+
+  // Ad specific fields
+  final String? type;
+  final String? mediaType;
+  final String? mediaUrl;
+  final String? linkUrl;
+  final String? ctaLabel;
 
   Reel({
     required this.id,
@@ -29,17 +41,27 @@ class Reel {
     this.sharesCount = 0,
     this.isLikedByMe = false,
     this.timestamp,
+    this.latitude,
+    this.longitude,
+    this.city,
+    this.country,
+    this.type,
+    this.mediaType,
+    this.mediaUrl,
+    this.linkUrl,
+    this.ctaLabel,
   });
 
   factory Reel.fromJson(Map<String, dynamic> json) {
     return Reel(
+      type: json['type']?.toString(),
       id: json['id']?.toString() ?? '',
       authorId: (json['author_id'] ?? json['authorId'])?.toString() ?? '',
       postedBy: (json['posted_by'] ?? json['postedBy'])?.toString() ?? '',
       authorName: json['authorName']?.toString() ?? '',
       authorAvatarUrl: json['authorAvatarUrl']?.toString(),
       videoUrl: json['videoUrl']?.toString() ?? '',
-      caption: json['caption']?.toString(),
+      caption: (json['caption'] ?? json['description'])?.toString(),
       durationSeconds: json['durationSeconds'] is int ? json['durationSeconds'] : int.tryParse(json['durationSeconds']?.toString() ?? ''),
       viewsCount: json['viewsCount'] is int ? json['viewsCount'] : int.tryParse(json['viewsCount']?.toString() ?? '0') ?? 0,
       likesCount: json['likesCount'] is int ? json['likesCount'] : int.tryParse(json['likesCount']?.toString() ?? '0') ?? 0,
@@ -47,6 +69,14 @@ class Reel {
       sharesCount: json['sharesCount'] is int ? json['sharesCount'] : int.tryParse(json['sharesCount']?.toString() ?? '0') ?? 0,
       isLikedByMe: json['isLikedByMe'] == true || json['isLikedByMe'] == 'true' || json['isLikedByMe'] == 1 || json['isLikedByMe'] == '1' || json['liked'] == true || json['liked'] == 'true' || json['liked'] == 1 || json['isLiked'] == true || json['isLiked'] == 'true' || json['is_liked'] == true || json['is_liked'] == 'true' || json['is_liked'] == 1,
       timestamp: json['timestamp'] != null ? DateTime.tryParse(json['timestamp'].toString()) : null,
+      latitude: json['latitude'] != null ? double.tryParse(json['latitude'].toString()) : null,
+      longitude: json['longitude'] != null ? double.tryParse(json['longitude'].toString()) : null,
+      city: json['city']?.toString(),
+      country: json['country']?.toString(),
+      mediaType: json['mediaType']?.toString(),
+      mediaUrl: json['mediaUrl']?.toString(),
+      linkUrl: json['linkUrl']?.toString(),
+      ctaLabel: json['ctaLabel']?.toString(),
     );
   }
 
@@ -65,6 +95,15 @@ class Reel {
     int? sharesCount,
     bool? isLikedByMe,
     DateTime? timestamp,
+    double? latitude,
+    double? longitude,
+    String? city,
+    String? country,
+    String? type,
+    String? mediaType,
+    String? mediaUrl,
+    String? linkUrl,
+    String? ctaLabel,
   }) {
     return Reel(
       id: id ?? this.id,
@@ -81,6 +120,15 @@ class Reel {
       sharesCount: sharesCount ?? this.sharesCount,
       isLikedByMe: isLikedByMe ?? this.isLikedByMe,
       timestamp: timestamp ?? this.timestamp,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      city: city ?? this.city,
+      country: country ?? this.country,
+      type: type ?? this.type,
+      mediaType: mediaType ?? this.mediaType,
+      mediaUrl: mediaUrl ?? this.mediaUrl,
+      linkUrl: linkUrl ?? this.linkUrl,
+      ctaLabel: ctaLabel ?? this.ctaLabel,
     );
   }
 }
@@ -89,11 +137,13 @@ class ReelPagination {
   final String? nextCursor;
   final bool hasNextPage;
   final int nextCount;
+  final int? position;
 
   ReelPagination({
     this.nextCursor,
     this.hasNextPage = false,
     this.nextCount = 0,
+    this.position,
   });
 
   factory ReelPagination.fromJson(Map<String, dynamic> json) {
@@ -117,6 +167,7 @@ class ReelPagination {
       nextCursor: json['nextCursor']?.toString(),
       hasNextPage: hasNext,
       nextCount: nxtCount,
+      position: json['position'] is int ? json['position'] : int.tryParse(json['position']?.toString() ?? ''),
     );
   }
 }

@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:eventsbooking/models/checkout_model.dart';
-import 'package:eventsbooking/models/holder_info_model.dart';
-import 'package:eventsbooking/models/payment_model.dart';
-import 'package:eventsbooking/models/payment_result_model.dart';
-import 'package:eventsbooking/repositories/event_repositories.dart';
+import 'package:gormahiafc/models/checkout_model.dart';
+import 'package:gormahiafc/models/holder_info_model.dart';
+import 'package:gormahiafc/models/payment_model.dart';
+import 'package:gormahiafc/models/payment_result_model.dart';
+import 'package:gormahiafc/repositories/event_repositories.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

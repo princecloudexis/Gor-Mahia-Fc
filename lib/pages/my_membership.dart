@@ -1,15 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:eventsbooking/models/user_model.dart';
-import 'package:eventsbooking/pages/monthly_contribution.dart';
-import 'package:eventsbooking/providers/user_providers.dart';
-import 'package:eventsbooking/theme/app_colors.dart';
-import 'package:eventsbooking/theme/apptheme.dart';
+import 'package:gormahiafc/models/user_model.dart';
+import 'package:gormahiafc/pages/monthly_contribution.dart';
+import 'package:gormahiafc/providers/user_providers.dart';
+import 'package:gormahiafc/theme/app_colors.dart';
+import 'package:gormahiafc/theme/apptheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:eventsbooking/pages/membership_signup.dart';
-import 'package:eventsbooking/pages/membership_history.dart';
-import 'package:eventsbooking/controllers/membership_controller.dart';
+import 'package:gormahiafc/pages/membership_signup.dart';
+import 'package:gormahiafc/pages/membership_history.dart';
+import 'package:gormahiafc/controllers/membership_controller.dart';
 
 class MyMembership extends ConsumerWidget {
   const MyMembership({super.key});

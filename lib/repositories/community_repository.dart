@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:eventsbooking/api/api_client.dart';
+import 'package:gormahiafc/api/api_client.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/community_models.dart';
 

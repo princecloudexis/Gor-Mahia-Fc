@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'package:eventsbooking/models/category_model.dart';
-import 'package:eventsbooking/repositories/event_repositories.dart';
+import 'package:gormahiafc/models/category_model.dart';
+import 'package:gormahiafc/repositories/event_repositories.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/event_model.dart';
 

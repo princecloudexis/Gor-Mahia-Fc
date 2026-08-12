@@ -1,4 +1,4 @@
-import 'package:eventsbooking/repositories/match_repository.dart';
+import 'package:gormahiafc/repositories/match_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/app_colors.dart';

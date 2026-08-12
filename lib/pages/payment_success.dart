@@ -1,11 +1,11 @@
 import 'dart:math';
-import 'package:eventsbooking/pages/main_shell.dart';
-import 'package:eventsbooking/theme/app_colors.dart';
+import 'package:gormahiafc/pages/main_shell.dart';
+import 'package:gormahiafc/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:eventsbooking/providers/user_providers.dart';
-import 'package:eventsbooking/providers/navigation_providers.dart';
-import 'package:eventsbooking/pages/my_membership.dart';
+import 'package:gormahiafc/providers/user_providers.dart';
+import 'package:gormahiafc/providers/navigation_providers.dart';
+import 'package:gormahiafc/pages/my_membership.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 class PaymentSuccess extends ConsumerStatefulWidget {
   final String title;

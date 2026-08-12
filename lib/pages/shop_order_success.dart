@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:eventsbooking/theme/app_colors.dart';
+import 'package:gormahiafc/theme/app_colors.dart';
 
 class ShopOrderSuccessPage extends StatelessWidget {
   final String orderNumber;

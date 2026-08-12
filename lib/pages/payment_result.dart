@@ -1,7 +1,7 @@
-import 'package:eventsbooking/pages/details.dart';
-import 'package:eventsbooking/pages/main_shell.dart';
-import 'package:eventsbooking/pages/tickets.dart';
-import 'package:eventsbooking/theme/apptheme.dart';
+import 'package:gormahiafc/pages/details.dart';
+import 'package:gormahiafc/pages/main_shell.dart';
+import 'package:gormahiafc/pages/tickets.dart';
+import 'package:gormahiafc/theme/apptheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 

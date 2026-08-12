@@ -1,18 +1,18 @@
 import 'dart:async';
-import 'package:eventsbooking/models/category_model.dart';
-import 'package:eventsbooking/models/checkout_model.dart';
-import 'package:eventsbooking/models/ticket_holder_model.dart';
-import 'package:eventsbooking/models/ticket_model.dart';
-import 'package:eventsbooking/models/user_ticket_model.dart';
-import 'package:eventsbooking/providers/location_providers.dart';
-import 'package:eventsbooking/repositories/event_repositories.dart';
+import 'package:gormahiafc/models/category_model.dart';
+import 'package:gormahiafc/models/checkout_model.dart';
+import 'package:gormahiafc/models/ticket_holder_model.dart';
+import 'package:gormahiafc/models/ticket_model.dart';
+import 'package:gormahiafc/models/user_ticket_model.dart';
+import 'package:gormahiafc/providers/location_providers.dart';
+import 'package:gormahiafc/repositories/event_repositories.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/event_model.dart';
-import 'package:eventsbooking/main.dart';
-import 'package:eventsbooking/services/fcm_service.dart';
-import 'package:eventsbooking/controllers/auth_controller.dart';
-import 'package:eventsbooking/pages/login.dart';
+import 'package:gormahiafc/main.dart';
+import 'package:gormahiafc/services/fcm_service.dart';
+import 'package:gormahiafc/controllers/auth_controller.dart';
+import 'package:gormahiafc/pages/login.dart';
 
 class HomePageData {
   final List<CategoryModel> categories;

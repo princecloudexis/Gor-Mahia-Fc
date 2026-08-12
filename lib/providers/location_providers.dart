@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:eventsbooking/models/location_model.dart';
-import 'package:eventsbooking/helper/location_helper.dart';
+import 'package:gormahiafc/models/location_model.dart';
+import 'package:gormahiafc/helper/location_helper.dart';
 
 class LocationController extends StateNotifier<AsyncValue<LocationModel>> {
   final LocationHelper _locationHelper = LocationHelper();

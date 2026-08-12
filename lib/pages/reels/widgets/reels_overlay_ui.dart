@@ -62,14 +62,12 @@ class ReelsOverlayUI extends StatelessWidget {
                   label: 'Share',
                   onTap: onSharePressed,
                 ),
-                if (isMyReel) ...[
-                  const SizedBox(height: 22),
-                  _ActionBtn(
-                    icon: Icons.more_vert,
-                    label: '',
-                    onTap: onMoreOptionsPressed,
-                  ),
-                ],
+                const SizedBox(height: 22),
+                _ActionBtn(
+                  icon: Icons.more_vert,
+                  label: '',
+                  onTap: onMoreOptionsPressed,
+                ),
               ],
             ),
           ),

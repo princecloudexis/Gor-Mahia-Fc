@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'package:eventsbooking/models/contribution_models.dart';
-import 'package:eventsbooking/providers/contribution_providers.dart';
-import 'package:eventsbooking/repositories/contribution_repository.dart';
-import 'package:eventsbooking/theme/app_colors.dart';
+import 'package:gormahiafc/models/contribution_models.dart';
+import 'package:gormahiafc/providers/contribution_providers.dart';
+import 'package:gormahiafc/repositories/contribution_repository.dart';
+import 'package:gormahiafc/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';

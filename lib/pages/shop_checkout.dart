@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:eventsbooking/theme/app_colors.dart';
-import 'package:eventsbooking/providers/shop_providers.dart';
-import 'package:eventsbooking/providers/user_providers.dart';
-import 'package:eventsbooking/pages/shop_payment_processing.dart';
+import 'package:gormahiafc/theme/app_colors.dart';
+import 'package:gormahiafc/providers/shop_providers.dart';
+import 'package:gormahiafc/providers/user_providers.dart';
+import 'package:gormahiafc/pages/shop_payment_processing.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ShopCheckoutPage extends ConsumerStatefulWidget {
@@ -15,7 +15,8 @@ class ShopCheckoutPage extends ConsumerStatefulWidget {
   ConsumerState<ShopCheckoutPage> createState() => _ShopCheckoutPageState();
 }
 
-class _ShopCheckoutPageState extends ConsumerState<ShopCheckoutPage> with WidgetsBindingObserver {
+class _ShopCheckoutPageState extends ConsumerState<ShopCheckoutPage>
+    with WidgetsBindingObserver {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -26,15 +27,15 @@ class _ShopCheckoutPageState extends ConsumerState<ShopCheckoutPage> with Widget
   bool _isProcessing = false;
   int? _createdOrderId;
   String? _createdOrderNumber;
-  
+
   bool _paymentLaunched = false;
   String? _currentReference;
-  
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    
+
     final user = ref.read(userProvider);
     if (user != null) {
       _nameController.text = user.fullName;
@@ -125,7 +126,7 @@ class _ShopCheckoutPageState extends ConsumerState<ShopCheckoutPage> with Widget
       } else {
         throw Exception('Could not launch payment page.');
       }
-      
+
       // We do NOT navigate here. We wait for the app to resume from the browser!
     } catch (e) {
       if (mounted) {
@@ -332,7 +333,7 @@ class _ShopCheckoutPageState extends ConsumerState<ShopCheckoutPage> with Widget
                         elevation: 0,
                       ),
                       child: const Text(
-                        'Place Order & Pay with M-Pesa',
+                        'Place Order & Pay Online',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,

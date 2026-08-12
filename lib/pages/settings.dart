@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:eventsbooking/providers/theme_provider.dart';
-import 'package:eventsbooking/theme/apptheme.dart';
-import 'package:eventsbooking/controllers/auth_controller.dart';
-import 'package:eventsbooking/pages/login.dart';
+import 'package:gormahiafc/providers/theme_provider.dart';
+import 'package:gormahiafc/theme/apptheme.dart';
+import 'package:gormahiafc/controllers/auth_controller.dart';
+import 'package:gormahiafc/pages/login.dart';
 
 class Settings extends ConsumerWidget {
   const Settings({super.key});

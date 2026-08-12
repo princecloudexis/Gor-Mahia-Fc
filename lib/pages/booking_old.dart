@@ -4,12 +4,12 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:eventsbooking/api/api_client.dart';
-import 'package:eventsbooking/pages/checkout.dart';
-import 'package:eventsbooking/pages/login.dart';
-import 'package:eventsbooking/providers/booking_provider.dart';
-import 'package:eventsbooking/providers/preregistration_provider.dart';
-import 'package:eventsbooking/providers/user_providers.dart';
+import 'package:gormahiafc/api/api_client.dart';
+import 'package:gormahiafc/pages/checkout.dart';
+import 'package:gormahiafc/pages/login.dart';
+import 'package:gormahiafc/providers/booking_provider.dart';
+import 'package:gormahiafc/providers/preregistration_provider.dart';
+import 'package:gormahiafc/providers/user_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

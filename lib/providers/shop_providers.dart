@@ -1,6 +1,6 @@
-import 'package:eventsbooking/api/api_client.dart';
-import 'package:eventsbooking/models/shop_models.dart';
-import 'package:eventsbooking/repositories/shop_repository.dart';
+import 'package:gormahiafc/api/api_client.dart';
+import 'package:gormahiafc/models/shop_models.dart';
+import 'package:gormahiafc/repositories/shop_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final shopRepositoryProvider = Provider<ShopRepository>((ref) {

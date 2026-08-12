@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:eventsbooking/controllers/auth_controller.dart';
-import 'package:eventsbooking/pages/home.dart';
-import 'package:eventsbooking/pages/login.dart';
-import 'package:eventsbooking/providers/splash_provider.dart';
+import 'package:gormahiafc/controllers/auth_controller.dart';
+import 'package:gormahiafc/pages/home.dart';
+import 'package:gormahiafc/pages/login.dart';
+import 'package:gormahiafc/providers/splash_provider.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

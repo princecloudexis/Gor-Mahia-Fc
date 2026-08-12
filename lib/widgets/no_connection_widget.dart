@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:eventsbooking/providers/connectivity_provider.dart';
-import 'package:eventsbooking/theme/apptheme.dart';
+import 'package:gormahiafc/providers/connectivity_provider.dart';
+import 'package:gormahiafc/theme/apptheme.dart';
 
 class NoConnectionFullScreen extends ConsumerWidget {
   const NoConnectionFullScreen({super.key});

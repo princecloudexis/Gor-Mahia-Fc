@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:eventsbooking/theme/app_colors.dart';
-import 'package:eventsbooking/theme/apptheme.dart';
+import 'package:gormahiafc/theme/app_colors.dart';
+import 'package:gormahiafc/theme/apptheme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:eventsbooking/pages/shop_product_details.dart';
-import 'package:eventsbooking/models/shop_models.dart';
-import 'package:eventsbooking/providers/shop_providers.dart';
+import 'package:gormahiafc/pages/shop_product_details.dart';
+import 'package:gormahiafc/models/shop_models.dart';
+import 'package:gormahiafc/providers/shop_providers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:eventsbooking/pages/shop_cart.dart';
-import 'package:eventsbooking/pages/shop_orders.dart';
+import 'package:gormahiafc/pages/shop_cart.dart';
+import 'package:gormahiafc/pages/shop_orders.dart';
 import 'profile.dart';
 import 'search.dart';
 import '../widgets/top_action_btn.dart';
-import 'package:eventsbooking/pages/shop_all_products.dart';
+import 'package:gormahiafc/pages/shop_all_products.dart';
+import 'package:gormahiafc/pages/home_dashboard_sections.dart';
 
 class Shop extends ConsumerStatefulWidget {
   const Shop({super.key});
@@ -165,11 +166,9 @@ class _ShopState extends ConsumerState<Shop> {
                   banners.first,
                 ).animate().fadeIn(duration: 500.ms);
               },
-              loading: () => const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(20),
-                  child: CircularProgressIndicator(),
-                ),
+              loading: () => const ShimmerBox(
+                height: 190,
+                margin: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               ),
               error: (err, stack) {
                 print('Error: $err');
@@ -195,7 +194,10 @@ class _ShopState extends ConsumerState<Shop> {
                   newArrivals,
                 ).animate().fadeIn(duration: 500.ms, delay: 100.ms);
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const ShimmerBox(
+                height: 170,
+                margin: EdgeInsets.symmetric(horizontal: 20),
+              ),
               error: (err, stack) {
                 print('Error: $err');
                 return Center(child: Text('Error: $err'));
@@ -220,7 +222,10 @@ class _ShopState extends ConsumerState<Shop> {
                   topPicks,
                 ).animate().fadeIn(duration: 400.ms, delay: 100.ms);
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const ShimmerBox(
+                height: 180,
+                margin: EdgeInsets.symmetric(horizontal: 20),
+              ),
               error: (err, stack) {
                 print('Error: $err');
                 return Center(child: Text('Error: $err'));
@@ -256,7 +261,10 @@ class _ShopState extends ConsumerState<Shop> {
                   selectedCategoryId,
                 ).animate().fadeIn(duration: 400.ms, delay: 100.ms);
               },
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => const ShimmerBox(
+                height: 40,
+                margin: EdgeInsets.symmetric(horizontal: 20),
+              ),
               error: (err, stack) {
                 print('Error: $err');
                 return Center(child: Text('Error: $err'));
@@ -297,8 +305,10 @@ class _ShopState extends ConsumerState<Shop> {
                             products,
                           ).animate().fadeIn(duration: 400.ms, delay: 200.ms);
                         },
-                        loading: () =>
-                            const Center(child: CircularProgressIndicator()),
+                        loading: () => const ShimmerBox(
+                          height: 240,
+                          margin: EdgeInsets.symmetric(horizontal: 20),
+                        ),
                         error: (err, stack) =>
                             Center(child: Text('Error loading products: $err')),
                       )

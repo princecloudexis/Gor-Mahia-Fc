@@ -24,6 +24,7 @@ class MainShell extends ConsumerStatefulWidget {
 class _MainShellState extends ConsumerState<MainShell>
     with SingleTickerProviderStateMixin {
   late AnimationController _indicatorController;
+  DateTime? currentBackPressTime;
 
   final List<Widget> _pages = [
     const Home(),
@@ -105,14 +106,33 @@ class _MainShellState extends ConsumerState<MainShell>
   @override
   Widget build(BuildContext context) {
     final currentIndex = ref.watch(mainShellTabIndexProvider);
-    return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      extendBody: true,
-      body: IndexedStack(index: currentIndex, children: _pages),
-      bottomNavigationBar: _GlassNavBar(
-        items: _navItems,
-        currentIndex: currentIndex,
-        onTap: _onTap,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        final now = DateTime.now();
+        if (currentBackPressTime == null || 
+            now.difference(currentBackPressTime!) > const Duration(seconds: 2)) {
+          currentBackPressTime = now;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Press back again to exit'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        } else {
+          SystemNavigator.pop();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        extendBody: true,
+        body: IndexedStack(index: currentIndex, children: _pages),
+        bottomNavigationBar: _GlassNavBar(
+          items: _navItems,
+          currentIndex: currentIndex,
+          onTap: _onTap,
+        ),
       ),
     );
   }

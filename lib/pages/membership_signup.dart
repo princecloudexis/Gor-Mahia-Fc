@@ -1,9 +1,9 @@
-import 'package:eventsbooking/controllers/membership_controller.dart';
-import 'package:eventsbooking/models/membership_models.dart';
-import 'package:eventsbooking/pages/main_shell.dart';
-import 'package:eventsbooking/pages/membership_payment.dart';
-import 'package:eventsbooking/theme/app_colors.dart';
-import 'package:eventsbooking/widgets/breadcrumb_tab_bar.dart';
+import 'package:gormahiafc/controllers/membership_controller.dart';
+import 'package:gormahiafc/models/membership_models.dart';
+import 'package:gormahiafc/pages/main_shell.dart';
+import 'package:gormahiafc/pages/membership_payment.dart';
+import 'package:gormahiafc/theme/app_colors.dart';
+import 'package:gormahiafc/widgets/breadcrumb_tab_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

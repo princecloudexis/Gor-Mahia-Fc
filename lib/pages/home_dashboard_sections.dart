@@ -18,7 +18,7 @@ import 'shop.dart';
 import 'shop_product_details.dart';
 import 'group_details.dart';
 import 'booking.dart';
-import 'package:eventsbooking/providers/user_providers.dart';
+import 'package:gormahiafc/providers/user_providers.dart';
 
 EventModel _matchToEvent(MatchModel match) {
   return EventModel(

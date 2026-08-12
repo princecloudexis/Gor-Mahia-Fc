@@ -1,5 +1,5 @@
 import 'dart:math' as math;
-import 'package:eventsbooking/models/ticket_model.dart';
+import 'package:gormahiafc/models/ticket_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/seat_layout_model.dart';

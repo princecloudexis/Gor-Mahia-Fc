@@ -1,18 +1,18 @@
 import 'dart:ui';
-import 'package:eventsbooking/models/payment_result_model.dart';
-import 'package:eventsbooking/pages/payment_result.dart';
-import 'package:eventsbooking/providers/event_providers.dart';
-import 'package:eventsbooking/providers/seat_provider.dart';
-import 'package:eventsbooking/theme/apptheme.dart';
+import 'package:gormahiafc/models/payment_result_model.dart';
+import 'package:gormahiafc/pages/payment_result.dart';
+import 'package:gormahiafc/providers/event_providers.dart';
+import 'package:gormahiafc/providers/seat_provider.dart';
+import 'package:gormahiafc/theme/apptheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:eventsbooking/theme/app_colors.dart';
+import 'package:gormahiafc/theme/app_colors.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';
-import 'package:eventsbooking/models/checkout_model.dart';
-import 'package:eventsbooking/providers/checkout_provider.dart';
-import 'package:eventsbooking/providers/user_providers.dart';
+import 'package:gormahiafc/models/checkout_model.dart';
+import 'package:gormahiafc/providers/checkout_provider.dart';
+import 'package:gormahiafc/providers/user_providers.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class Checkout extends ConsumerStatefulWidget {

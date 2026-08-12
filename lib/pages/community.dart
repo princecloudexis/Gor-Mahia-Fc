@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:eventsbooking/pages/search.dart';
-import 'package:eventsbooking/pages/shop.dart';
+import 'package:gormahiafc/pages/search.dart';
+import 'package:gormahiafc/pages/shop.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';

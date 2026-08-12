@@ -7,6 +7,7 @@ import '../../providers/reels_providers.dart';
 import 'widgets/video_player_item.dart';
 import 'widgets/reels_preload_manager.dart';
 import 'custom_camera_screen.dart';
+import 'widgets/ad_item.dart';
 
 final GlobalKey<RefreshIndicatorState> reelsRefreshKey =
     GlobalKey<RefreshIndicatorState>();
@@ -74,8 +75,8 @@ class ReelsFeedState extends ConsumerState<ReelsFeed> {
       _isOverlayOpen = true;
     });
 
-    // Pause current reel while camera is open.
-    _preloadManager.pauseCurrent();
+    // Release all reel decoders to free up hardware resources for the camera/upload flow.
+    _preloadManager.releaseResources();
 
     try {
       final result = await Navigator.push(
@@ -123,8 +124,8 @@ class ReelsFeedState extends ConsumerState<ReelsFeed> {
           _isRequestingCamera = false;
           _isOverlayOpen = false;
         });
-        // Resume current reel when we come back.
-        _preloadManager.resumeCurrent();
+        // Restore reels decoders when we come back.
+        _preloadManager.restoreResources();
       }
     }
   }
@@ -192,6 +193,23 @@ class ReelsFeedState extends ConsumerState<ReelsFeed> {
                 itemBuilder: (context, index) {
                   final isCurrentPage =
                       index == _currentIndex && isActiveTab && !_isOverlayOpen;
+
+                  // Render AdItem if the item is an ad
+                  if (reels[index].type == 'ad') {
+                    final isInWindow = (index - _currentIndex).abs() <= 1;
+                    if (isInWindow) {
+                      return ListenableBuilder(
+                        listenable: _preloadManager,
+                        builder: (context, _) {
+                          return AdItem(
+                            ad: reels[index],
+                            controller: _preloadManager.getController(index),
+                          );
+                        },
+                      );
+                    }
+                    return Container(color: Colors.black);
+                  }
 
                   // Only render VideoPlayerItem for the window (current ± 1).
                   // For far-away reels, just show a thumbnail to save resources.

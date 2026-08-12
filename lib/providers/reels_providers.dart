@@ -1,7 +1,53 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import '../models/reels_model.dart';
 import '../repositories/reels_repository.dart';
 import '../pages/reels/reels_feed.dart';
+
+/// Caches the user's location to avoid hitting GPS hardware on every single video swipe
+class LocationCache {
+  static double? latitude;
+  static double? longitude;
+  static String? city;
+  static String? country;
+  static bool _isFetching = false;
+  static DateTime? _lastFetched;
+
+  static Future<void> updateLocation() async {
+    if (_isFetching) return;
+    // Only fetch every 15 minutes max to save battery
+    if (_lastFetched != null && DateTime.now().difference(_lastFetched!).inMinutes < 15) return;
+
+    try {
+      _isFetching = true;
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return;
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      // Only get location if permission is already granted, don't prompt here (prompt is only on upload screen)
+      if (permission != LocationPermission.whileInUse && permission != LocationPermission.always) return;
+
+      Position? position = await Geolocator.getLastKnownPosition();
+      position ??= await Geolocator.getCurrentPosition(locationSettings: const LocationSettings(timeLimit: Duration(seconds: 5)));
+
+      latitude = position.latitude;
+      longitude = position.longitude;
+
+      final placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+      if (placemarks.isNotEmpty) {
+        final place = placemarks.first;
+        city = place.locality?.isNotEmpty == true ? place.locality : place.subAdministrativeArea;
+        country = place.country;
+      }
+      _lastFetched = DateTime.now();
+    } catch (_) {
+      // Ignore errors silently for background tracking
+    } finally {
+      _isFetching = false;
+    }
+  }
+}
 
 class ReelsNotifier extends StateNotifier<AsyncValue<ReelResponse>> {
   final ReelsRepository _repo;
@@ -44,7 +90,10 @@ class ReelsNotifier extends StateNotifier<AsyncValue<ReelResponse>> {
       return;
 
     try {
-      final res = await _repo.fetchReels(cursor: currentState.meta!.nextCursor);
+      final res = await _repo.fetchReels(
+        cursor: currentState.meta!.nextCursor,
+        position: currentState.meta!.position,
+      );
 
       if (!mounted) return;
       state = AsyncValue.data(
@@ -169,6 +218,35 @@ class ReelsNotifier extends StateNotifier<AsyncValue<ReelResponse>> {
     }
   }
 
+  Future<String> markNotInterested(String reelId) async {
+    final currentState = state.valueOrNull;
+    if (currentState == null) return "Success";
+
+    final int reelIndex = currentState.data.indexWhere((r) => r.id == reelId);
+    if (reelIndex == -1) return "Success";
+
+    final List<Reel> newData = List.from(currentState.data)..removeAt(reelIndex);
+
+    if (mounted) {
+      state = AsyncValue.data(
+        ReelResponse(data: newData, meta: currentState.meta),
+      );
+    }
+
+    try {
+      final res = await _repo.markNotInterested(reelId);
+      return res['message']?.toString() ?? "Got it, you'll see less of this.";
+    } catch (e) {
+      if (mounted) {
+        final revertData = List<Reel>.from(currentState.data);
+        state = AsyncValue.data(
+          ReelResponse(data: revertData, meta: currentState.meta),
+        );
+      }
+      rethrow;
+    }
+  }
+
   void incrementCommentCount(String reelId, {int? commentsCount}) {
     final currentState = state.valueOrNull;
     if (currentState == null) return;
@@ -221,11 +299,18 @@ class ReelsNotifier extends StateNotifier<AsyncValue<ReelResponse>> {
     required double watchedPercentage,
     required int watchedSeconds,
   }) async {
+    // Fire and forget updating the location cache
+    LocationCache.updateLocation();
+
     await _repo.logActivity(
       reelId: reelId,
-      eventType: 'progress',
+      eventType: 'play', // As requested by backend: POST /v1/reels/activity
       watchedPercentage: watchedPercentage,
       watchedSeconds: watchedSeconds,
+      latitude: LocationCache.latitude,
+      longitude: LocationCache.longitude,
+      city: LocationCache.city,
+      country: LocationCache.country,
     );
   }
 
@@ -500,7 +585,15 @@ class ReelUploadNotifier extends StateNotifier<ReelUploadState> {
 
   ReelUploadNotifier(this._repo, this._ref) : super(ReelUploadState());
 
-  Future<void> uploadReel(String videoPath, String caption) async {
+  Future<void> uploadReel(
+    String videoPath,
+    String caption, {
+    int durationSeconds = 0,
+    double? latitude,
+    double? longitude,
+    String? city,
+    String? country,
+  }) async {
     state = state.copyWith(isUploading: true, progress: 0.0, error: null, videoPath: videoPath);
     try {
       final videoUrl = await _repo.uploadReelMedia(
@@ -515,6 +608,11 @@ class ReelUploadNotifier extends StateNotifier<ReelUploadState> {
       final newReel = await _repo.createReel(
         videoUrl,
         caption,
+        durationSeconds: durationSeconds,
+        latitude: latitude,
+        longitude: longitude,
+        city: city,
+        country: country,
       );
 
       if (mounted) {

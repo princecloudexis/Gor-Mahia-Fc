@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:eventsbooking/theme/app_colors.dart';
-import 'package:eventsbooking/providers/shop_providers.dart';
+import 'package:gormahiafc/theme/app_colors.dart';
+import 'package:gormahiafc/providers/shop_providers.dart';
 import 'dart:async';
-import 'package:eventsbooking/pages/shop_order_success.dart';
+import 'package:gormahiafc/pages/shop_order_success.dart';
 
 class ShopPaymentProcessingPage extends ConsumerStatefulWidget {
   final String reference;

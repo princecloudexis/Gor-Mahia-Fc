@@ -1,4 +1,4 @@
-import 'package:eventsbooking/providers/notifications_providers.dart';
+import 'package:gormahiafc/providers/notifications_providers.dart';
 
 class NotificationModel {
   final String id;

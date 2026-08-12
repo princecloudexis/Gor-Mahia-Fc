@@ -1,6 +1,6 @@
-import 'package:eventsbooking/models/membership_models.dart';
-import 'package:eventsbooking/providers/user_providers.dart';
-import 'package:eventsbooking/repositories/membership_repository.dart';
+import 'package:gormahiafc/models/membership_models.dart';
+import 'package:gormahiafc/providers/user_providers.dart';
+import 'package:gormahiafc/repositories/membership_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 enum MembershipStatus { initial, loading, loaded, submitting, success, error }

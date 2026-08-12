@@ -221,11 +221,11 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
           // Comment Input Field
           SafeArea(
             child: Container(
-              padding: EdgeInsets.only(
+              padding: const EdgeInsets.only(
                 left: 16, 
                 right: 16, 
                 top: 12, 
-                bottom: MediaQuery.of(context).viewInsets.bottom + 12
+                bottom: 12,
               ),
               decoration: const BoxDecoration(
                 color: Color(0xFF1E1E1E),

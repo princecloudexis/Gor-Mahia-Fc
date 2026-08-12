@@ -1,7 +1,7 @@
 
-import 'package:eventsbooking/pages/splashscreen.dart';
-import 'package:eventsbooking/providers/connectivity_provider.dart';
-import 'package:eventsbooking/widgets/no_connection_widget.dart';
+import 'package:gormahiafc/pages/splashscreen.dart';
+import 'package:gormahiafc/providers/connectivity_provider.dart';
+import 'package:gormahiafc/widgets/no_connection_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

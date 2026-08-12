@@ -57,9 +57,15 @@ class _VideoPlayerItemState extends ConsumerState<VideoPlayerItem>
   // Track max watched seconds to log activity
   int _maxWatchedSeconds = 0;
 
+  late final ReelsNotifier _reelsNotifier;
+
   @override
   void initState() {
     super.initState();
+    _reelsNotifier = ref.read(reelsFeedProvider.notifier);
+    if (widget.isCurrent && widget.controller != null) {
+      widget.controller!.play();
+    }
     _attachControllerListener(widget.controller);
   }
 
@@ -144,13 +150,11 @@ class _VideoPlayerItemState extends ConsumerState<VideoPlayerItem>
       final duration = controller.value.duration.inSeconds;
       if (duration > 0 && _maxWatchedSeconds > 0) {
         final percentage = (_maxWatchedSeconds / duration) * 100;
-        ref
-            .read(reelsFeedProvider.notifier)
-            .logActivity(
-              reelId: widget.reel.id,
-              watchedPercentage: percentage,
-              watchedSeconds: _maxWatchedSeconds,
-            );
+        _reelsNotifier.logActivity(
+          reelId: widget.reel.id,
+          watchedPercentage: percentage,
+          watchedSeconds: _maxWatchedSeconds,
+        );
       }
     }
   }
@@ -254,10 +258,25 @@ class _VideoPlayerItemState extends ConsumerState<VideoPlayerItem>
                           context: context,
                           isScrollControlled: true,
                           backgroundColor: Colors.transparent,
-                          builder: (context) => FractionallySizedBox(
-                            heightFactor: 0.6,
-                            child: CommentsBottomSheet(reelId: widget.reel.id),
-                          ),
+                          builder: (context) {
+                            final mediaQuery = MediaQuery.of(context);
+                            final keyboardHeight = mediaQuery.viewInsets.bottom;
+                            final screenHeight = mediaQuery.size.height;
+                            
+                            // Calculate max available height above the keyboard
+                            final maxAvailableHeight = screenHeight - keyboardHeight - mediaQuery.padding.top;
+                            
+                            // Base height is 60% of screen, but shouldn't exceed available height
+                            final sheetHeight = (screenHeight * 0.6).clamp(0.0, maxAvailableHeight);
+                            
+                            return Padding(
+                              padding: EdgeInsets.only(bottom: keyboardHeight),
+                              child: SizedBox(
+                                height: sheetHeight,
+                                child: CommentsBottomSheet(reelId: widget.reel.id),
+                              ),
+                            );
+                          },
                         );
                       },
                   onSharePressed:
@@ -280,8 +299,7 @@ class _VideoPlayerItemState extends ConsumerState<VideoPlayerItem>
                     final isMyReel =
                         currentUser != null &&
                         currentUser.id.toString() == widget.reel.authorId;
-                    if (!isMyReel) return;
-                    _showDeleteBottomSheet(context, ref);
+                    _showOptionsBottomSheet(context, ref, isMyReel);
                   },
                 );
               },
@@ -311,7 +329,7 @@ class _VideoPlayerItemState extends ConsumerState<VideoPlayerItem>
     );
   }
 
-  void _showDeleteBottomSheet(BuildContext context, WidgetRef ref) {
+  void _showOptionsBottomSheet(BuildContext context, WidgetRef ref, bool isMyReel) {
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1E281F),
@@ -332,69 +350,100 @@ class _VideoPlayerItemState extends ConsumerState<VideoPlayerItem>
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              ListTile(
-                leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: const Text(
-                  'Delete Reel',
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontWeight: FontWeight.w600,
+              if (isMyReel)
+                ListTile(
+                  leading: const Icon(Icons.delete_outline, color: Colors.red),
+                  title: const Text(
+                    'Delete Reel',
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    final bool? confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        backgroundColor: const Color(0xFF1E281F),
+                        title: const Text(
+                          'Delete Reel?',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        content: const Text(
+                          'Are you sure you want to delete this reel? This cannot be undone.',
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text(
+                              'Cancel',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            child: const Text(
+                              'Delete',
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+
+                    if (confirm == true) {
+                      try {
+                        await ref
+                            .read(reelsFeedProvider.notifier)
+                            .deleteReel(widget.reel.id);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Reel deleted successfully!'),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Failed to delete reel: $e')),
+                          );
+                        }
+                      }
+                    }
+                  },
+                ),
+              ListTile(
+                leading: const Icon(Icons.visibility_off_outlined, color: Colors.white),
+                title: const Text(
+                  'Not Interested',
+                  style: TextStyle(color: Colors.white),
                 ),
                 onTap: () async {
                   Navigator.pop(context);
-                  final bool? confirm = await showDialog<bool>(
-                    context: context,
-                    builder: (context) => AlertDialog(
-                      backgroundColor: const Color(0xFF1E281F),
-                      title: const Text(
-                        'Delete Reel?',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      content: const Text(
-                        'Are you sure you want to delete this reel? This cannot be undone.',
-                        style: TextStyle(color: Colors.white70),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, false),
-                          child: const Text(
-                            'Cancel',
-                            style: TextStyle(color: Colors.white),
-                          ),
+                  try {
+                    final message = await ref
+                        .read(reelsFeedProvider.notifier)
+                        .markNotInterested(widget.reel.id);
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(message),
+                          backgroundColor: Colors.blueAccent,
+                          duration: const Duration(seconds: 2),
                         ),
-                        TextButton(
-                          onPressed: () => Navigator.pop(context, true),
-                          child: const Text(
-                            'Delete',
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-
-                  if (confirm == true) {
-                    try {
-                      await ref
-                          .read(reelsFeedProvider.notifier)
-                          .deleteReel(widget.reel.id);
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Reel deleted successfully!'),
-                          ),
-                        );
-                      }
-                    } catch (e) {
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Failed to delete reel: $e')),
-                        );
-                      }
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Failed: $e')),
+                      );
                     }
                   }
                 },

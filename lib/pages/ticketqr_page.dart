@@ -1,6 +1,6 @@
-import 'package:eventsbooking/models/ticket_holder_model.dart';
-import 'package:eventsbooking/providers/event_providers.dart';
-import 'package:eventsbooking/theme/apptheme.dart';
+import 'package:gormahiafc/models/ticket_holder_model.dart';
+import 'package:gormahiafc/providers/event_providers.dart';
+import 'package:gormahiafc/theme/apptheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

@@ -41,8 +41,30 @@ class ReelsPreloadManager extends ChangeNotifier {
   void setReels(List<Reel> reels) {
     _reels = reels;
     // If we already have a current index, refresh the window.
+    if (_currentIndex >= 0 && _isActive) {
+      _updateWindow(_currentIndex);
+    }
+  }
+
+  /// Temporarily releases all hardware decoders (e.g. when opening camera or upload screen)
+  /// to prevent OMX_ErrorInsufficientResources on older devices.
+  void releaseResources() {
+    _isActive = false;
+    for (final controller in _controllers.values) {
+      controller.dispose();
+    }
+    _controllers.clear();
+    _initializing.clear();
+    notifyListeners();
+  }
+
+  /// Restores decoders after returning from camera/upload screen.
+  void restoreResources() {
+    if (_disposed) return;
+    _isActive = true;
     if (_currentIndex >= 0) {
       _updateWindow(_currentIndex);
+      notifyListeners();
     }
   }
 
@@ -80,8 +102,12 @@ class ReelsPreloadManager extends ChangeNotifier {
   // ─── Internal ──────────────────────────────────────────────────────────────
 
   /// Ensures only [index-1, index, index+1] are alive (window of 3).
-  /// Keeping window to ±1 avoids starving the current reel of bandwidth
-  /// on slow/mobile networks.
+  ///
+  /// Mobile network strategy:
+  ///   1. Always initialize the CURRENT reel immediately (full bandwidth).
+  ///   2. Delay neighbors (prev/next) by 3 seconds so they don't compete
+  ///      with the current reel for bandwidth on slow mobile connections.
+  ///   3. On fast connections (WiFi) the delay is unnoticeable.
   void _updateWindow(int index) {
     final windowIds = <String>{};
     for (int i = index - 1; i <= index + 1; i++) {
@@ -100,20 +126,32 @@ class ReelsPreloadManager extends ChangeNotifier {
       _initializing.remove(id);
     }
 
-    // Initialize controllers that are inside the window but not yet created.
-    for (int i = index - 1; i <= index + 1; i++) {
-      if (i >= 0 && i < _reels.length) {
-        final id = _reels[i].id;
-        if (!_controllers.containsKey(id) &&
-            !_initializing.contains(id) &&
-            !(_errorStates[id] ?? false)) {
-          _initController(i);
-        }
-      }
-    }
+    // ── Step 1: Initialize current reel immediately ──────────────────────────
+    _initIfNeeded(index);
+
+    // ── Step 2: Delay neighbors so current gets full bandwidth first ─────────
+    // On mobile networks this prevents bandwidth starvation of the current reel.
+    // On WiFi the 3-second delay is imperceptible.
+    final capturedIndex = index;
+    Future.delayed(const Duration(seconds: 3), () {
+      if (_disposed || _currentIndex != capturedIndex) return;
+      _initIfNeeded(capturedIndex - 1);
+      _initIfNeeded(capturedIndex + 1);
+    });
 
     // Play current, pause all others.
     _syncPlayback(index);
+  }
+
+  /// Initializes the controller at [i] only if it isn't already created/pending/errored.
+  void _initIfNeeded(int i) {
+    if (i < 0 || i >= _reels.length) return;
+    final id = _reels[i].id;
+    if (!_controllers.containsKey(id) &&
+        !_initializing.contains(id) &&
+        !(_errorStates[id] ?? false)) {
+      _initController(i);
+    }
   }
 
   /// Initializes and starts buffering the controller at [index].
@@ -123,17 +161,26 @@ class ReelsPreloadManager extends ChangeNotifier {
     if (index < 0 || index >= _reels.length) return;
 
     final reel = _reels[index];
+    if (reel.type == 'ad' && reel.mediaType != 'video') return; // Skip video controller for non-video ads
+
     final id = reel.id;
 
     _initializing.add(id);
 
     VideoPlayerController controller;
 
-    if (reel.videoUrl.startsWith('assets/')) {
-      controller = VideoPlayerController.asset(reel.videoUrl);
+    final urlToPlay = (reel.type == 'ad' && reel.mediaType == 'video') ? (reel.mediaUrl ?? reel.videoUrl) : reel.videoUrl;
+    
+    if (urlToPlay.isEmpty) {
+      _initializing.remove(id);
+      return;
+    }
+
+    if (urlToPlay.startsWith('assets/')) {
+      controller = VideoPlayerController.asset(urlToPlay);
     } else {
       controller = VideoPlayerController.networkUrl(
-        Uri.parse(reel.videoUrl),
+        Uri.parse(urlToPlay),
         videoPlayerOptions: VideoPlayerOptions(
           mixWithOthers: false,
         ),

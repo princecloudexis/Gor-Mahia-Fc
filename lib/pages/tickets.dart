@@ -1,10 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:eventsbooking/api/api_client.dart';
-import 'package:eventsbooking/models/user_ticket_model.dart';
-import 'package:eventsbooking/pages/details.dart';
-import 'package:eventsbooking/pages/ticketqr_page.dart';
-import 'package:eventsbooking/providers/event_providers.dart';
-import 'package:eventsbooking/theme/apptheme.dart';
+import 'package:gormahiafc/api/api_client.dart';
+import 'package:gormahiafc/models/user_ticket_model.dart';
+import 'package:gormahiafc/pages/details.dart';
+import 'package:gormahiafc/pages/ticketqr_page.dart';
+import 'package:gormahiafc/providers/event_providers.dart';
+import 'package:gormahiafc/theme/apptheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

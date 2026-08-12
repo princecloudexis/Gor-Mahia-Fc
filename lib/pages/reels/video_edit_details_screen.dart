@@ -7,6 +7,7 @@ import 'package:ffmpeg_kit_flutter_new_min_gpl/ffmpeg_session.dart';
 import 'package:file_picker/file_picker.dart' as fp;
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
+import 'upload_reel_screen.dart';
 
 class VideoEditDetailsScreen extends StatefulWidget {
   final File file;
@@ -20,6 +21,7 @@ class _VideoEditDetailsScreenState extends State<VideoEditDetailsScreen> {
   late final VideoEditorController _controller;
   bool _isExporting = false;
   bool _isPickingMusic = false;
+  bool _initError = false;
   File? _backgroundMusic;
   bool _muteOriginalAudio = false;
   
@@ -35,11 +37,13 @@ class _VideoEditDetailsScreenState extends State<VideoEditDetailsScreen> {
       maxDuration: const Duration(seconds: 60),
     );
     _controller.initialize().then((_) {
+      if (_controller.video.value.duration == Duration.zero) {
+        if (mounted) setState(() => _initError = true);
+        return;
+      }
       if (mounted) setState(() {});
     }).catchError((error) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $error')));
-      }
+      if (mounted) setState(() => _initError = true);
     });
   }
 
@@ -170,8 +174,36 @@ class _VideoEditDetailsScreenState extends State<VideoEditDetailsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: _controller.initialized
-          ? SafeArea(
+      body: _initError
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.white54, size: 48),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Video format/resolution not supported\nfor editing on this device.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).primaryColor),
+                    onPressed: () {
+                       Navigator.pushReplacement(
+                         context,
+                         MaterialPageRoute(
+                           builder: (context) => UploadReelScreen(videoFile: widget.file),
+                         ),
+                       );
+                    },
+                    child: const Text('Skip Editing & Upload', style: TextStyle(color: Colors.white)),
+                  ),
+                ],
+              ),
+            )
+          : _controller.initialized
+              ? SafeArea(
               child: Stack(
                 children: [
                   Column(

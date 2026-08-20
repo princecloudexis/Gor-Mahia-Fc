@@ -1,6 +1,6 @@
-import 'package:gormahiafc/api/api_client.dart';
-import 'package:gormahiafc/models/shop_models.dart';
-import 'package:gormahiafc/repositories/shop_repository.dart';
+import 'package:kogalo_network/api/api_client.dart';
+import 'package:kogalo_network/models/shop_models.dart';
+import 'package:kogalo_network/repositories/shop_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final shopRepositoryProvider = Provider<ShopRepository>((ref) {

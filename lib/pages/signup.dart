@@ -1,8 +1,8 @@
-import 'package:gormahiafc/pages/login.dart';
-import 'package:gormahiafc/pages/otp.dart';
-import 'package:gormahiafc/theme/apptheme.dart';
-import 'package:gormahiafc/theme/app_colors.dart';
-import 'package:gormahiafc/widgets/breadcrumb_tab_bar.dart';
+import 'package:kogalo_network/pages/login.dart';
+import 'package:kogalo_network/pages/otp.dart';
+import 'package:kogalo_network/theme/apptheme.dart';
+import 'package:kogalo_network/theme/app_colors.dart';
+import 'package:kogalo_network/widgets/breadcrumb_tab_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -430,7 +430,7 @@ class _SignupState extends ConsumerState<Signup> with TickerProviderStateMixin {
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: isDark
-                  ? Colors.white.withOpacity(0.04)
+                  ? Colors.white.withValues(alpha: 0.04)
                   : Colors.grey.shade300,
             ),
           ),
@@ -443,7 +443,7 @@ class _SignupState extends ConsumerState<Signup> with TickerProviderStateMixin {
                   label,
                   style: TextStyle(
                     color: isDark
-                        ? AppColors.textSecondaryDark.withOpacity(0.7)
+                        ? AppColors.textSecondaryDark.withValues(alpha: 0.7)
                         : Colors.black54,
                     fontSize: 11,
                     fontWeight: FontWeight.w500,
@@ -463,7 +463,7 @@ class _SignupState extends ConsumerState<Signup> with TickerProviderStateMixin {
                     hintText: hint,
                     hintStyle: TextStyle(
                       color: isDark
-                          ? Colors.white.withOpacity(0.2)
+                          ? Colors.white.withValues(alpha: 0.2)
                           : Colors.black26,
                       fontSize: 14,
                     ),
@@ -551,7 +551,7 @@ class _SignupState extends ConsumerState<Signup> with TickerProviderStateMixin {
         Text(
           'Already have an account? ',
           style: TextStyle(
-            color: isDark ? Colors.white.withOpacity(0.7) : Colors.black54,
+            color: isDark ? Colors.white.withValues(alpha: 0.7) : Colors.black54,
           ),
         ),
         TextButton(

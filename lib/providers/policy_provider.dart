@@ -1,4 +1,4 @@
-import 'package:gormahiafc/models/policy_model.dart';
+import 'package:kogalo_network/models/policy_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final privacyPolicyProvider = FutureProvider.autoDispose<List<PolicyModel>>((

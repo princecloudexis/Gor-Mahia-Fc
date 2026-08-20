@@ -1,5 +1,5 @@
-import 'package:gormahiafc/models/event_model.dart';
-import 'package:gormahiafc/models/payment_model.dart';
+import 'package:kogalo_network/models/event_model.dart';
+import 'package:kogalo_network/models/payment_model.dart';
 import 'dart:math' as math;
 
 extension DoubleRounding on double {

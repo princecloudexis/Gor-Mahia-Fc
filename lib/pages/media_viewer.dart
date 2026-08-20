@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:kogalo_network/config/app_config.dart';
 
 import '../models/community_models.dart';
 import '../theme/app_colors.dart';
@@ -382,7 +383,7 @@ class _MediaViewerState extends ConsumerState<MediaViewer> {
                                     : 'Check out this post!';
                                 final link =
                                     currentPost.shareUrl ??
-                                    'https://footballclub.staging-workhub.com/posts/${currentPost.id}';
+                                    '${AppConfig.storageBaseUrl}posts/${currentPost.id}';
                                 await Share.share(
                                   '$text\n\n$link',
                                   subject: 'Gor Mahia FC',

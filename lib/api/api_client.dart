@@ -1,13 +1,14 @@
+import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'package:dio/dio.dart';
-import 'package:gormahiafc/utils/app_exception.dart';
+import 'package:kogalo_network/utils/app_exception.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:kogalo_network/config/app_config.dart';
 
 class ApiClient {
   final Dio dio;
-  static const String _apiBaseUrl =
-      'https://footballclub.staging-workhub.com/api';
+  static String get _apiBaseUrl => AppConfig.baseApiUrl;
 
   // Cache SharedPreferences instance
   SharedPreferences? _prefs;
@@ -32,25 +33,25 @@ class ApiClient {
           if (token != null && token.isNotEmpty) {
             options.headers['Authorization'] = 'Bearer $token';
           }
-          print('Bearer : ${token}');
-          print('🌐 ${options.method} ${options.path}');
+          debugPrint('Bearer : ${token}');
+          debugPrint('🌐 ${options.method} ${options.path}');
           return handler.next(options);
         },
         onResponse: (response, handler) {
-          print('[${response.statusCode}] ${response.requestOptions.path}');
+          debugPrint('[${response.statusCode}] ${response.requestOptions.path}');
           return handler.next(response);
         },
         onError: (DioException e, handler) async {
-          print('❌ [${e.response?.statusCode}] ${e.requestOptions.path}');
+          debugPrint('❌ [${e.response?.statusCode}] ${e.requestOptions.path}');
           
           if (e.response?.statusCode == 422) {
-            print('🛑 422 VALIDATION ERROR: ${e.response?.data}');
+            debugPrint('🛑 422 VALIDATION ERROR: ${e.response?.data}');
           }
 
           if (e.response?.statusCode == 401) {
             _prefs ??= await SharedPreferences.getInstance();
             await _prefs!.remove('auth_token');
-            print('🔴 Token cleared due to 401');
+            debugPrint('🔴 Token cleared due to 401');
           }
 
           final appException = AppException.fromDioException(e);
@@ -71,7 +72,7 @@ class ApiClient {
         LogInterceptor(
           responseBody: true,  
           requestBody: true,
-          logPrint: (obj) => print('📝 $obj'),
+          logPrint: (obj) => debugPrint('📝 $obj'),
         ),
       );
       return true;
@@ -110,10 +111,7 @@ class ApiClient {
     );
   }
 
-  String get storageBaseUrl {
-    final uri = Uri.parse(_apiBaseUrl);
-    return '${uri.scheme}://${uri.host}/';
-  }
+  String get storageBaseUrl => AppConfig.storageBaseUrl;
 
   void clearCache() {
     _prefs = null;

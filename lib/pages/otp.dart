@@ -1,10 +1,10 @@
 import 'dart:async';
-import 'package:gormahiafc/pages/login.dart';
-import 'package:gormahiafc/pages/membership_signup.dart';
-import 'package:gormahiafc/providers/fcm_providers.dart';
-import 'package:gormahiafc/theme/apptheme.dart';
-import 'package:gormahiafc/theme/app_colors.dart';
-import 'package:gormahiafc/widgets/breadcrumb_tab_bar.dart';
+import 'package:kogalo_network/pages/login.dart';
+import 'package:kogalo_network/pages/membership_signup.dart';
+import 'package:kogalo_network/providers/fcm_providers.dart';
+import 'package:kogalo_network/theme/apptheme.dart';
+import 'package:kogalo_network/theme/app_colors.dart';
+import 'package:kogalo_network/widgets/breadcrumb_tab_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -247,7 +247,7 @@ class _AppHeader extends StatelessWidget {
         Text(
           'Enter the 4-digit code sent to\n$maskedEmail',
           textAlign: TextAlign.center,
-          style: TextStyle(color: isDark ? Colors.white.withOpacity(0.7) : Colors.black54, fontSize: 16),
+          style: TextStyle(color: isDark ? Colors.white.withValues(alpha: 0.7) : Colors.black54, fontSize: 16),
         ).animate().fadeIn(duration: 500.ms, delay: 300.ms),
       ],
     );
@@ -284,7 +284,7 @@ class _OtpInputFieldsState extends State<_OtpInputFields> {
           decoration: BoxDecoration(
             color: isDark ? AppColors.bgSurfaceDark : Colors.grey.shade100,
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade300),
+            border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade300),
           ),
           child: TextFormField(
             controller: widget.controllers[index],
@@ -350,7 +350,7 @@ class _VerifyButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: AppTheme.primaryPink.withOpacity(0.3),
+              color: AppTheme.primaryPink.withValues(alpha: 0.3),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -409,7 +409,7 @@ class _ResendCodeSection extends ConsumerWidget {
             children: [
               Text(
                 "Didn't receive the code? ",
-                style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white.withOpacity(0.7) : Colors.black54),
+                style: TextStyle(color: Theme.of(context).brightness == Brightness.dark ? Colors.white.withValues(alpha: 0.7) : Colors.black54),
               ),
               TextButton(
                 onPressed: onResend,
@@ -455,7 +455,7 @@ class _InfoDialog extends StatelessWidget {
       backgroundColor: Theme.of(context).brightness == Brightness.dark ? AppColors.bgSurfaceDark : Colors.white,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
-        side: BorderSide(color: Colors.white.withOpacity(0.05)),
+        side: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(32.0),
@@ -487,7 +487,7 @@ class _InfoDialog extends StatelessWidget {
               message,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Theme.of(context).brightness == Brightness.dark ? Colors.white.withOpacity(0.7) : Colors.black54,
+                color: Theme.of(context).brightness == Brightness.dark ? Colors.white.withValues(alpha: 0.7) : Colors.black54,
                 fontSize: 15,
               ),
             ),

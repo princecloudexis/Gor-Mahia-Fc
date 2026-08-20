@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gormahiafc/models/giftcard_model.dart';
+import 'package:kogalo_network/models/giftcard_model.dart';
 
 DateTime? _safeParseDateTime(String? dateString) {
   if (dateString == null) return null;

@@ -1,9 +1,15 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import '../models/reels_model.dart';
 import '../repositories/reels_repository.dart';
 import '../pages/reels/reels_feed.dart';
+
+final reportReasonsProvider = FutureProvider<List<Map<String, String>>>((ref) async {
+  final repository = ref.watch(reelsRepositoryProvider);
+  return await repository.getReportReasons();
+});
 
 /// Caches the user's location to avoid hitting GPS hardware on every single video swipe
 class LocationCache {
@@ -101,7 +107,7 @@ class ReelsNotifier extends StateNotifier<AsyncValue<ReelResponse>> {
       );
     } catch (e, stackTrace) {
       if (!mounted) return;
-      print("Pagination error: $e");
+      debugPrint("Pagination error: $e");
     }
   }
 
@@ -284,7 +290,7 @@ class ReelsNotifier extends StateNotifier<AsyncValue<ReelResponse>> {
         ReelResponse(data: newData, meta: currentState.meta),
       );
     } catch (e) {
-      print("Failed to sync reel stats for $reelId: $e");
+      debugPrint("Failed to sync reel stats for $reelId: $e");
     }
   }
 
@@ -329,7 +335,7 @@ class ReelsNotifier extends StateNotifier<AsyncValue<ReelResponse>> {
         );
       }
     } catch (e) {
-      print('Failed to delete reel: $e');
+      debugPrint('Failed to delete reel: $e');
       rethrow;
     }
   }
@@ -379,7 +385,7 @@ class ReelCommentsNotifier extends StateNotifier<AsyncValue<ReelCommentResponse>
         ),
       );
     } catch (e) {
-      print("Pagination error: $e");
+      debugPrint("Pagination error: $e");
     }
   }
 
@@ -437,7 +443,7 @@ class ReelCommentsNotifier extends StateNotifier<AsyncValue<ReelCommentResponse>
         );
       }
     } catch (e) {
-      print("Failed to load replies: $e");
+      debugPrint("Failed to load replies: $e");
     }
   }
 
@@ -753,7 +759,7 @@ class MyReelsNotifier extends StateNotifier<AsyncValue<List<Reel>>> {
       
       state = AsyncValue.data(newData);
     } catch (e) {
-      print("Failed to sync my reel stats for $reelId: $e");
+      debugPrint("Failed to sync my reel stats for $reelId: $e");
     }
   }
 }

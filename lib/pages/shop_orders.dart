@@ -150,7 +150,7 @@ class _OrderCard extends StatelessWidget {
             ? []
             : [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -189,7 +189,7 @@ class _OrderCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.15),
+                    color: statusColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -225,7 +225,7 @@ class _OrderCard extends StatelessWidget {
                       width: 50,
                       height: 50,
                       decoration: BoxDecoration(
-                        color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.withOpacity(0.1),
+                        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: item.image != null && item.image!.isNotEmpty
@@ -276,7 +276,7 @@ class _OrderCard extends StatelessWidget {
                     // Item Price
                     if (item.price > 0)
                       Text(
-                        'KSh ${item.price.toStringAsFixed(0)}',
+                        'KSh ${item.price.toStringAsFixed(2)}',
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           color: isDark ? Colors.white : Colors.black87,
@@ -291,12 +291,41 @@ class _OrderCard extends StatelessWidget {
             height: 1,
             color: isDark ? Colors.white12 : Colors.black12,
           ),
+          if (order.deliveryAddress != null || order.paymentMethod != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (order.deliveryAddress != null) ...[
+                    Text('Delivery Details', style: TextStyle(fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black87)),
+                    const SizedBox(height: 6),
+                    if (order.deliveryName != null) Text(order.deliveryName!, style: TextStyle(fontSize: 13, color: isDark ? Colors.white70 : Colors.black54)),
+                    if (order.deliveryPhone != null) Text(order.deliveryPhone!, style: TextStyle(fontSize: 13, color: isDark ? Colors.white70 : Colors.black54)),
+                    Text(order.deliveryAddress!, style: TextStyle(fontSize: 13, color: isDark ? Colors.white70 : Colors.black54)),
+                    if (order.notes != null) Text('Notes: ${order.notes}', style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic, color: isDark ? Colors.white70 : Colors.black54)),
+                    const SizedBox(height: 12),
+                  ],
+                  if (order.paymentMethod != null) ...[
+                    Text('Payment Details', style: TextStyle(fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black87)),
+                    const SizedBox(height: 6),
+                    Text('Method: ${order.paymentMethod}', style: TextStyle(fontSize: 13, color: isDark ? Colors.white70 : Colors.black54)),
+                    if (order.paymentReference != null) Text('Ref: ${order.paymentReference}', style: TextStyle(fontSize: 13, color: isDark ? Colors.white70 : Colors.black54)),
+                  ],
+                ],
+              ),
+            ),
+          if (order.deliveryAddress != null || order.paymentMethod != null)
+            Divider(
+              height: 1,
+              color: isDark ? Colors.white12 : Colors.black12,
+            ),
           // Footer Total
           Builder(
             builder: (context) {
-              final totalSubtotal = order.items.fold(0.0, (sum, item) => sum + item.subtotal);
-              final totalVat = order.items.fold(0.0, (sum, item) => sum + item.vat);
-              final totalPlatformCharge = order.items.fold(0.0, (sum, item) => sum + item.platformCharge);
+              final totalSubtotal = order.subtotal;
+              final totalPaymentCharge = order.paymentCharge;
+              final totalPlatformCharge = order.platformCharge;
 
               return Padding(
                 padding: const EdgeInsets.all(16),
@@ -307,25 +336,29 @@ class _OrderCard extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text('Subtotal', style: TextStyle(color: isDark ? Colors.white70 : Colors.black54)),
-                          Text('KSh ${totalSubtotal.toStringAsFixed(0)}', style: TextStyle(fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black87)),
+                          Text('KSh ${totalSubtotal.toStringAsFixed(2)}', style: TextStyle(fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black87)),
                         ],
                       ),
-                      const SizedBox(height: 6),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('VAT', style: TextStyle(color: isDark ? Colors.white70 : Colors.black54)),
-                          Text('KSh ${totalVat.toStringAsFixed(0)}', style: TextStyle(fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black87)),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Platform Charge', style: TextStyle(color: isDark ? Colors.white70 : Colors.black54)),
-                          Text('KSh ${totalPlatformCharge.toStringAsFixed(0)}', style: TextStyle(fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black87)),
-                        ],
-                      ),
+                      if (totalPaymentCharge > 0) ...[
+                        const SizedBox(height: 6),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Payment Charge', style: TextStyle(color: isDark ? Colors.white70 : Colors.black54)),
+                            Text('KSh ${totalPaymentCharge.toStringAsFixed(2)}', style: TextStyle(fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black87)),
+                          ],
+                        ),
+                      ],
+                      if (totalPlatformCharge > 0) ...[
+                        const SizedBox(height: 6),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Platform Charge', style: TextStyle(color: isDark ? Colors.white70 : Colors.black54)),
+                            Text('KSh ${totalPlatformCharge.toStringAsFixed(2)}', style: TextStyle(fontWeight: FontWeight.w600, color: isDark ? Colors.white : Colors.black87)),
+                          ],
+                        ),
+                      ],
                       const SizedBox(height: 10),
                       Divider(color: isDark ? Colors.white12 : Colors.black12, height: 1),
                       const SizedBox(height: 10),
@@ -341,7 +374,7 @@ class _OrderCard extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          'KSh ${order.totalAmount.toStringAsFixed(0)}',
+                          'KSh ${order.totalAmount.toStringAsFixed(2)}',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,

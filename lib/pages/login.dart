@@ -97,7 +97,6 @@ class _LoginState extends ConsumerState<Login>
     );
   }
 
-
   Widget _buildMainContent(bool isLoading) {
     return SingleChildScrollView(
       physics: const ClampingScrollPhysics(),
@@ -153,7 +152,7 @@ class _LoginState extends ConsumerState<Login>
         ).animate().fadeIn(duration: 500.ms, delay: 200.ms),
         const SizedBox(height: 8),
         Text(
-          'Sign in to continue to Gor Mahia FC',
+          'Sign in to continue to Kogalo Network',
           style: TextStyle(
             fontSize: 15,
             color: isDark ? Colors.white70 : Colors.black54,
@@ -215,7 +214,7 @@ class _LoginState extends ConsumerState<Login>
               ? Icons.visibility_off_outlined
               : Icons.visibility_outlined,
           color: Theme.of(context).brightness == Brightness.dark
-              ? Colors.white.withOpacity(0.5)
+              ? Colors.white.withValues(alpha: 0.5)
               : Colors.black38,
           size: 20,
         ),
@@ -311,7 +310,9 @@ class _LoginState extends ConsumerState<Login>
         Text(
           "Don't have an account? ",
           style: TextStyle(
-            color: isDark ? AppTheme.textLight.withOpacity(0.8) : Colors.black54,
+            color: isDark
+                ? AppTheme.textLight.withValues(alpha: 0.8)
+                : Colors.black54,
             fontSize: 14,
           ),
         ),
@@ -343,7 +344,6 @@ class _LoginState extends ConsumerState<Login>
           .login(_emailController.text.trim(), _passwordController.text);
     }
   }
-
 
   void _navigateToHome() {
     Navigator.pushAndRemoveUntil(
@@ -427,7 +427,7 @@ class _AppLogo extends StatelessWidget {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 24,
             offset: const Offset(0, 8),
           ),
@@ -474,7 +474,9 @@ class _InputField extends StatelessWidget {
       decoration: BoxDecoration(
         color: isDark ? AppColors.bgSurfaceDark : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: isDark ? Colors.white.withOpacity(0.04) : Colors.grey.shade300),
+        border: Border.all(
+          color: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.grey.shade300,
+        ),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -484,7 +486,9 @@ class _InputField extends StatelessWidget {
             Text(
               labelText,
               style: TextStyle(
-                color: isDark ? AppColors.textSecondaryDark.withOpacity(0.7) : Colors.black54,
+                color: isDark
+                    ? AppColors.textSecondaryDark.withValues(alpha: 0.7)
+                    : Colors.black54,
                 fontSize: 11,
                 fontWeight: FontWeight.w500,
               ),
@@ -496,12 +500,17 @@ class _InputField extends StatelessWidget {
               keyboardType: keyboardType,
               textInputAction: textInputAction,
               onFieldSubmitted: onFieldSubmitted,
-              style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontSize: 14),
+              style: TextStyle(
+                color: isDark ? Colors.white : Colors.black87,
+                fontSize: 14,
+              ),
               decoration: InputDecoration(
                 filled: false,
                 hintText: hintText,
                 hintStyle: TextStyle(
-                  color: isDark ? Colors.white.withOpacity(0.2) : Colors.black26,
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.2)
+                      : Colors.black26,
                   fontSize: 14,
                 ),
                 border: InputBorder.none,
@@ -519,11 +528,18 @@ class _InputField extends StatelessWidget {
                         child: suffixIcon,
                       )
                     : null,
-                prefixIconConstraints: const BoxConstraints(minWidth: 32, maxHeight: 20),
+                prefixIconConstraints: const BoxConstraints(
+                  minWidth: 32,
+                  maxHeight: 20,
+                ),
                 prefixIcon: Container(
                   alignment: Alignment.centerLeft,
                   width: 32,
-                  child: Icon(prefixIcon, color: AppColors.primaryGreen, size: 18),
+                  child: Icon(
+                    prefixIcon,
+                    color: AppColors.primaryGreen,
+                    size: 18,
+                  ),
                 ),
               ),
               validator: validator,
@@ -590,12 +606,20 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
               const SizedBox(height: 24),
               Text(
                 'Reset Password',
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: textColor),
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 'Enter your email address and we\'ll send you a link to reset your password.',
-                style: TextStyle(fontSize: 14, color: subTextColor, height: 1.4),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: subTextColor,
+                  height: 1.4,
+                ),
               ),
               const SizedBox(height: 24),
               _InputField(
@@ -614,7 +638,10 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
               Center(
                 child: TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text('Cancel', style: TextStyle(color: subTextColor, fontSize: 15)),
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(color: subTextColor, fontSize: 15),
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
@@ -638,7 +665,7 @@ class _ForgotPasswordSheetState extends ConsumerState<_ForgotPasswordSheet> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
-          disabledBackgroundColor: AppTheme.primaryGreen.withOpacity(0.6),
+          disabledBackgroundColor: AppTheme.primaryGreen.withValues(alpha: 0.6),
         ),
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 200),
@@ -755,9 +782,20 @@ class _SuccessDialog extends StatelessWidget {
               child: Icon(icon, color: Colors.white, size: 36),
             ).animate().scale(duration: 500.ms, curve: Curves.elasticOut),
             const SizedBox(height: 20),
-            Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: textColor)),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: textColor,
+              ),
+            ),
             const SizedBox(height: 8),
-            Text(message, textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: subTextColor, height: 1.4)),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: subTextColor, height: 1.4),
+            ),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,

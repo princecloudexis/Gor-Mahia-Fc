@@ -37,14 +37,14 @@
     </queries>
     
     <application
-        android:label="GormahiaFc"
+        android:label="Kogalo Network"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         
         <!-- Google Maps API Key -->
         <meta-data 
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyCWmFmE0EVsam40Oh1pRzY1M-uUpUa5S4c"/>
+            android:value="${mapsApiKey}"/>
         
         <!-- Main Activity -->
         <activity
@@ -75,10 +75,16 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data 
                     android:scheme="https" 
-                    android:host="yourapp.com" />
+                    android:host="kogalonetwork.com" />
                 <data 
                     android:scheme="http" 
-                    android:host="yourapp.com" />
+                    android:host="kogalonetwork.com" />
+                <data 
+                    android:scheme="https" 
+                    android:host="footballclub.staging-workhub.com" />
+                <data 
+                    android:scheme="http" 
+                    android:host="footballclub.staging-workhub.com" />
             </intent-filter>
 
             <!-- Deep Link for Payment Callback -->
@@ -86,15 +92,9 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="gormahiafc" />
+                <data android:scheme="kogalonetwork" />
             </intent-filter>
             
-            <!-- Deep Links - SEND action (for sharing) -->
-            <intent-filter>
-                <action android:name="android.intent.action.SEND" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="text/plain" />
-            </intent-filter>
         </activity>
         
 

@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gormahiafc/repositories/event_repositories.dart';
+import 'package:kogalo_network/repositories/event_repositories.dart';
 import '../models/event_model.dart';
 import 'event_providers.dart';
 

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 // providers/user_providers.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -12,13 +13,13 @@ class UserNotifier extends StateNotifier<UserModel?> {
     try {
       final user = await _authRepository.getUserProfile();
       state = user;
-      print('👤 User fetched: ${user.firstName} ${user.lastName}');
-      print(
+      debugPrint('👤 User fetched: ${user.firstName} ${user.lastName}');
+      debugPrint(
         '👤 Stats - Attended: ${user.eventsAttended}, Upcoming: ${user.upcomingEvents}',
       );
       return true;
     } catch (e) {
-      print('👤 fetchUser error: $e');
+      debugPrint('👤 fetchUser error: $e');
       if (state == null) {
         state = null;
       }
@@ -28,7 +29,7 @@ class UserNotifier extends StateNotifier<UserModel?> {
 
   void setUserFromLogin(UserModel user) {
     state = user;
-    print('👤 User set from login: ${user.firstName} ${user.lastName}');
+    debugPrint('👤 User set from login: ${user.firstName} ${user.lastName}');
   }
 
   Future<bool> updateUserProfile({
@@ -47,17 +48,17 @@ class UserNotifier extends StateNotifier<UserModel?> {
         imageFile: imageFile,
       );
       await fetchUser();
-      print('👤 Profile updated successfully');
+      debugPrint('👤 Profile updated successfully');
       return true;
     } catch (e) {
-      print('👤 updateUserProfile error: $e');
+      debugPrint('👤 updateUserProfile error: $e');
       return false;
     }
   }
 
   void clearUser() {
     state = null;
-    print('👤 User cleared');
+    debugPrint('👤 User cleared');
   }
 
   void updateUser(UserModel user) {

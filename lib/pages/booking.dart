@@ -1,17 +1,18 @@
+import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:gormahiafc/api/api_client.dart';
-import 'package:gormahiafc/models/seat_layout_model.dart';
-import 'package:gormahiafc/pages/checkout.dart';
-import 'package:gormahiafc/pages/login.dart';
-import 'package:gormahiafc/providers/booking_provider.dart';
-import 'package:gormahiafc/providers/preregistration_provider.dart';
-import 'package:gormahiafc/providers/seat_provider.dart';
-import 'package:gormahiafc/providers/user_providers.dart';
-import 'package:gormahiafc/repositories/event_repositories.dart';
-import 'package:gormahiafc/utils/app_exception.dart';
-import 'package:gormahiafc/widgets/seat_map_widget.dart';
+import 'package:kogalo_network/api/api_client.dart';
+import 'package:kogalo_network/models/seat_layout_model.dart';
+import 'package:kogalo_network/pages/checkout.dart';
+import 'package:kogalo_network/pages/login.dart';
+import 'package:kogalo_network/providers/booking_provider.dart';
+import 'package:kogalo_network/providers/preregistration_provider.dart';
+import 'package:kogalo_network/providers/seat_provider.dart';
+import 'package:kogalo_network/providers/user_providers.dart';
+import 'package:kogalo_network/repositories/event_repositories.dart';
+import 'package:kogalo_network/utils/app_exception.dart';
+import 'package:kogalo_network/widgets/seat_map_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -616,7 +617,7 @@ class _CompactTopSection extends ConsumerWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryPink.withOpacity(0.15),
+                    color: AppTheme.primaryPink.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -653,10 +654,10 @@ class _CompactTopSection extends ConsumerWidget {
               margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: AppTheme.primaryPink.withOpacity(0.1),
+                color: AppTheme.primaryPink.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: AppTheme.primaryPink.withOpacity(0.3),
+                  color: AppTheme.primaryPink.withValues(alpha: 0.3),
                 ),
               ),
               child: const Row(
@@ -751,7 +752,7 @@ class _CompactDateSelector extends ConsumerWidget {
               boxShadow: isSelected
                   ? [
                       BoxShadow(
-                        color: AppTheme.primaryPink.withOpacity(0.3),
+                        color: AppTheme.primaryPink.withValues(alpha: 0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -790,7 +791,7 @@ class _CompactDateSelector extends ConsumerWidget {
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: isSelected
-                        ? Colors.white.withOpacity(0.85)
+                        ? Colors.white.withValues(alpha: 0.85)
                         : Theme.of(context).textTheme.bodySmall?.color,
                   ),
                 ),
@@ -1229,7 +1230,7 @@ class _SeatBookingBottomBarState extends ConsumerState<_SeatBookingBottomBar> {
         color: Theme.of(context).cardColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 10,
             offset: const Offset(0, -4),
           ),
@@ -1290,7 +1291,7 @@ class _SeatBookingBottomBarState extends ConsumerState<_SeatBookingBottomBar> {
                   boxShadow: canSubmit
                       ? [
                           BoxShadow(
-                            color: AppColors.greenMain.withOpacity(0.3),
+                            color: AppColors.greenMain.withValues(alpha: 0.3),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
                           )
@@ -1475,7 +1476,7 @@ class _BookingBottomBar extends ConsumerWidget {
         color: Theme.of(context).cardColor,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 20,
             offset: const Offset(0, -5),
           ),
@@ -1723,7 +1724,7 @@ class _DateSelector extends ConsumerWidget {
                     boxShadow: isSelected
                         ? [
                             BoxShadow(
-                              color: AppTheme.primaryPink.withOpacity(0.3),
+                              color: AppTheme.primaryPink.withValues(alpha: 0.3),
                               blurRadius: 8,
                               offset: const Offset(0, 4),
                             ),
@@ -2187,7 +2188,7 @@ class _IncentiveSection extends ConsumerWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -2416,10 +2417,10 @@ class _TicketDetailsErrorView extends ConsumerWidget {
               child: Container(
                 padding: const EdgeInsets.all(28),
                 decoration: BoxDecoration(
-                  color: iconColor.withOpacity(0.1),
+                  color: iconColor.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: iconColor.withOpacity(0.2),
+                    color: iconColor.withValues(alpha: 0.2),
                     width: 2,
                   ),
                 ),
@@ -2604,7 +2605,7 @@ class _SeatMapWithDateAwareBookings extends ConsumerWidget {
               child: Container(
                 color: Theme.of(
                   context,
-                ).scaffoldBackgroundColor.withOpacity(0.7),
+                ).scaffoldBackgroundColor.withValues(alpha: 0.7),
                 alignment: Alignment.center,
                 child: const Column(
                   mainAxisSize: MainAxisSize.min,

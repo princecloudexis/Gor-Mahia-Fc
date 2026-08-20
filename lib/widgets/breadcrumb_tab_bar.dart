@@ -1,4 +1,4 @@
-import 'package:gormahiafc/theme/app_colors.dart';
+import 'package:kogalo_network/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 class BreadcrumbTabBar extends StatelessWidget {
@@ -20,7 +20,7 @@ class BreadcrumbTabBar extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),

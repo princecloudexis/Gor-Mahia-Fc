@@ -1,4 +1,4 @@
-import 'package:gormahiafc/repositories/event_repositories.dart';
+import 'package:kogalo_network/repositories/event_repositories.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 enum PreRegistrationStatus { initial, loading, success, error }

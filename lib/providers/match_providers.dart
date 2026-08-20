@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/match_models.dart';
 import '../repositories/match_repository.dart';
@@ -45,7 +46,7 @@ final matchStatsProvider = StreamProvider.autoDispose
           final response = await matchRepository.getMatchStats(matchId);
           yield response.data;
         } catch (e) {
-          print('Error polling match stats for $matchId: $e');
+          debugPrint('Error polling match stats for $matchId: $e');
         }
         await Future.delayed(const Duration(seconds: 30));
       }
@@ -97,7 +98,7 @@ final matchSummaryStreamProvider = StreamProvider.autoDispose
           final response = await matchRepository.getMatchSummary(matchId);
           yield response.data;
         } catch (e) {
-          print('Error polling match summary for $matchId: $e');
+          debugPrint('Error polling match summary for $matchId: $e');
         }
         // Wait 30 seconds before the next fetch to avoid overloading the API
         await Future.delayed(const Duration(seconds: 30));

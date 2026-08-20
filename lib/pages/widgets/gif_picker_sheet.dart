@@ -53,7 +53,7 @@ class _GifPickerSheetState extends ConsumerState<GifPickerSheet> {
             width: 40,
             height: 4,
             decoration: BoxDecoration(
-              color: Colors.grey.withOpacity(0.4),
+              color: Colors.grey.withValues(alpha: 0.4),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -100,8 +100,8 @@ class _GifPickerSheetState extends ConsumerState<GifPickerSheet> {
                               borderRadius: BorderRadius.circular(12),
                               child: Container(
                                 color: isDark
-                                    ? Colors.white.withOpacity(0.08)
-                                    : Colors.black.withOpacity(0.06),
+                                    ? Colors.white.withValues(alpha: 0.08)
+                                    : Colors.black.withValues(alpha: 0.06),
                                 child: Image.network(
                                   gif.url,
                                   fit: BoxFit.cover,

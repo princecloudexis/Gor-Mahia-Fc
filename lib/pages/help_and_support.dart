@@ -1,4 +1,4 @@
-import 'package:gormahiafc/providers/user_providers.dart';
+import 'package:kogalo_network/providers/user_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -214,7 +214,7 @@ ${_messageController.text}
     final baseBorder = OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
       borderSide: BorderSide(
-        color: theme.hintColor.withOpacity(0.4),
+        color: theme.hintColor.withValues(alpha: 0.4),
         width: 1.5,
       ),
     );

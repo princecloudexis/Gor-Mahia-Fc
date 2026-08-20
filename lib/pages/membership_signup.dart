@@ -1,9 +1,9 @@
-import 'package:gormahiafc/controllers/membership_controller.dart';
-import 'package:gormahiafc/models/membership_models.dart';
-import 'package:gormahiafc/pages/main_shell.dart';
-import 'package:gormahiafc/pages/membership_payment.dart';
-import 'package:gormahiafc/theme/app_colors.dart';
-import 'package:gormahiafc/widgets/breadcrumb_tab_bar.dart';
+import 'package:kogalo_network/controllers/membership_controller.dart';
+import 'package:kogalo_network/models/membership_models.dart';
+import 'package:kogalo_network/pages/main_shell.dart';
+import 'package:kogalo_network/pages/membership_payment.dart';
+import 'package:kogalo_network/theme/app_colors.dart';
+import 'package:kogalo_network/widgets/breadcrumb_tab_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -52,18 +52,32 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
            }
         }
         
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => MembershipPayment(
-              title: response.packageName,
-              price: 'KSh ${response.amount}',
-              rawAmount: response.amount,
-              period: period,
-              membershipId: response.membershipId.toString(),
+        if (response.requiresPayment) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => MembershipPayment(
+                title: response.packageName,
+                price: 'KSh ${response.amount}',
+                rawAmount: response.amount,
+                period: period,
+                membershipId: response.membershipId.toString(),
+              ),
             ),
-          ),
-        );
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Membership processed successfully!'),
+              backgroundColor: AppColors.success,
+            ),
+          );
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const MainShell()),
+            (route) => false,
+          );
+        }
         ref.read(membershipControllerProvider.notifier).resetStatus();
       }
     });
@@ -179,7 +193,7 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
       decoration: BoxDecoration(
         color: isDark ? AppColors.bgSurfaceDark : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: isDark ? Colors.white.withOpacity(0.04) : Colors.grey.shade300),
+        border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.grey.shade300),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       child: Column(
@@ -189,7 +203,7 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
           Text(
             'Country',
             style: TextStyle(
-              color: isDark ? AppColors.textSecondaryDark.withOpacity(0.7) : Colors.black54,
+              color: isDark ? AppColors.textSecondaryDark.withValues(alpha: 0.7) : Colors.black54,
               fontSize: 11,
               fontWeight: FontWeight.w500,
             ),
@@ -202,7 +216,7 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
               filled: false,
               hintText: 'Enter your country',
               hintStyle: TextStyle(
-                color: isDark ? Colors.white.withOpacity(0.3) : Colors.black26,
+                color: isDark ? Colors.white.withValues(alpha: 0.3) : Colors.black26,
                 fontSize: 14,
               ),
               border: InputBorder.none,
@@ -232,7 +246,7 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
           decoration: BoxDecoration(
             color: isDark ? AppColors.bgSurfaceDark : Colors.grey.shade100,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: isDark ? Colors.white.withOpacity(0.04) : Colors.grey.shade300),
+            border: Border.all(color: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.grey.shade300),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
           child: Column(
@@ -242,7 +256,7 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
               Text(
                 label,
                 style: TextStyle(
-                  color: isDark ? AppColors.textSecondaryDark.withOpacity(0.7) : Colors.black54,
+                  color: isDark ? AppColors.textSecondaryDark.withValues(alpha: 0.7) : Colors.black54,
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
                 ),
@@ -254,7 +268,7 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
                   isDense: true,
                   icon: Icon(
                     Icons.keyboard_arrow_down,
-                    color: isDark ? Colors.white.withOpacity(0.5) : Colors.black54,
+                    color: isDark ? Colors.white.withValues(alpha: 0.5) : Colors.black54,
                   ),
                   dropdownColor: isDark ? AppColors.bgSurfaceDark : Colors.white,
                   style: TextStyle(color: isDark ? Colors.white : Colors.black87, fontSize: 14),
@@ -289,13 +303,13 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
             padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppColors.greenMedium.withOpacity(0.1)
+                  ? AppColors.greenMedium.withValues(alpha: 0.1)
                   : (isDark ? AppColors.bgSurfaceDark : Colors.grey.shade100),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: isSelected
                     ? AppColors.primaryGreen
-                    : (isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade300),
+                    : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade300),
                 width: isSelected ? 2 : 1,
               ),
             ),
@@ -307,7 +321,7 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
                   size: 36,
                   color: isSelected
                       ? AppColors.primaryGreen
-                      : (isDark ? Colors.white.withOpacity(0.3) : Colors.black38),
+                      : (isDark ? Colors.white.withValues(alpha: 0.3) : Colors.black38),
                 ),
                 const SizedBox(height: 12),
                 Text(
@@ -325,7 +339,7 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
                   'KSh ${package.price} / ${package.type}',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: isDark ? Colors.white.withOpacity(0.7) : Colors.black54,
+                    color: isDark ? Colors.white.withValues(alpha: 0.7) : Colors.black54,
                     fontSize: 12,
                   ),
                 ),
@@ -423,7 +437,7 @@ class _MembershipSignupState extends ConsumerState<MembershipSignup> {
             'Skip for Now',
             style: TextStyle(
               color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white.withOpacity(0.7)
+                  ? Colors.white.withValues(alpha: 0.7)
                   : Colors.black54,
               fontSize: 14,
               fontWeight: FontWeight.w600,

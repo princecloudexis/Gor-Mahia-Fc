@@ -2,16 +2,16 @@ import 'dart:async';
 import 'dart:ui';
 import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:gormahiafc/api/api_client.dart';
-import 'package:gormahiafc/pages/location.dart';
-import 'package:gormahiafc/pages/categoryevents.dart';
-import 'package:gormahiafc/pages/details.dart';
-import 'package:gormahiafc/pages/notifications.dart';
-import 'package:gormahiafc/pages/profile.dart';
-import 'package:gormahiafc/pages/search.dart';
-import 'package:gormahiafc/pages/shop.dart';
-import 'package:gormahiafc/providers/location_providers.dart';
-import 'package:gormahiafc/widgets/safe_svg_network.dart';
+import 'package:kogalo_network/api/api_client.dart';
+import 'package:kogalo_network/pages/location.dart';
+import 'package:kogalo_network/pages/categoryevents.dart';
+import 'package:kogalo_network/pages/details.dart';
+import 'package:kogalo_network/pages/notifications.dart';
+import 'package:kogalo_network/pages/profile.dart';
+import 'package:kogalo_network/pages/search.dart';
+import 'package:kogalo_network/pages/shop.dart';
+import 'package:kogalo_network/providers/location_providers.dart';
+import 'package:kogalo_network/widgets/safe_svg_network.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -111,10 +111,10 @@ class _HomeState extends ConsumerState<Home> {
         decoration: BoxDecoration(
           color: AppColors.bgSurfaceDark,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white.withOpacity(0.05)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
+              color: Colors.black.withValues(alpha: 0.2),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -178,12 +178,16 @@ class _HomeState extends ConsumerState<Home> {
                           const SizedBox(height: 4),
                           Row(
                             children: [
-                              Text(
-                                user?.membershipPlan ?? "Free Plan",
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.7),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
+                              Flexible(
+                                child: Text(
+                                  user?.membershipPlan ?? "Free Plan",
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.7),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               const SizedBox(width: 4),
@@ -206,7 +210,7 @@ class _HomeState extends ConsumerState<Home> {
               padding: const EdgeInsets.only(left: 12),
               decoration: BoxDecoration(
                 border: Border(
-                  left: BorderSide(color: Colors.white.withOpacity(0.1)),
+                  left: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
                 ),
               ),
               child: _LocationWidget(),
@@ -286,10 +290,10 @@ class _HomeState extends ConsumerState<Home> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.2),
+                  color: Colors.black.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(4),
                   border: Border.all(
-                    color: AppColors.gold.withOpacity(0.3),
+                    color: AppColors.gold.withValues(alpha: 0.3),
                     width: 0.5,
                   ),
                 ),
@@ -307,7 +311,7 @@ class _HomeState extends ConsumerState<Home> {
                       style: TextStyle(
                         fontSize: 9,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white.withOpacity(0.85),
+                        color: Colors.white.withValues(alpha: 0.85),
                         letterSpacing: 1.0,
                         fontFamily: 'Manrope',
                       ),
@@ -567,7 +571,7 @@ class _LocationWidget extends ConsumerWidget {
                     return Text(
                       cityName,
                       style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                         fontWeight: FontWeight.w600,
                         fontSize: 12,
                       ),
@@ -578,7 +582,7 @@ class _LocationWidget extends ConsumerWidget {
                   loading: () => Text(
                     'Finding...',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       fontSize: 12,
                     ),
                   ),
@@ -595,7 +599,7 @@ class _LocationWidget extends ConsumerWidget {
             locationAsync.value?.country.isNotEmpty == true
                 ? locationAsync.value!.country
                 : 'Tap to change',
-            style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 9),
+            style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 9),
           ),
         ],
       ),
@@ -798,7 +802,7 @@ class _BannerSectionState extends ConsumerState<_BannerSection> {
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              Colors.black.withOpacity(0.6),
+                              Colors.black.withValues(alpha: 0.6),
                               Colors.transparent,
                             ],
                             begin: Alignment.bottomCenter,
@@ -948,7 +952,7 @@ class _DiscoverCard extends ConsumerWidget {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 16,
               offset: const Offset(0, 6),
             ),
@@ -969,7 +973,7 @@ class _DiscoverCard extends ConsumerWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      Colors.black.withOpacity(0.65),
+                      Colors.black.withValues(alpha: 0.65),
                       Colors.transparent,
                     ],
                     begin: Alignment.bottomCenter,
@@ -1197,7 +1201,7 @@ class _UpcomingEventTile extends ConsumerWidget {
               width: 44,
               height: 52,
               decoration: BoxDecoration(
-                color: AppTheme.primaryPink.withOpacity(0.1),
+                color: AppTheme.primaryPink.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Column(
@@ -1305,7 +1309,7 @@ class _FavoriteBtn extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(7),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.35),
+              color: Colors.black.withValues(alpha: 0.35),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
@@ -1358,7 +1362,7 @@ class ErrorDisplayWidget extends StatelessWidget {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppTheme.primaryPink,
                   side: BorderSide(
-                    color: AppTheme.primaryPink.withOpacity(0.5),
+                    color: AppTheme.primaryPink.withValues(alpha: 0.5),
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -1706,7 +1710,7 @@ class _FootballRefreshIndicatorState extends State<_FootballRefreshIndicator>
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.greenMain.withOpacity(0.45),
+                                  color: AppColors.greenMain.withValues(alpha: 0.45),
                                   blurRadius: 14,
                                   offset: const Offset(0, 4),
                                 ),

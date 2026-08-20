@@ -8,17 +8,14 @@ import '../providers/match_providers.dart';
 import '../providers/community_providers.dart';
 import '../providers/shop_providers.dart';
 import '../providers/navigation_providers.dart';
-
-import 'tickets.dart';
 import 'matches.dart';
 import 'match_center.dart';
-import 'community.dart';
 import 'monthly_contribution.dart';
 import 'shop.dart';
 import 'shop_product_details.dart';
 import 'group_details.dart';
 import 'booking.dart';
-import 'package:gormahiafc/providers/user_providers.dart';
+import 'package:kogalo_network/pages/shop_cart.dart';
 
 EventModel _matchToEvent(MatchModel match) {
   return EventModel(
@@ -50,7 +47,7 @@ class ShimmerBox extends StatelessWidget {
       height: height,
       margin: margin,
       decoration: BoxDecoration(
-        color: Theme.of(context).dividerColor.withOpacity(0.05),
+        color: Theme.of(context).dividerColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
       ),
     );
@@ -217,10 +214,10 @@ class LiveNowSection extends ConsumerWidget {
                       margin: const EdgeInsets.only(right: 16),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryGreen.withOpacity(0.15),
+                        color: AppColors.primaryGreen.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: AppColors.primaryGreen.withOpacity(0.3),
+                          color: AppColors.primaryGreen.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Column(
@@ -384,18 +381,16 @@ class QuickAccessSection extends ConsumerWidget {
                 icon: Icons.sports_score_outlined,
                 label: 'Live Score',
                 onTap: () {
-                  ref.read(mainShellTabIndexProvider.notifier).state = 1;
+                  ref.read(mainShellTabIndexProvider.notifier).state = 4;
                   ref.read(matchesTabIndexProvider.notifier).state =
                       1; // Live tab
                 },
               ),
               QuickAccessItem(
-                icon: Icons.calendar_month_outlined,
-                label: 'Fixtures',
+                icon: Icons.play_circle_outline,
+                label: 'Reels',
                 onTap: () {
                   ref.read(mainShellTabIndexProvider.notifier).state = 1;
-                  ref.read(matchesTabIndexProvider.notifier).state =
-                      0; // Fixtures tab
                 },
               ),
               QuickAccessItem(
@@ -452,7 +447,7 @@ class QuickAccessItem extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: Theme.of(context).dividerColor.withOpacity(0.05),
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.05),
               shape: BoxShape.circle,
             ),
             child: Icon(
@@ -469,7 +464,7 @@ class QuickAccessItem extends StatelessWidget {
             style: TextStyle(
               color: Theme.of(
                 context,
-              ).textTheme.bodyLarge?.color?.withOpacity(0.7),
+              ).textTheme.bodyLarge?.color?.withValues(alpha: 0.7),
               fontSize: 10,
             ),
           ),
@@ -548,10 +543,10 @@ class UpcomingMatchTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Theme.of(context).dividerColor.withOpacity(0.03),
+        color: Theme.of(context).dividerColor.withValues(alpha: 0.03),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Theme.of(context).dividerColor.withOpacity(0.05),
+          color: Theme.of(context).dividerColor.withValues(alpha: 0.05),
         ),
       ),
       child: Row(
@@ -560,7 +555,7 @@ class UpcomingMatchTile extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: Theme.of(context).dividerColor.withOpacity(0.1),
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child:
@@ -571,7 +566,7 @@ class UpcomingMatchTile extends StatelessWidget {
                     Icons.sports_soccer,
                     color: Theme.of(
                       context,
-                    ).textTheme.bodyLarge?.color?.withOpacity(0.54),
+                    ).textTheme.bodyLarge?.color?.withValues(alpha: 0.54),
                   ),
           ),
           const SizedBox(width: 12),
@@ -584,7 +579,7 @@ class UpcomingMatchTile extends StatelessWidget {
                   style: TextStyle(
                     color: Theme.of(
                       context,
-                    ).textTheme.bodyLarge?.color?.withOpacity(0.7),
+                    ).textTheme.bodyLarge?.color?.withValues(alpha: 0.7),
                     fontSize: 10,
                   ),
                 ),
@@ -604,7 +599,7 @@ class UpcomingMatchTile extends StatelessWidget {
                   style: TextStyle(
                     color: Theme.of(
                       context,
-                    ).textTheme.bodyLarge?.color?.withOpacity(0.54),
+                    ).textTheme.bodyLarge?.color?.withValues(alpha: 0.54),
                     fontSize: 10,
                   ),
                   maxLines: 1,
@@ -717,7 +712,7 @@ class _CommunityGroupsSectionState
                           image: CachedNetworkImageProvider(group.imageUrl!),
                           fit: BoxFit.cover,
                           colorFilter: ColorFilter.mode(
-                            Colors.black.withOpacity(0.6),
+                            Colors.black.withValues(alpha: 0.6),
                             BlendMode.darken,
                           ),
                         )
@@ -813,9 +808,11 @@ class SupportBannerSection extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.primaryGreen.withOpacity(0.15),
+          color: AppColors.primaryGreen.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.primaryGreen.withOpacity(0.3)),
+          border: Border.all(
+            color: AppColors.primaryGreen.withValues(alpha: 0.3),
+          ),
         ),
         child: Row(
           children: [
@@ -823,7 +820,7 @@ class SupportBannerSection extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: AppColors.primaryGreen.withOpacity(0.2),
+                color: AppColors.primaryGreen.withValues(alpha: 0.2),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -852,7 +849,7 @@ class SupportBannerSection extends StatelessWidget {
                     style: TextStyle(
                       color: Theme.of(
                         context,
-                      ).textTheme.bodyLarge?.color?.withOpacity(0.7),
+                      ).textTheme.bodyLarge?.color?.withValues(alpha: 0.7),
                       fontSize: 11,
                     ),
                   ),
@@ -943,112 +940,187 @@ class FanShopSection extends ConsumerWidget {
                 itemCount: products.length,
                 itemBuilder: (context, index) {
                   final product = products[index];
-                  return Container(
-                    width: 140,
-                    margin: const EdgeInsets.only(right: 12),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).dividerColor.withOpacity(0.03),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: Theme.of(context).dividerColor.withOpacity(0.05),
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ProductDetailsPage(product: product),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      width: 140,
+                      margin: const EdgeInsets.only(right: 12),
+                      decoration: BoxDecoration(
+                        color: Theme.of(
+                          context,
+                        ).dividerColor.withValues(alpha: 0.03),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Theme.of(
+                            context,
+                          ).dividerColor.withValues(alpha: 0.05),
+                        ),
                       ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: ClipRRect(
-                            borderRadius: const BorderRadius.vertical(
-                              top: Radius.circular(12),
-                            ),
-                            child: Container(
-                              color: Colors.white,
-                              width: double.infinity,
-                              child: CachedNetworkImage(
-                                imageUrl: product.image ?? '',
-                                fit: BoxFit.contain,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: ClipRRect(
+                              borderRadius: const BorderRadius.vertical(
+                                top: Radius.circular(12),
+                              ),
+                              child: Container(
+                                color: Colors.white,
                                 width: double.infinity,
-                                errorWidget: (_, __, ___) => Container(
-                                  color: Theme.of(
-                                    context,
-                                  ).dividerColor.withOpacity(0.1),
-                                  child: Icon(
-                                    Icons.shopping_bag_outlined,
+                                child: CachedNetworkImage(
+                                  imageUrl: product.image ?? '',
+                                  fit: BoxFit.contain,
+                                  width: double.infinity,
+                                  errorWidget: (_, __, ___) => Container(
+                                    color: Theme.of(
+                                      context,
+                                    ).dividerColor.withValues(alpha: 0.1),
+                                    child: Icon(
+                                      Icons.shopping_bag_outlined,
+                                      color: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge
+                                          ?.color
+                                          ?.withValues(alpha: 0.54),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(10),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  product.name ?? 'Product',
+                                  style: TextStyle(
+                                    fontSize: 11,
                                     color: Theme.of(context)
                                         .textTheme
                                         .bodyLarge
                                         ?.color
-                                        ?.withOpacity(0.54),
+                                        ?.withValues(alpha: 0.8),
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'KSH ${product.price ?? 0}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
                                   ),
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    onPressed: () async {
+                                      int? variantId;
+                                      if (product.variants.isNotEmpty) {
+                                        variantId = product.variants.first.id;
+                                      }
+
+                                      showDialog(
+                                        context: context,
+                                        barrierDismissible: false,
+                                        builder: (context) => const Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                      );
+
+                                      try {
+                                        await ref
+                                            .read(shopRepositoryProvider)
+                                            .addToCart(
+                                              productId: product.id,
+                                              variantId: variantId,
+                                              quantity: 1,
+                                            );
+                                        ref.invalidate(shopCartProvider);
+
+                                        if (context.mounted) {
+                                          Navigator.pop(
+                                            context,
+                                          ); // Close loading
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                '${product.name} added to cart!',
+                                              ),
+                                              backgroundColor:
+                                                  AppColors.primaryGreen,
+                                              duration: const Duration(
+                                                seconds: 1,
+                                              ),
+                                            ),
+                                          );
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  const ShopCartPage(),
+                                            ),
+                                          );
+                                        }
+                                      } catch (e) {
+                                        if (context.mounted) {
+                                          Navigator.pop(
+                                            context,
+                                          ); // Close loading
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(
+                                              content: Text(
+                                                e.toString().replaceAll(
+                                                  'Exception: ',
+                                                  '',
+                                                ),
+                                              ),
+                                              backgroundColor: Colors.redAccent,
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.primaryGreen,
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 6,
+                                      ),
+                                      minimumSize: Size.zero,
+                                    ),
+                                    child: const Text(
+                                      'ADD TO CART',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(10),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                product.name ?? 'Product',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge
-                                      ?.color
-                                      ?.withOpacity(0.8),
-                                ),
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'KSH ${product.price ?? 0}',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => ProductDetailsPage(
-                                          product: product,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.primaryGreen,
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 6,
-                                    ),
-                                    minimumSize: Size.zero,
-                                  ),
-                                  child: const Text(
-                                    'ADD TO CART',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   );
                 },

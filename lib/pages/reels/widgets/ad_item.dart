@@ -1,17 +1,82 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 import '../../../models/reels_model.dart';
+import '../../../repositories/reels_repository.dart';
 
-class AdItem extends StatelessWidget {
+class AdItem extends ConsumerStatefulWidget {
   final Reel ad;
   final VideoPlayerController? controller;
+  final bool isCurrent;
 
-  const AdItem({super.key, required this.ad, this.controller});
+  const AdItem({
+    super.key, 
+    required this.ad, 
+    this.controller,
+    this.isCurrent = false,
+  });
+
+  @override
+  ConsumerState<AdItem> createState() => _AdItemState();
+}
+
+class _AdItemState extends ConsumerState<AdItem> {
+  DateTime? _viewStartTime;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.isCurrent) {
+      _viewStartTime = DateTime.now();
+    }
+  }
+
+  @override
+  void didUpdateWidget(AdItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isCurrent && !oldWidget.isCurrent) {
+      // Started viewing
+      _viewStartTime = DateTime.now();
+    } else if (!widget.isCurrent && oldWidget.isCurrent) {
+      // Stopped viewing
+      _sendInteraction();
+    }
+  }
+
+  @override
+  void dispose() {
+    if (widget.isCurrent) {
+      _sendInteraction();
+    }
+    super.dispose();
+  }
+
+  void _sendInteraction({bool clicked = false}) {
+    if (_viewStartTime == null && !clicked) return;
+    
+    int? watchedSeconds;
+    if (_viewStartTime != null) {
+      watchedSeconds = DateTime.now().difference(_viewStartTime!).inSeconds;
+      if (!clicked) {
+        _viewStartTime = null; // Reset if we're sending watch time
+      }
+    }
+
+    if ((watchedSeconds != null && watchedSeconds > 0) || clicked) {
+      ref.read(reelsRepositoryProvider).recordAdInteraction(
+        widget.ad.id,
+        watchedSeconds: (watchedSeconds != null && watchedSeconds > 0) ? watchedSeconds : null,
+        clicked: clicked ? true : null,
+      );
+    }
+  }
 
   Future<void> _launchUrl() async {
-    final urlStr = ad.linkUrl;
+    final urlStr = widget.ad.linkUrl;
     if (urlStr == null || urlStr.isEmpty) return;
+    
+    _sendInteraction(clicked: true);
     
     final uri = Uri.parse(urlStr);
     if (await canLaunchUrl(uri)) {
@@ -21,7 +86,7 @@ class AdItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasVideoController = controller != null && controller!.value.isInitialized;
+    final hasVideoController = widget.controller != null && widget.controller!.value.isInitialized;
 
     return Stack(
       fit: StackFit.expand,
@@ -30,26 +95,26 @@ class AdItem extends StatelessWidget {
         Container(color: Colors.black),
         
         // Media (Video or Image)
-        if (ad.mediaType == 'video' && hasVideoController)
+        if (widget.ad.mediaType == 'video' && hasVideoController)
           SizedBox.expand(
             child: FittedBox(
-              fit: controller!.value.size.height >= controller!.value.size.width
+              fit: widget.controller!.value.size.height >= widget.controller!.value.size.width
                   ? BoxFit.cover
                   : BoxFit.contain,
               child: SizedBox(
-                width: controller!.value.size.width,
-                height: controller!.value.size.height,
-                child: VideoPlayer(controller!),
+                width: widget.controller!.value.size.width,
+                height: widget.controller!.value.size.height,
+                child: VideoPlayer(widget.controller!),
               ),
             ),
           )
-        else if (ad.mediaType == 'video' && !hasVideoController)
+        else if (widget.ad.mediaType == 'video' && !hasVideoController)
           const Center(
             child: CircularProgressIndicator(color: Colors.white54),
           )
-        else if (ad.mediaType == 'image' && ad.mediaUrl != null && ad.mediaUrl!.isNotEmpty)
+        else if (widget.ad.mediaType == 'image' && widget.ad.mediaUrl != null && widget.ad.mediaUrl!.isNotEmpty)
           Image.network(
-            ad.mediaUrl!,
+            widget.ad.mediaUrl!,
             fit: BoxFit.cover,
             errorBuilder: (context, error, stackTrace) => const Center(
               child: Icon(Icons.broken_image, color: Colors.white54, size: 50),
@@ -105,9 +170,9 @@ class AdItem extends StatelessWidget {
               const SizedBox(height: 12),
               
               // Description / Caption
-              if (ad.caption != null && ad.caption!.isNotEmpty) ...[
+              if (widget.ad.caption != null && widget.ad.caption!.isNotEmpty) ...[
                 Text(
-                  ad.caption!,
+                  widget.ad.caption!,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 16,
@@ -119,7 +184,7 @@ class AdItem extends StatelessWidget {
               ],
               
               // CTA Button
-              if (ad.ctaLabel != null && ad.ctaLabel!.isNotEmpty)
+              if (widget.ad.ctaLabel != null && widget.ad.ctaLabel!.isNotEmpty)
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -132,7 +197,7 @@ class AdItem extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      ad.ctaLabel!,
+                      widget.ad.ctaLabel!,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,

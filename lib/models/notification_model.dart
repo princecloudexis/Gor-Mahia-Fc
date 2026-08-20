@@ -1,4 +1,4 @@
-import 'package:gormahiafc/providers/notifications_providers.dart';
+import 'package:kogalo_network/providers/notifications_providers.dart';
 
 class NotificationModel {
   final String id;

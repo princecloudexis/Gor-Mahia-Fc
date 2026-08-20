@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:gormahiafc/models/location_model.dart';
+import 'package:kogalo_network/models/location_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 const String _locationKey = 'last_known_location';

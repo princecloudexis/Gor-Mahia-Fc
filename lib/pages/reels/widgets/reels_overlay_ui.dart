@@ -9,6 +9,7 @@ class ReelsOverlayUI extends StatelessWidget {
   final VoidCallback onSharePressed;
   final VoidCallback onCommentsPressed;
   final VoidCallback onMoreOptionsPressed;
+  final VoidCallback onDescriptionPressed;
 
   const ReelsOverlayUI({
     super.key,
@@ -18,6 +19,7 @@ class ReelsOverlayUI extends StatelessWidget {
     required this.onSharePressed,
     required this.onCommentsPressed,
     required this.onMoreOptionsPressed,
+    required this.onDescriptionPressed,
   });
 
   String _formatCount(int count) {
@@ -121,7 +123,20 @@ class ReelsOverlayUI extends StatelessWidget {
                 const SizedBox(height: 9),
                 // Caption
                 if (reel.caption != null && reel.caption!.isNotEmpty) ...[
-                  _ExpandableCaption(text: reel.caption!),
+                  GestureDetector(
+                    onTap: onDescriptionPressed,
+                    child: Text(
+                      reel.caption!,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13.5,
+                        height: 1.3,
+                        shadows: [Shadow(blurRadius: 3, color: Colors.black45)],
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                   const SizedBox(height: 9),
                 ],
                 // Audio
@@ -133,7 +148,7 @@ class ReelsOverlayUI extends StatelessWidget {
                       child: Text(
                         'Original Audio - ${reel.authorName}',
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.88),
+                          color: Colors.white.withValues(alpha: 0.88),
                           fontSize: 12.5,
                           shadows: const [
                             Shadow(blurRadius: 3, color: Colors.black45),
@@ -206,42 +221,3 @@ class _ActionBtn extends StatelessWidget {
   }
 }
 
-// ── Expandable caption ───────────────────────────────────────────────────────
-class _ExpandableCaption extends StatefulWidget {
-  final String text;
-
-  const _ExpandableCaption({required this.text});
-
-  @override
-  State<_ExpandableCaption> createState() => _ExpandableCaptionState();
-}
-
-class _ExpandableCaptionState extends State<_ExpandableCaption> {
-  bool _isExpanded = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _isExpanded = !_isExpanded;
-        });
-      },
-      child: AnimatedSize(
-        duration: const Duration(milliseconds: 200),
-        alignment: Alignment.topLeft,
-        child: Text(
-          widget.text,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 13.5,
-            height: 1.3,
-            shadows: [Shadow(blurRadius: 3, color: Colors.black45)],
-          ),
-          maxLines: _isExpanded ? null : 2,
-          overflow: _isExpanded ? null : TextOverflow.ellipsis,
-        ),
-      ),
-    );
-  }
-}

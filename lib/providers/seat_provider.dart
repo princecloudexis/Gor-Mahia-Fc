@@ -5,7 +5,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gormahiafc/repositories/event_repositories.dart';
+import 'package:kogalo_network/repositories/event_repositories.dart';
 import '../models/seat_layout_model.dart';
 
 final selectedSeatsProvider = StateProvider.autoDispose<Set<String>>(

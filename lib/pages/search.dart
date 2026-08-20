@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:gormahiafc/pages/details.dart';
+import 'package:kogalo_network/pages/details.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -229,7 +229,7 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           height: maxExtent,
-          color: theme.scaffoldBackgroundColor.withOpacity(0.9),
+          color: theme.scaffoldBackgroundColor.withValues(alpha: 0.9),
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
           child: Consumer(
             builder: (context, ref, _) {
@@ -240,6 +240,7 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
                   return TextField(
                     controller: controller,
                     autofocus: false,
+                    cursorColor: AppColors.primaryGreen,
                     onChanged: (query) {
                       ref.read(searchProvider.notifier).onQueryChanged(query);
                     },
@@ -247,12 +248,12 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
                     decoration: InputDecoration(
                       hintText: 'Search here...',
                       hintStyle: TextStyle(
-                        color: theme.hintColor.withOpacity(0.6),
+                        color: theme.hintColor.withValues(alpha: 0.6),
                         fontSize: 15,
                       ),
-                      prefixIcon: Icon(
+                      prefixIcon: const Icon(
                         Icons.search,
-                        color: theme.colorScheme.primary,
+                        color: AppColors.primaryGreen,
                         size: 24,
                       ),
                       suffixIcon: value.text.isNotEmpty
@@ -279,21 +280,21 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30),
                         borderSide: BorderSide(
-                          color: theme.dividerColor.withOpacity(0.3),
+                          color: theme.dividerColor.withValues(alpha: 0.3),
                           width: 1,
                         ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30),
                         borderSide: BorderSide(
-                          color: theme.dividerColor.withOpacity(0.3),
+                          color: theme.dividerColor.withValues(alpha: 0.3),
                           width: 1,
                         ),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(30),
-                        borderSide: BorderSide(
-                          color: theme.colorScheme.primary,
+                        borderSide: const BorderSide(
+                          color: AppColors.primaryGreen,
                           width: 2,
                         ),
                       ),
@@ -333,7 +334,7 @@ class _FilterSectionHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
+              color: theme.colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, size: 16, color: theme.colorScheme.primary),
@@ -384,20 +385,20 @@ class _CustomFilterChip extends StatelessWidget {
           border: Border.all(
             color: isSelected
                 ? Colors.transparent
-                : theme.dividerColor.withOpacity(0.3),
+                : theme.dividerColor.withValues(alpha: 0.3),
             width: isSelected ? 0 : 1,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: theme.colorScheme.primary.withOpacity(0.3),
+                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   ),
                 ]
               : [
                   BoxShadow(
-                    color: theme.shadowColor.withOpacity(0.05),
+                    color: theme.shadowColor.withValues(alpha: 0.05),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -413,7 +414,7 @@ class _CustomFilterChip extends StatelessWidget {
               Icon(
                 Icons.check_circle,
                 size: 18,
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
               ),
               const SizedBox(width: 8),
             ],
@@ -548,7 +549,7 @@ class _CategoryFilterBar extends ConsumerWidget {
                     colorFilter: ColorFilter.mode(
                       isSelected
                           ? Colors.white
-                          : theme.colorScheme.primary.withOpacity(0.7),
+                          : theme.colorScheme.primary.withValues(alpha: 0.7),
                       BlendMode.srcIn,
                     ),
                   )
@@ -608,7 +609,7 @@ class _SearchResultItem extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: theme.shadowColor.withOpacity(0.08),
+            color: theme.shadowColor.withValues(alpha: 0.08),
             spreadRadius: 1,
             blurRadius: 10,
             offset: const Offset(0, 4),
@@ -758,7 +759,7 @@ class _SearchResultItem extends ConsumerWidget {
                                         ]
                                       : [
                                           theme.colorScheme.primary,
-                                          theme.colorScheme.primary.withOpacity(
+                                          theme.colorScheme.primary.withValues(alpha: 
                                             0.85,
                                           ),
                                         ],
@@ -772,7 +773,7 @@ class _SearchResultItem extends ConsumerWidget {
                                         (isFree
                                                 ? Colors.green
                                                 : theme.colorScheme.primary)
-                                            .withOpacity(0.25),
+                                            .withValues(alpha: 0.25),
                                     spreadRadius: 0,
                                     blurRadius: 4,
                                     offset: const Offset(0, 2),
@@ -819,8 +820,8 @@ class _InitialView extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  theme.colorScheme.primary.withOpacity(0.15),
-                  theme.colorScheme.primary.withOpacity(0.05),
+                  theme.colorScheme.primary.withValues(alpha: 0.15),
+                  theme.colorScheme.primary.withValues(alpha: 0.05),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -855,10 +856,10 @@ class _InitialView extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
+              color: theme.colorScheme.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(25),
               border: Border.all(
-                color: theme.colorScheme.primary.withOpacity(0.2),
+                color: theme.colorScheme.primary.withValues(alpha: 0.2),
               ),
             ),
             child: Row(
@@ -903,8 +904,8 @@ class _NoResultsView extends ConsumerWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  theme.colorScheme.error.withOpacity(0.15),
-                  theme.colorScheme.error.withOpacity(0.05),
+                  theme.colorScheme.error.withValues(alpha: 0.15),
+                  theme.colorScheme.error.withValues(alpha: 0.05),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,

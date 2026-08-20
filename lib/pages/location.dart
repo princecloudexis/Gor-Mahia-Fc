@@ -1,8 +1,8 @@
 import 'dart:ui';
-import 'package:gormahiafc/models/location_model.dart';
-import 'package:gormahiafc/providers/event_providers.dart';
-import 'package:gormahiafc/providers/location_providers.dart';
-import 'package:gormahiafc/theme/apptheme.dart';
+import 'package:kogalo_network/models/location_model.dart';
+import 'package:kogalo_network/providers/event_providers.dart';
+import 'package:kogalo_network/providers/location_providers.dart';
+import 'package:kogalo_network/theme/apptheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -122,7 +122,7 @@ class _ErrorView extends StatelessWidget {
               onPressed: onRetry,
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppTheme.primaryPink,
-                side: BorderSide(color: AppTheme.primaryPink.withOpacity(0.5)),
+                side: BorderSide(color: AppTheme.primaryPink.withValues(alpha: 0.5)),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -216,7 +216,7 @@ class _SearchDelegate extends SliverPersistentHeaderDelegate {
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
-          color: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.95),
+          color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.95),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Consumer(
             builder: (context, ref, _) {
@@ -257,7 +257,7 @@ class _SearchDelegate extends SliverPersistentHeaderDelegate {
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
-                      color: AppTheme.primaryPink.withOpacity(0.5),
+                      color: AppTheme.primaryPink.withValues(alpha: 0.5),
                     ),
                   ),
                 ),
@@ -307,9 +307,9 @@ class _CurrentLocationTileState extends ConsumerState<_CurrentLocationTile> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
-          color: AppTheme.primaryPink.withOpacity(0.06),
+          color: AppTheme.primaryPink.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppTheme.primaryPink.withOpacity(0.25)),
+          border: Border.all(color: AppTheme.primaryPink.withValues(alpha: 0.25)),
         ),
         child: Row(
           children: [
@@ -317,7 +317,7 @@ class _CurrentLocationTileState extends ConsumerState<_CurrentLocationTile> {
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: AppTheme.primaryPink.withOpacity(0.1),
+                color: AppTheme.primaryPink.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
@@ -507,7 +507,7 @@ class _CityList extends ConsumerWidget {
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                          color: AppTheme.primaryPink.withOpacity(0.08),
+                          color: AppTheme.primaryPink.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Center(

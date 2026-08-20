@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>FootBall.Ios1</string>
+	<string>com.kogalonetwork.app</string>
 	<key>PROJECT_ID</key>
 	<string>footballstaging</string>
 	<key>STORAGE_BUCKET</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:503736580212:ios:7eeefe1057eeacbe3af921</string>
+	<string>1:503736580212:ios:226cd9edc63802213af921</string>
 </dict>
 </plist>

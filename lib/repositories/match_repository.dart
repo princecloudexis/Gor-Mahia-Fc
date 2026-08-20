@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api/api_client.dart';
 import '../models/match_models.dart';
@@ -12,7 +13,7 @@ class MatchRepository {
       final response = await _apiClient.dio.get('/user/matches/fixtures');
       return MatchFixturesResponse.fromJson(response.data);
     } catch (e) {
-      print('Error fetching fixtures: $e');
+      debugPrint('Error fetching fixtures: $e');
       rethrow;
     }
   }
@@ -22,7 +23,7 @@ class MatchRepository {
       final response = await _apiClient.dio.get('/user/matches/results');
       return MatchResultsResponse.fromJson(response.data);
     } catch (e) {
-      print('Error fetching results: $e');
+      debugPrint('Error fetching results: $e');
       rethrow;
     }
   }
@@ -32,7 +33,7 @@ class MatchRepository {
       final response = await _apiClient.dio.get('/user/matches/live');
       return MatchLiveResponse.fromJson(response.data);
     } catch (e) {
-      print('Error fetching live matches: $e');
+      debugPrint('Error fetching live matches: $e');
       rethrow;
     }
   }
@@ -42,7 +43,7 @@ class MatchRepository {
       final response = await _apiClient.dio.get('/user/matches/$matchId/lineup');
       return MatchLineupResponse.fromJson(response.data);
     } catch (e) {
-      print('Error fetching match lineup for $matchId: $e');
+      debugPrint('Error fetching match lineup for $matchId: $e');
       rethrow;
     }
   }
@@ -52,7 +53,7 @@ class MatchRepository {
       final response = await _apiClient.dio.get('/user/matches/$matchId/stats');
       return MatchStatsResponse.fromJson(response.data);
     } catch (e) {
-      print('Error fetching match stats for $matchId: $e');
+      debugPrint('Error fetching match stats for $matchId: $e');
       rethrow;
     }
   }
@@ -62,7 +63,7 @@ class MatchRepository {
       final response = await _apiClient.dio.get('/user/matches/$matchId/chat');
       return MatchChatResponse.fromJson(response.data);
     } catch (e) {
-      print('Error fetching match chat for $matchId: $e');
+      debugPrint('Error fetching match chat for $matchId: $e');
       rethrow;
     }
   }
@@ -80,7 +81,7 @@ class MatchRepository {
         throw Exception("Failed to get message data from response.");
       }
     } catch (e) {
-      print('Error posting match chat for $matchId: $e');
+      debugPrint('Error posting match chat for $matchId: $e');
       rethrow;
     }
   }
@@ -93,7 +94,7 @@ class MatchRepository {
       }
       throw Exception("No broadcasting config data found.");
     } catch (e) {
-      print('Error fetching broadcasting config: $e');
+      debugPrint('Error fetching broadcasting config: $e');
       rethrow;
     }
   }
@@ -103,7 +104,7 @@ class MatchRepository {
       final response = await _apiClient.dio.get('/user/matches/$matchId/summary');
       return MatchSummaryResponse.fromJson(response.data);
     } catch (e) {
-      print('Error fetching match summary for $matchId: $e');
+      debugPrint('Error fetching match summary for $matchId: $e');
       rethrow;
     }
   }
@@ -113,7 +114,7 @@ class MatchRepository {
       final response = await _apiClient.dio.get('/user/matches/$matchId');
       return MatchOverviewResponse.fromJson(response.data);
     } catch (e) {
-      print('Error fetching match overview for $matchId: $e');
+      debugPrint('Error fetching match overview for $matchId: $e');
       rethrow;
     }
   }

@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:gormahiafc/api/api_client.dart';
-import 'package:gormahiafc/models/shop_models.dart';
+import 'package:kogalo_network/api/api_client.dart';
+import 'package:kogalo_network/models/shop_models.dart';
 import 'package:flutter/foundation.dart';
 
 class ShopRepository {

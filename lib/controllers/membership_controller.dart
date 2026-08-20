@@ -1,6 +1,6 @@
-import 'package:gormahiafc/models/membership_models.dart';
-import 'package:gormahiafc/providers/user_providers.dart';
-import 'package:gormahiafc/repositories/membership_repository.dart';
+import 'package:kogalo_network/models/membership_models.dart';
+import 'package:kogalo_network/providers/user_providers.dart';
+import 'package:kogalo_network/repositories/membership_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 enum MembershipStatus { initial, loading, loaded, submitting, success, error }
@@ -71,7 +71,6 @@ class MembershipController extends StateNotifier<MembershipState> {
     state = state.copyWith(status: MembershipStatus.submitting, errorMessage: null);
     try {
       final response = await _repository.submitMembership(
-        userId: user.id.toString(),
         country: country,
         branchId: branchId,
         packageId: packageId,

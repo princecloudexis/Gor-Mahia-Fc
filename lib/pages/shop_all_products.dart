@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:kogalo_network/config/app_config.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gormahiafc/theme/app_colors.dart';
-import 'package:gormahiafc/models/shop_models.dart';
-import 'package:gormahiafc/pages/shop_product_details.dart';
+import 'package:kogalo_network/theme/app_colors.dart';
+import 'package:kogalo_network/models/shop_models.dart';
+import 'package:kogalo_network/pages/shop_product_details.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class ShopAllProductsPage extends ConsumerWidget {
@@ -18,7 +19,7 @@ class ShopAllProductsPage extends ConsumerWidget {
   String _getImageUrl(String? path) {
     if (path == null || path.isEmpty) return '';
     if (path.startsWith('http')) return path;
-    return 'https://footballclub.staging-workhub.com/${path.replaceFirst(RegExp(r'^/+'), '')}';
+    return '${AppConfig.storageBaseUrl}${path.replaceFirst(RegExp(r'^/+'), '')}';
   }
 
   @override
@@ -118,7 +119,7 @@ class ShopAllProductsPage extends ConsumerWidget {
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                'KES ${product.price.toStringAsFixed(0)}',
+                                'KES ${product.price.toStringAsFixed(2)}',
                                 style: TextStyle(
                                   color: isDark ? Colors.green.shade400 : AppColors.primaryGreen,
                                   fontWeight: FontWeight.bold,

@@ -1,5 +1,5 @@
-import 'package:gormahiafc/models/policy_model.dart';
-import 'package:gormahiafc/theme/apptheme.dart';
+import 'package:kogalo_network/models/policy_model.dart';
+import 'package:kogalo_network/theme/apptheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -115,7 +115,7 @@ class _PolicyItemState extends State<_PolicyItem> {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: _expanded
-              ? AppTheme.primaryPink.withOpacity(0.3)
+              ? AppTheme.primaryPink.withValues(alpha: 0.3)
               : Theme.of(context).dividerColor,
         ),
       ),
@@ -145,12 +145,12 @@ class _PolicyItemState extends State<_PolicyItem> {
             height: 28,
             decoration: BoxDecoration(
               color: _expanded
-                  ? AppTheme.primaryPink.withOpacity(0.1)
+                  ? AppTheme.primaryPink.withValues(alpha: 0.1)
                   : Theme.of(context).scaffoldBackgroundColor,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
                 color: _expanded
-                    ? AppTheme.primaryPink.withOpacity(0.3)
+                    ? AppTheme.primaryPink.withValues(alpha: 0.3)
                     : Theme.of(context).dividerColor,
               ),
             ),
@@ -293,9 +293,9 @@ class _ErrorState extends StatelessWidget {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: AppTheme.accentRed.withOpacity(0.08),
+                color: AppTheme.accentRed.withValues(alpha: 0.08),
                 shape: BoxShape.circle,
-                border: Border.all(color: AppTheme.accentRed.withOpacity(0.2)),
+                border: Border.all(color: AppTheme.accentRed.withValues(alpha: 0.2)),
               ),
               child: Icon(
                 Icons.cloud_off_outlined,

@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:503736580212:android:774577e44f756ba33af921",
+        "mobilesdk_app_id": "1:503736580212:android:505dc4013db8140f3af921",
         "android_client_info": {
-          "package_name": "FootBall.Ard1"
+          "package_name": "com.kogalonetwork.app"
         }
       },
       "oauth_client": [],

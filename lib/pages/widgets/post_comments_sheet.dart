@@ -203,7 +203,7 @@ class _PostCommentsSheetState extends ConsumerState<PostCommentsSheet> {
                         child: Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(0.6),
+                            color: Colors.black.withValues(alpha: 0.6),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -315,8 +315,8 @@ class _PostCommentsSheetState extends ConsumerState<PostCommentsSheet> {
                           child: Container(
                             decoration: BoxDecoration(
                               color: isDark
-                                  ? Colors.white.withOpacity(0.05)
-                                  : Colors.black.withOpacity(0.05),
+                                  ? Colors.white.withValues(alpha: 0.05)
+                                  : Colors.black.withValues(alpha: 0.05),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: TextField(
@@ -512,7 +512,7 @@ class _PostCommentsSheetState extends ConsumerState<PostCommentsSheet> {
               else
                 CircleAvatar(
                   radius: isReply ? 12 : 16,
-                  backgroundColor: AppColors.primaryGreen.withOpacity(0.15),
+                  backgroundColor: AppColors.primaryGreen.withValues(alpha: 0.15),
                   child: Icon(
                     Icons.person,
                     size: isReply ? 16 : 20,
@@ -528,8 +528,8 @@ class _PostCommentsSheetState extends ConsumerState<PostCommentsSheet> {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: isDark
-                            ? Colors.white.withOpacity(0.05)
-                            : Colors.black.withOpacity(0.05),
+                            ? Colors.white.withValues(alpha: 0.05)
+                            : Colors.black.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Column(

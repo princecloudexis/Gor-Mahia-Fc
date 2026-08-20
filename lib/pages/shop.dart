@@ -1,19 +1,21 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:kogalo_network/config/app_config.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gormahiafc/theme/app_colors.dart';
-import 'package:gormahiafc/theme/apptheme.dart';
+import 'package:kogalo_network/theme/app_colors.dart';
+import 'package:kogalo_network/theme/apptheme.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:gormahiafc/pages/shop_product_details.dart';
-import 'package:gormahiafc/models/shop_models.dart';
-import 'package:gormahiafc/providers/shop_providers.dart';
+import 'package:kogalo_network/pages/shop_product_details.dart';
+import 'package:kogalo_network/models/shop_models.dart';
+import 'package:kogalo_network/providers/shop_providers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:gormahiafc/pages/shop_cart.dart';
-import 'package:gormahiafc/pages/shop_orders.dart';
+import 'package:kogalo_network/pages/shop_cart.dart';
+import 'package:kogalo_network/pages/shop_orders.dart';
 import 'profile.dart';
 import 'search.dart';
 import '../widgets/top_action_btn.dart';
-import 'package:gormahiafc/pages/shop_all_products.dart';
-import 'package:gormahiafc/pages/home_dashboard_sections.dart';
+import 'package:kogalo_network/pages/shop_all_products.dart';
+import 'package:kogalo_network/pages/home_dashboard_sections.dart';
 
 class Shop extends ConsumerStatefulWidget {
   const Shop({super.key});
@@ -27,7 +29,7 @@ class _ShopState extends ConsumerState<Shop> {
   String _getImageUrl(String? path) {
     if (path == null || path.isEmpty) return '';
     if (path.startsWith('http')) return path;
-    return 'https://footballclub.staging-workhub.com/' +
+    return AppConfig.storageBaseUrl +
         path.replaceFirst(RegExp(r'^/+'), '');
   }
 
@@ -156,7 +158,7 @@ class _ShopState extends ConsumerState<Shop> {
                     child: Center(
                       child: Text(
                         'No banners available',
-                        style: TextStyle(color: Colors.white.withOpacity(0.5)),
+                        style: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
                       ),
                     ),
                   );
@@ -171,7 +173,7 @@ class _ShopState extends ConsumerState<Shop> {
                 margin: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
               ),
               error: (err, stack) {
-                print('Error: $err');
+                debugPrint('Error: $err');
                 return Center(child: Text('Error: $err'));
               },
             ),
@@ -199,7 +201,7 @@ class _ShopState extends ConsumerState<Shop> {
                 margin: EdgeInsets.symmetric(horizontal: 20),
               ),
               error: (err, stack) {
-                print('Error: $err');
+                debugPrint('Error: $err');
                 return Center(child: Text('Error: $err'));
               },
             ),
@@ -227,7 +229,7 @@ class _ShopState extends ConsumerState<Shop> {
                 margin: EdgeInsets.symmetric(horizontal: 20),
               ),
               error: (err, stack) {
-                print('Error: $err');
+                debugPrint('Error: $err');
                 return Center(child: Text('Error: $err'));
               },
             ),
@@ -266,7 +268,7 @@ class _ShopState extends ConsumerState<Shop> {
                 margin: EdgeInsets.symmetric(horizontal: 20),
               ),
               error: (err, stack) {
-                print('Error: $err');
+                debugPrint('Error: $err');
                 return Center(child: Text('Error: $err'));
               },
             ),
@@ -334,13 +336,13 @@ class _ShopState extends ConsumerState<Shop> {
           image: const AssetImage('assets/images/banner.jpg'),
           fit: BoxFit.cover,
           colorFilter: ColorFilter.mode(
-            Colors.black.withOpacity(0.4),
+            Colors.black.withValues(alpha: 0.4),
             BlendMode.darken,
           ),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -368,7 +370,7 @@ class _ShopState extends ConsumerState<Shop> {
                   Text(
                     banner.subtitle!,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
                     ),
@@ -577,7 +579,7 @@ class _ShopState extends ConsumerState<Shop> {
                     border: Border.all(
                       color: isSelected
                           ? AppColors.primaryGreen
-                          : Colors.grey.withOpacity(0.3),
+                          : Colors.grey.withValues(alpha: 0.3),
                     ),
                   ),
                   alignment: Alignment.center,
@@ -741,14 +743,14 @@ class _ProductCardState extends ConsumerState<_ProductCard> {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isDark
-                ? Colors.white.withOpacity(0.05)
-                : Colors.grey.withOpacity(0.2),
+                ? Colors.white.withValues(alpha: 0.05)
+                : Colors.grey.withValues(alpha: 0.2),
           ),
           boxShadow: isDark
               ? []
               : [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -762,8 +764,8 @@ class _ProductCardState extends ConsumerState<_ProductCard> {
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: isDark
-                      ? Colors.white.withOpacity(0.05)
-                      : Colors.grey.withOpacity(0.1),
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : Colors.grey.withValues(alpha: 0.1),
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(15),
                   ),
@@ -834,8 +836,8 @@ class _ProductCardState extends ConsumerState<_ProductCard> {
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
                             color: isDark
-                                ? Colors.black.withOpacity(0.3)
-                                : Colors.white.withOpacity(0.7),
+                                ? Colors.black.withValues(alpha: 0.3)
+                                : Colors.white.withValues(alpha: 0.7),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
@@ -876,7 +878,7 @@ class _ProductCardState extends ConsumerState<_ProductCard> {
                     children: [
                       Expanded(
                         child: Text(
-                          'KSh ${widget.product.price.toStringAsFixed(0)}',
+                          'KSh ${widget.product.price.toStringAsFixed(2)}',
                           style: TextStyle(
                             color: isDark
                                 ? AppColors.greenLight
@@ -890,7 +892,7 @@ class _ProductCardState extends ConsumerState<_ProductCard> {
                       Container(
                         padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryGreen.withOpacity(0.1),
+                          color: AppColors.primaryGreen.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Icon(
@@ -981,7 +983,7 @@ class _NewArrivalCardState extends ConsumerState<_NewArrivalCard> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           gradient: LinearGradient(
-            colors: [AppColors.bgDark, AppColors.greenDark.withOpacity(0.8)],
+            colors: [AppColors.bgDark, AppColors.greenDark.withValues(alpha: 0.8)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -995,14 +997,14 @@ class _NewArrivalCardState extends ConsumerState<_NewArrivalCard> {
                   ),
                   fit: BoxFit.cover,
                   colorFilter: ColorFilter.mode(
-                    Colors.black.withOpacity(0.6),
+                    Colors.black.withValues(alpha: 0.6),
                     BlendMode.darken,
                   ),
                 )
               : null,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.15),
+              color: Colors.black.withValues(alpha: 0.15),
               blurRadius: 12,
               offset: const Offset(0, 6),
             ),
@@ -1017,7 +1019,7 @@ class _NewArrivalCardState extends ConsumerState<_NewArrivalCard> {
                 child: Icon(
                   Icons.star_border_rounded,
                   size: 140,
-                  color: Colors.white.withOpacity(0.05),
+                  color: Colors.white.withValues(alpha: 0.05),
                 ),
               ),
             Positioned(
@@ -1028,7 +1030,7 @@ class _NewArrivalCardState extends ConsumerState<_NewArrivalCard> {
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha: 0.3),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -1054,10 +1056,10 @@ class _NewArrivalCardState extends ConsumerState<_NewArrivalCard> {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.gold.withOpacity(0.2),
+                          color: AppColors.gold.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(
-                            color: AppColors.gold.withOpacity(0.5),
+                            color: AppColors.gold.withValues(alpha: 0.5),
                           ),
                         ),
                         child: const Text(
@@ -1089,7 +1091,7 @@ class _NewArrivalCardState extends ConsumerState<_NewArrivalCard> {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Text(
-                        'KSh ${widget.product.price.toStringAsFixed(0)}',
+                        'KSh ${widget.product.price.toStringAsFixed(2)}',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 16,
@@ -1241,8 +1243,8 @@ class _TopPickCardState extends ConsumerState<_TopPickCard> {
                         padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
                           color: isDark
-                              ? Colors.black.withOpacity(0.3)
-                              : Colors.white.withOpacity(0.7),
+                              ? Colors.black.withValues(alpha: 0.3)
+                              : Colors.white.withValues(alpha: 0.7),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -1267,7 +1269,7 @@ class _TopPickCardState extends ConsumerState<_TopPickCard> {
             ),
             const SizedBox(height: 2),
             Text(
-              'KSh ${widget.product.price.toStringAsFixed(0)}',
+              'KSh ${widget.product.price.toStringAsFixed(2)}',
               style: TextStyle(
                 color: isDark ? Colors.white70 : Colors.black87,
                 fontSize: 12,

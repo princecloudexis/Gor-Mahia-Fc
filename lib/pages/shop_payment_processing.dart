@@ -1,9 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gormahiafc/theme/app_colors.dart';
-import 'package:gormahiafc/providers/shop_providers.dart';
+import 'package:kogalo_network/theme/app_colors.dart';
+import 'package:kogalo_network/providers/shop_providers.dart';
 import 'dart:async';
-import 'package:gormahiafc/pages/shop_order_success.dart';
+import 'package:kogalo_network/pages/shop_order_success.dart';
 
 class ShopPaymentProcessingPage extends ConsumerStatefulWidget {
   final String reference;
@@ -22,7 +23,7 @@ class ShopPaymentProcessingPage extends ConsumerStatefulWidget {
 class _ShopPaymentProcessingPageState extends ConsumerState<ShopPaymentProcessingPage> {
   Timer? _timer;
   int _secondsPassed = 0;
-  final int _maxTimeout = 300; // 5 minutes timeout for card entry
+  final int _maxTimeout = 120; // 2 minutes timeout for card entry
   bool _isFinished = false;
   String _statusMessage = 'Waiting for Paystack confirmation...';
 
@@ -160,7 +161,7 @@ class _ShopPaymentProcessingPageState extends ConsumerState<ShopPaymentProcessin
                     width: 100,
                     height: 100,
                   decoration: BoxDecoration(
-                    color: AppColors.primaryGreen.withOpacity(0.1),
+                    color: AppColors.primaryGreen.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: const Center(

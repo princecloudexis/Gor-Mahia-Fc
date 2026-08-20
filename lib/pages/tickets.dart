@@ -1,10 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:gormahiafc/api/api_client.dart';
-import 'package:gormahiafc/models/user_ticket_model.dart';
-import 'package:gormahiafc/pages/details.dart';
-import 'package:gormahiafc/pages/ticketqr_page.dart';
-import 'package:gormahiafc/providers/event_providers.dart';
-import 'package:gormahiafc/theme/apptheme.dart';
+import 'package:kogalo_network/api/api_client.dart';
+import 'package:kogalo_network/models/user_ticket_model.dart';
+import 'package:kogalo_network/pages/details.dart';
+import 'package:kogalo_network/pages/ticketqr_page.dart';
+import 'package:kogalo_network/providers/event_providers.dart';
+import 'package:kogalo_network/theme/apptheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -111,7 +111,7 @@ class _TicketList extends ConsumerWidget {
               Icon(
                 Icons.error_outline_rounded,
                 size: 56,
-                color: Colors.redAccent.withOpacity(0.7),
+                color: Colors.redAccent.withValues(alpha: 0.7),
               ),
               const SizedBox(height: 16),
               Text(
@@ -312,7 +312,7 @@ class _TicketImageHeader extends ConsumerWidget {
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+                  colors: [Colors.black.withValues(alpha: 0.7), Colors.transparent],
                   stops: const [0.0, 0.7],
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,

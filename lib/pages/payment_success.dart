@@ -1,11 +1,11 @@
 import 'dart:math';
-import 'package:gormahiafc/pages/main_shell.dart';
-import 'package:gormahiafc/theme/app_colors.dart';
+import 'package:kogalo_network/pages/main_shell.dart';
+import 'package:kogalo_network/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gormahiafc/providers/user_providers.dart';
-import 'package:gormahiafc/providers/navigation_providers.dart';
-import 'package:gormahiafc/pages/my_membership.dart';
+import 'package:kogalo_network/providers/user_providers.dart';
+import 'package:kogalo_network/providers/navigation_providers.dart';
+import 'package:kogalo_network/pages/my_membership.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 class PaymentSuccess extends ConsumerStatefulWidget {
   final String title;
@@ -112,7 +112,7 @@ class _PaymentSuccessState extends ConsumerState<PaymentSuccess>
                     'Your membership has been\nsuccessfully activated.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withValues(alpha: 0.7),
                       fontSize: 16,
                       height: 1.5,
                     ),
@@ -143,7 +143,7 @@ class _PaymentSuccessState extends ConsumerState<PaymentSuccess>
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: AppColors.primaryGreen.withOpacity(0.15),
+                color: AppColors.primaryGreen.withValues(alpha: 0.15),
                 width: 20,
               ),
             ),
@@ -157,7 +157,7 @@ class _PaymentSuccessState extends ConsumerState<PaymentSuccess>
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: AppColors.primaryGreen.withOpacity(0.3),
+                color: AppColors.primaryGreen.withValues(alpha: 0.3),
                 width: 8,
               ),
             ),
@@ -208,10 +208,10 @@ class _PaymentSuccessState extends ConsumerState<PaymentSuccess>
           width: double.infinity,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.primaryGreen.withOpacity(0.4), width: 1.5),
+            border: Border.all(color: AppColors.primaryGreen.withValues(alpha: 0.4), width: 1.5),
             gradient: LinearGradient(
               colors: [
-                AppColors.primaryGreen.withOpacity(0.18),
+                AppColors.primaryGreen.withValues(alpha: 0.18),
                 AppColors.bgSurfaceDark,
                 AppColors.bgSurfaceDark,
               ],
@@ -220,7 +220,7 @@ class _PaymentSuccessState extends ConsumerState<PaymentSuccess>
             ),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primaryGreen.withOpacity(0.1),
+                color: AppColors.primaryGreen.withValues(alpha: 0.1),
                 blurRadius: 24,
                 spreadRadius: 2,
               ),
@@ -263,7 +263,7 @@ class _PaymentSuccessState extends ConsumerState<PaymentSuccess>
                           Text(
                             details.membershipType,
                             style: TextStyle(
-                              color: AppColors.greenLight.withOpacity(0.9),
+                              color: AppColors.greenLight.withValues(alpha: 0.9),
                               fontSize: 13,
                             ),
                           ),
@@ -273,7 +273,7 @@ class _PaymentSuccessState extends ConsumerState<PaymentSuccess>
                   ],
                 ),
                 const SizedBox(height: 24),
-                Divider(color: Colors.white.withOpacity(0.08)),
+                Divider(color: Colors.white.withValues(alpha: 0.08)),
                 const SizedBox(height: 16),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.end,
@@ -319,7 +319,7 @@ class _PaymentSuccessState extends ConsumerState<PaymentSuccess>
             error: (e, s) => Center(
               child: Padding(
                 padding: const EdgeInsets.all(32.0),
-                child: Text('Error loading card', style: TextStyle(color: Colors.white.withOpacity(0.5))),
+                child: Text('Error loading card', style: TextStyle(color: Colors.white.withValues(alpha: 0.5))),
               ),
             ),
           ),
@@ -330,7 +330,7 @@ class _PaymentSuccessState extends ConsumerState<PaymentSuccess>
 
   Widget _cardLabel(String text) => Text(
         text,
-        style: TextStyle(color: Colors.white.withOpacity(0.45), fontSize: 11),
+        style: TextStyle(color: Colors.white.withValues(alpha: 0.45), fontSize: 11),
       );
 
   Widget _cardValue(String text) => Text(
@@ -384,7 +384,7 @@ class _PaymentSuccessState extends ConsumerState<PaymentSuccess>
             },
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.white,
-              side: BorderSide(color: Colors.white.withOpacity(0.15)),
+              side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -453,7 +453,7 @@ class _ConfettiPainter extends CustomPainter {
       final rotation = p.rotation + p.rotationSpeed * t;
 
       final paint = Paint()
-        ..color = p.color.withOpacity(alpha.clamp(0.0, 1.0))
+        ..color = p.color.withValues(alpha: alpha.clamp(0.0, 1.0))
         ..style = PaintingStyle.fill;
 
       canvas.save();

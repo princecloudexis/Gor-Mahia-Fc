@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gormahiafc/api/api_client.dart';
+import 'package:kogalo_network/api/api_client.dart';
 import '../models/reels_model.dart';
 
 class ReelsRepository {
@@ -27,14 +27,14 @@ class ReelsRepository {
     return false;
   }
 
-  Future<ReelResponse> fetchReels({String? cursor, int? position, int limit = 10}) async {
+  Future<ReelResponse> fetchReels({String? cursor, int? position, int? limit}) async {
     try {
       final response = await _apiClient.dio.get(
         '/v1/reels',
         queryParameters: {
           if (cursor != null) 'cursor': cursor,
           if (position != null) 'position': position,
-          'limit': limit
+          if (limit != null) 'limit': limit
         },
       );
       if (_isSuccess(response.data)) {
@@ -226,7 +226,7 @@ class ReelsRepository {
         throw Exception(response.data['message'] ?? 'Failed to share reel');
       }
     } catch (e) {
-      print('Failed to log share: $e');
+      debugPrint('Failed to log share: $e');
     }
   }
 
@@ -240,7 +240,25 @@ class ReelsRepository {
         throw Exception(response.data['message'] ?? 'Failed to log view');
       }
     } catch (e) {
-      print('Failed to log view: $e');
+      debugPrint('Failed to log view: $e');
+    }
+  }
+
+  Future<void> recordAdInteraction(String adId, {int? watchedSeconds, bool? clicked}) async {
+    try {
+      final data = <String, dynamic>{};
+      if (watchedSeconds != null) data['watchedSeconds'] = watchedSeconds;
+      if (clicked != null) data['clicked'] = clicked;
+
+      final response = await _apiClient.dio.post(
+        '/v1/advertisements/$adId/interaction',
+        data: data,
+      );
+      if (!_isSuccess(response.data)) {
+        throw Exception(response.data['message'] ?? 'Failed to log ad interaction');
+      }
+    } catch (e) {
+      debugPrint('Failed to log ad interaction: $e');
     }
   }
 
@@ -303,9 +321,9 @@ class ReelsRepository {
       }
     } catch (e) {
       if (e is DioException && e.response != null) {
-        print('Failed to log activity: Validation Error: ${e.response?.data}');
+        debugPrint('Failed to log activity: Validation Error: ${e.response?.data}');
       } else {
-        print('Failed to log activity: $e');
+        debugPrint('Failed to log activity: $e');
       }
     }
   }
@@ -466,6 +484,53 @@ class ReelsRepository {
         return ReelCommentResponse.fromJson(response.data);
       }
       throw Exception(response.data['message'] ?? 'Failed to fetch replies');
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        if (e.response!.data is Map && e.response!.data['message'] != null) {
+          throw Exception(e.response!.data['message']);
+        }
+      }
+      rethrow;
+    }
+  }
+
+  Future<List<Map<String, String>>> getReportReasons() async {
+    try {
+      final response = await _apiClient.dio.get('/v1/reels/report-reasons');
+      if (_isSuccess(response.data)) {
+        final List<dynamic> data = response.data['data'];
+        return data.map((item) => {
+          'value': item['value'].toString(),
+          'label': item['label'].toString(),
+        }).toList();
+      }
+      throw Exception(response.data['message'] ?? 'Failed to fetch report reasons');
+    } catch (e) {
+      if (e is DioException && e.response?.data != null) {
+        if (e.response!.data is Map && e.response!.data['message'] != null) {
+          throw Exception(e.response!.data['message']);
+        }
+      }
+      rethrow;
+    }
+  }
+
+  Future<void> reportReel(String reelId, String reason, {String? details}) async {
+    try {
+      final requestData = <String, dynamic>{
+        'reason': int.tryParse(reason) ?? reason,
+      };
+      if (details != null) {
+        requestData['details'] = details;
+      }
+      
+      final response = await _apiClient.dio.post(
+        '/v1/reels/$reelId/report',
+        data: requestData,
+      );
+      if (!_isSuccess(response.data)) {
+        throw Exception(response.data['message'] ?? 'Failed to report reel');
+      }
     } catch (e) {
       if (e is DioException && e.response?.data != null) {
         if (e.response!.data is Map && e.response!.data['message'] != null) {

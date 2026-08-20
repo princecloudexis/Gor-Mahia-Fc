@@ -1,13 +1,13 @@
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:gormahiafc/api/api_client.dart';
-import 'package:gormahiafc/models/category_model.dart';
-import 'package:gormahiafc/models/event_model.dart';
-import 'package:gormahiafc/pages/details.dart';
-import 'package:gormahiafc/pages/search.dart';
-import 'package:gormahiafc/providers/location_providers.dart';
-import 'package:gormahiafc/repositories/event_repositories.dart';
-import 'package:gormahiafc/widgets/safe_svg_network.dart';
+import 'package:kogalo_network/api/api_client.dart';
+import 'package:kogalo_network/models/category_model.dart';
+import 'package:kogalo_network/models/event_model.dart';
+import 'package:kogalo_network/pages/details.dart';
+import 'package:kogalo_network/pages/search.dart';
+import 'package:kogalo_network/providers/location_providers.dart';
+import 'package:kogalo_network/repositories/event_repositories.dart';
+import 'package:kogalo_network/widgets/safe_svg_network.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -153,9 +153,9 @@ class _AppBar extends ConsumerWidget {
             height: 36,
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppTheme.primaryPink.withOpacity(0.1),
+              color: AppTheme.primaryPink.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppTheme.primaryPink.withOpacity(0.2)),
+              border: Border.all(color: AppTheme.primaryPink.withValues(alpha: 0.2)),
             ),
             child: SafeSvgNetwork(
               category.iconUrl,
@@ -235,10 +235,10 @@ class _AppBar extends ConsumerWidget {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: AppTheme.primaryPink.withOpacity(0.1),
+                                color: AppTheme.primaryPink.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(6),
                                 border: Border.all(
-                                  color: AppTheme.primaryPink.withOpacity(0.3),
+                                  color: AppTheme.primaryPink.withValues(alpha: 0.3),
                                 ),
                               ),
                               child: Row(
@@ -319,7 +319,7 @@ class _FilterDelegate extends SliverPersistentHeaderDelegate {
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           height: 80,
-          color: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.9),
+          color: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.9),
           child: Consumer(
             builder: (context, ref, _) {
               final sortBy = ref.watch(sortByProvider);
@@ -442,7 +442,7 @@ class _CategoryBody extends ConsumerWidget {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppTheme.primaryPink,
                   side: BorderSide(
-                    color: AppTheme.primaryPink.withOpacity(0.5),
+                    color: AppTheme.primaryPink.withValues(alpha: 0.5),
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -634,13 +634,13 @@ class _PriceChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: isFree
-            ? Colors.green.withOpacity(0.1)
-            : AppTheme.primaryPink.withOpacity(0.1),
+            ? Colors.green.withValues(alpha: 0.1)
+            : AppTheme.primaryPink.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
           color: isFree
-              ? Colors.green.withOpacity(0.4)
-              : AppTheme.primaryPink.withOpacity(0.4),
+              ? Colors.green.withValues(alpha: 0.4)
+              : AppTheme.primaryPink.withValues(alpha: 0.4),
         ),
       ),
       child: Text(
@@ -676,7 +676,7 @@ class _FavBtn extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.all(7),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(

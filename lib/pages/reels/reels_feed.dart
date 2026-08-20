@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,10 +21,11 @@ class ReelsFeed extends ConsumerStatefulWidget {
   ConsumerState<ReelsFeed> createState() => ReelsFeedState();
 }
 
-class ReelsFeedState extends ConsumerState<ReelsFeed> {
+class ReelsFeedState extends ConsumerState<ReelsFeed> with WidgetsBindingObserver {
   final PageController _pageController = PageController();
   int _currentIndex = 0;
   bool _isOverlayOpen = false;
+  bool _isAppInForeground = true;
 
   /// Central preload manager — owns all VideoPlayerControllers.
   late final ReelsPreloadManager _preloadManager;
@@ -31,6 +33,7 @@ class ReelsFeedState extends ConsumerState<ReelsFeed> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _preloadManager = ReelsPreloadManager();
 
     // Rebuild whenever the manager notifies (e.g., a new controller is ready).
@@ -60,10 +63,21 @@ class ReelsFeedState extends ConsumerState<ReelsFeed> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _preloadManager.removeListener(_onManagerUpdate);
     _preloadManager.dispose();
     _pageController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (mounted) {
+      setState(() {
+        _isAppInForeground = (state == AppLifecycleState.resumed);
+      });
+    }
   }
 
   bool _isRequestingCamera = false;
@@ -136,7 +150,7 @@ class ReelsFeedState extends ConsumerState<ReelsFeed> {
     final isActiveTab = mainIndex == 1; // Reels is at index 1.
 
     // Let the manager know if this tab is active so it doesn't auto-play in the background
-    _preloadManager.setActive(isActiveTab && !_isOverlayOpen);
+    _preloadManager.setActive(isActiveTab && !_isOverlayOpen && _isAppInForeground);
 
     final reelsState = ref.watch(reelsFeedProvider);
     final uploadState = ref.watch(reelUploadProvider);
@@ -186,7 +200,7 @@ class ReelsFeedState extends ConsumerState<ReelsFeed> {
                   ref.read(reelsFeedProvider.notifier).logView(reels[index].id);
 
                   // Load more reels when near the end.
-                  if (index >= reels.length - 2) {
+                  if (index >= reels.length - 5) {
                     ref.read(reelsFeedProvider.notifier).loadMore();
                   }
                 },
@@ -196,7 +210,7 @@ class ReelsFeedState extends ConsumerState<ReelsFeed> {
 
                   // Render AdItem if the item is an ad
                   if (reels[index].type == 'ad') {
-                    final isInWindow = (index - _currentIndex).abs() <= 1;
+                    final isInWindow = (index - _currentIndex).abs() <= 2;
                     if (isInWindow) {
                       return ListenableBuilder(
                         listenable: _preloadManager,
@@ -204,6 +218,7 @@ class ReelsFeedState extends ConsumerState<ReelsFeed> {
                           return AdItem(
                             ad: reels[index],
                             controller: _preloadManager.getController(index),
+                            isCurrent: isCurrentPage,
                           );
                         },
                       );
@@ -211,9 +226,10 @@ class ReelsFeedState extends ConsumerState<ReelsFeed> {
                     return Container(color: Colors.black);
                   }
 
-                  // Only render VideoPlayerItem for the window (current ± 1).
-                  // For far-away reels, just show a thumbnail to save resources.
-                  final isInWindow = (index - _currentIndex).abs() <= 1;
+                  // Only render VideoPlayerItem for the active window (current ± 2).
+                  // Matching _halfWindow so error states + retry buttons show for all
+                  // reels that are being buffered, not just immediate neighbors.
+                  final isInWindow = (index - _currentIndex).abs() <= 2;
 
                   if (isInWindow) {
                     return ListenableBuilder(
@@ -224,6 +240,7 @@ class ReelsFeedState extends ConsumerState<ReelsFeed> {
                           isCurrent: isCurrentPage,
                           controller: _preloadManager.getController(index),
                           hasError: _preloadManager.hasError(index),
+                          errorReason: _preloadManager.errorReason(index),
                           onRetry: () => _preloadManager.retry(index),
                         );
                       },
@@ -294,7 +311,7 @@ class ReelsFeedState extends ConsumerState<ReelsFeed> {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.5),
+                          color: Colors.black.withValues(alpha: 0.5),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
@@ -368,7 +385,7 @@ class ReelsFeedState extends ConsumerState<ReelsFeed> {
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.4),
+                    color: Colors.black.withValues(alpha: 0.4),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(

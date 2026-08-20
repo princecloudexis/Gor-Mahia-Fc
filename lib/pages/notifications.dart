@@ -1,5 +1,5 @@
 import 'dart:ui';
-import 'package:gormahiafc/providers/notifications_providers.dart';
+import 'package:kogalo_network/providers/notifications_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -16,22 +16,41 @@ class Notifications extends ConsumerStatefulWidget {
 }
 
 class _NotificationsState extends ConsumerState<Notifications> {
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(isNotificationsPageVisibleProvider.notifier).state = true;
     });
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      ref.read(notificationsProvider.notifier).loadMore();
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final notifications = ref.watch(notificationsProvider);
+    final notificationState = ref.watch(notificationsProvider);
+    final notifications = notificationState.notifications;
     final unreadCount = notifications.where((n) => !n.isRead).length;
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: CustomScrollView(
+        controller: _scrollController,
         physics: const BouncingScrollPhysics(
           parent: AlwaysScrollableScrollPhysics(),
         ),
@@ -51,7 +70,21 @@ class _NotificationsState extends ConsumerState<Notifications> {
           else
             _NotificationList(notifications: notifications),
 
-          const SliverToBoxAdapter(child: SizedBox(height: 40)),
+          if (notificationState.isLoadingMore)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Center(
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+              ),
+            )
+          else
+            const SliverToBoxAdapter(child: SizedBox(height: 40)),
         ],
       ),
     );
@@ -215,9 +248,9 @@ class _UnreadBar extends StatelessWidget {
         margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: AppTheme.primaryPink.withOpacity(0.06),
+          color: AppTheme.primaryPink.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.primaryPink.withOpacity(0.2)),
+          border: Border.all(color: AppTheme.primaryPink.withValues(alpha: 0.2)),
         ),
         child: Row(
           children: [
@@ -309,9 +342,9 @@ class _NotificationTile extends ConsumerWidget {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.only(right: 20),
         decoration: BoxDecoration(
-          color: AppTheme.accentRed.withOpacity(0.1),
+          color: AppTheme.accentRed.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppTheme.accentRed.withOpacity(0.3)),
+          border: Border.all(color: AppTheme.accentRed.withValues(alpha: 0.3)),
         ),
         child: Icon(
           Icons.delete_outline_rounded,
@@ -382,12 +415,12 @@ class _NotificationTile extends ConsumerWidget {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: isUnread
-                ? AppTheme.primaryPink.withOpacity(0.04)
+                ? AppTheme.primaryPink.withValues(alpha: 0.04)
                 : Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: isUnread
-                  ? AppTheme.primaryPink.withOpacity(0.25)
+                  ? AppTheme.primaryPink.withValues(alpha: 0.25)
                   : Theme.of(context).dividerColor,
             ),
           ),
@@ -465,7 +498,7 @@ class _NotificationTile extends ConsumerWidget {
                         fontSize: 11,
                         color: Theme.of(
                           context,
-                        ).textTheme.bodySmall?.color?.withOpacity(0.6),
+                        ).textTheme.bodySmall?.color?.withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -540,9 +573,9 @@ class _TypeIcon extends StatelessWidget {
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: _color.withOpacity(0.1),
+        color: _color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _color.withOpacity(0.2)),
+        border: Border.all(color: _color.withValues(alpha: 0.2)),
       ),
       child: Icon(_icon, color: _color, size: 18),
     );

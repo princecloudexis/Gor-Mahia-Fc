@@ -23,10 +23,18 @@ val flutterMinSdkVersion = localProperties.getProperty("flutter.minSdkVersion") 
 val flutterTargetSdkVersion = localProperties.getProperty("flutter.targetSdkVersion") ?: "34"
 val flutterVersionCode = localProperties.getProperty("flutter.versionCode") ?: "1"
 val flutterVersionName = localProperties.getProperty("flutter.versionName") ?: "1.0"
+val mapsApiKey = localProperties.getProperty("MAPS_API_KEY") ?: ""
 
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.inputStream().use { stream ->
+        keystoreProperties.load(stream)
+    }
+}
 
 android {
-    namespace = "com.example.eventsbooking"
+    namespace = "com.kogalonetwork.app"
     compileSdk = flutterCompileSdkVersion.toInt()
 
     ndkVersion = "27.0.12077973"
@@ -48,17 +56,27 @@ android {
     }
 
     defaultConfig {
-        applicationId = "FootBall.Ard1"
+        applicationId = "com.kogalonetwork.app"
         minSdk = 24
         targetSdk = flutterTargetSdkVersion.toInt()
         versionCode = flutterVersionCode.toInt()
         versionName = flutterVersionName
         multiDexEnabled = true
+        manifestPlaceholders["mapsApiKey"] = mapsApiKey
+    }
+
+    signingConfigs {
+        create("release") {
+            keyAlias = keystoreProperties.getProperty("keyAlias")
+            keyPassword = keystoreProperties.getProperty("keyPassword")
+            storeFile = keystoreProperties.getProperty("storeFile")?.let { file("../$it") }
+            storePassword = keystoreProperties.getProperty("storePassword")
+        }
     }
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }

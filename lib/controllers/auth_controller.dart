@@ -1,4 +1,5 @@
-import 'package:gormahiafc/providers/user_providers.dart';
+import 'package:flutter/foundation.dart';
+import 'package:kogalo_network/providers/user_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../api/api_client.dart';
@@ -125,13 +126,13 @@ class AuthController extends StateNotifier<AuthState> {
       // Initialize FCM (non-blocking)
       _initFCMAfterLogin(loginResponse.token, loginResponse.user.id);
 
-      print('Login successful');
+      debugPrint('Login successful');
     } catch (e) {
       state = state.copyWith(
         status: AuthStatus.error,
         errorMessage: e.toString().replaceFirst('Exception: ', ''),
       );
-      print('❌ Login error: $e');
+      debugPrint('❌ Login error: $e');
     }
   }
 
@@ -139,9 +140,9 @@ class AuthController extends StateNotifier<AuthState> {
     Future.microtask(() async {
       try {
         await _userNotifier.fetchUser();
-        print('👤 Full profile fetched after login');
+        debugPrint('👤 Full profile fetched after login');
       } catch (e) {
-        print('⚠️ Could not fetch full profile after login: $e');
+        debugPrint('⚠️ Could not fetch full profile after login: $e');
       }
     });
   }
@@ -155,9 +156,9 @@ class AuthController extends StateNotifier<AuthState> {
           userAuthToken: token,
           userId: userId,
         );
-        print('FCM token registered');
+        debugPrint('FCM token registered');
       } catch (e) {
-        print('⚠️ FCM registration error: $e');
+        debugPrint('⚠️ FCM registration error: $e');
       }
     });
   }
@@ -272,7 +273,7 @@ class AuthController extends StateNotifier<AuthState> {
     _ref.invalidate(favoritesProvider); // event favorites
 
     state = const AuthState(status: AuthStatus.unauthenticated);
-    print('Logged out');
+    debugPrint('Logged out');
   }
 
   Future<void> _clearAuthData() async {

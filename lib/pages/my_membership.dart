@@ -1,15 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:gormahiafc/models/user_model.dart';
-import 'package:gormahiafc/pages/monthly_contribution.dart';
-import 'package:gormahiafc/providers/user_providers.dart';
-import 'package:gormahiafc/theme/app_colors.dart';
-import 'package:gormahiafc/theme/apptheme.dart';
+import 'package:kogalo_network/models/user_model.dart';
+import 'package:kogalo_network/pages/monthly_contribution.dart';
+import 'package:kogalo_network/providers/user_providers.dart';
+import 'package:kogalo_network/theme/app_colors.dart';
+import 'package:kogalo_network/theme/apptheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gormahiafc/pages/membership_signup.dart';
-import 'package:gormahiafc/pages/membership_history.dart';
-import 'package:gormahiafc/controllers/membership_controller.dart';
+import 'package:kogalo_network/pages/membership_signup.dart';
+import 'package:kogalo_network/pages/membership_history.dart';
+import 'package:kogalo_network/controllers/membership_controller.dart';
 
 class MyMembership extends ConsumerWidget {
   const MyMembership({super.key});
@@ -135,19 +135,19 @@ class _MembershipCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
             colors: [
-              AppColors.primaryGreen.withOpacity(0.2),
+              AppColors.primaryGreen.withValues(alpha: 0.2),
               isDark ? AppColors.bgDark : Colors.grey.shade100,
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           border: Border.all(
-            color: AppColors.primaryGreen.withOpacity(0.3),
+            color: AppColors.primaryGreen.withValues(alpha: 0.3),
             width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primaryGreen.withOpacity(0.05),
+              color: AppColors.primaryGreen.withValues(alpha: 0.05),
               blurRadius: 20,
               spreadRadius: 2,
             ),
@@ -164,7 +164,7 @@ class _MembershipCard extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: AppColors.primaryGreen.withOpacity(0.5),
+                  color: AppColors.primaryGreen.withValues(alpha: 0.5),
                   width: 2,
                 ),
               ),
@@ -202,7 +202,7 @@ class _MembershipCard extends StatelessWidget {
                     details.membershipType,
                     style: TextStyle(
                       color: isDark
-                          ? Colors.white.withOpacity(0.8)
+                          ? Colors.white.withValues(alpha: 0.8)
                           : Colors.black87,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
@@ -216,7 +216,7 @@ class _MembershipCard extends StatelessWidget {
                       'Member ID: ${details.memberId}',
                       style: TextStyle(
                         color: isDark
-                            ? Colors.white.withOpacity(0.6)
+                            ? Colors.white.withValues(alpha: 0.6)
                             : Colors.black54,
                         fontSize: 12,
                       ),
@@ -230,7 +230,7 @@ class _MembershipCard extends StatelessWidget {
                       'Since: ${details.since}',
                       style: TextStyle(
                         color: isDark
-                            ? Colors.white.withOpacity(0.6)
+                            ? Colors.white.withValues(alpha: 0.6)
                             : Colors.black54,
                         fontSize: 12,
                       ),
@@ -364,7 +364,7 @@ class _MembershipDetails extends StatelessWidget {
                     'Status',
                     style: TextStyle(
                       color: Theme.of(context).brightness == Brightness.dark
-                          ? Colors.white.withOpacity(0.6)
+                          ? Colors.white.withValues(alpha: 0.6)
                           : Colors.black54,
                       fontSize: 14,
                     ),
@@ -396,7 +396,7 @@ class _MembershipDetails extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            color: isDark ? Colors.white.withOpacity(0.6) : Colors.black54,
+            color: isDark ? Colors.white.withValues(alpha: 0.6) : Colors.black54,
             fontSize: 14,
           ),
         ),
@@ -616,7 +616,7 @@ class _QuickActions extends ConsumerWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: AppColors.greenLight.withOpacity(0.15),
+                color: AppColors.greenLight.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon, color: AppColors.greenLight, size: 20),
@@ -639,7 +639,7 @@ class _QuickActions extends ConsumerWidget {
                     subtitle,
                     style: TextStyle(
                       color: isDark
-                          ? Colors.white.withOpacity(0.6)
+                          ? Colors.white.withValues(alpha: 0.6)
                           : Colors.black54,
                       fontSize: 12,
                     ),
@@ -649,7 +649,7 @@ class _QuickActions extends ConsumerWidget {
             ),
             Icon(
               Icons.chevron_right,
-              color: isDark ? Colors.white.withOpacity(0.4) : Colors.black38,
+              color: isDark ? Colors.white.withValues(alpha: 0.4) : Colors.black38,
               size: 20,
             ),
           ],

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:io';
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -60,7 +61,7 @@ class _EditProfileState extends ConsumerState<EditProfile> {
         });
       }
     } catch (e) {
-      print('Image pick error: $e');
+      debugPrint('Image pick error: $e');
       if (mounted) {
         _showSnackBar('Failed to pick image', Colors.red);
       }
@@ -220,7 +221,7 @@ class _EditProfileState extends ConsumerState<EditProfile> {
         icon: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             shape: BoxShape.circle,
           ),
           child: const Icon(Icons.arrow_back, color: Colors.white),
@@ -246,8 +247,8 @@ class _EditProfileState extends ConsumerState<EditProfile> {
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                       colors: [
-                        Colors.black.withOpacity(0.3),
-                        Colors.black.withOpacity(0.5),
+                        Colors.black.withValues(alpha: 0.3),
+                        Colors.black.withValues(alpha: 0.5),
                       ],
                     ),
                   ),
@@ -279,7 +280,7 @@ class _EditProfileState extends ConsumerState<EditProfile> {
               gradient: AppTheme.primaryGradient,
               boxShadow: [
                 BoxShadow(
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                   blurRadius: 20,
                   offset: const Offset(0, 10),
                 ),
@@ -310,7 +311,7 @@ class _EditProfileState extends ConsumerState<EditProfile> {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withValues(alpha: 0.2),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
@@ -350,12 +351,12 @@ class _EditProfileState extends ConsumerState<EditProfile> {
       decoration: InputDecoration(
         filled: true,
         fillColor: readOnly
-            ? theme.cardColor.withOpacity(0.3)
-            : theme.cardColor.withOpacity(0.7),
+            ? theme.cardColor.withValues(alpha: 0.3)
+            : theme.cardColor.withValues(alpha: 0.7),
         prefixIcon: Icon(icon, color: theme.colorScheme.primary),
         labelText: labelText,
         labelStyle: TextStyle(
-          color: theme.colorScheme.onSurface.withOpacity(0.6),
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
@@ -364,7 +365,7 @@ class _EditProfileState extends ConsumerState<EditProfile> {
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(
-            color: theme.colorScheme.outline.withOpacity(0.2),
+            color: theme.colorScheme.outline.withValues(alpha: 0.2),
           ),
         ),
         focusedBorder: OutlineInputBorder(
@@ -385,7 +386,7 @@ class _EditProfileState extends ConsumerState<EditProfile> {
         suffixIcon: readOnly
             ? Icon(
                 Icons.lock_outline,
-                color: theme.colorScheme.onSurface.withOpacity(0.3),
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
                 size: 20,
               )
             : null,
@@ -443,7 +444,7 @@ class _ImagePickerOptions extends StatelessWidget {
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           decoration: BoxDecoration(
-            color: theme.canvasColor.withOpacity(0.9),
+            color: theme.canvasColor.withValues(alpha: 0.9),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
           ),
           child: SafeArea(
@@ -455,7 +456,7 @@ class _ImagePickerOptions extends StatelessWidget {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.outline.withOpacity(0.3),
+                    color: theme.colorScheme.outline.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -506,7 +507,7 @@ class _ImagePickerOptions extends StatelessWidget {
       leading: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: theme.colorScheme.primary.withOpacity(0.1),
+          color: theme.colorScheme.primary.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Icon(icon, color: theme.colorScheme.primary),

@@ -56,11 +56,13 @@ class MembershipSubmitResponse {
   final int membershipId;
   final String amount;
   final String packageName;
+  final bool requiresPayment;
 
   MembershipSubmitResponse({
     required this.membershipId,
     required this.amount,
     required this.packageName,
+    this.requiresPayment = true,
   });
 
   factory MembershipSubmitResponse.fromJson(Map<String, dynamic> json) {
@@ -68,6 +70,7 @@ class MembershipSubmitResponse {
       membershipId: json['membership_id'] ?? 0,
       amount: json['amount']?.toString() ?? '0',
       packageName: json['package_name'] ?? '',
+      requiresPayment: json['requires_payment'] ?? true,
     );
   }
 }
@@ -206,18 +209,26 @@ class Pagination {
 }
 
 class MembershipHistoryItem {
+  final int membershipId;
   final String packageName;
   final String amount;
+  final String price;
+  final String platformCharge;
   final String paymentStatus;
+  final String status;
   final String plan;
   final String createdAt;
   final String? startDate;
   final String? endDate;
 
   MembershipHistoryItem({
+    required this.membershipId,
     required this.packageName,
     required this.amount,
+    required this.price,
+    required this.platformCharge,
     required this.paymentStatus,
+    required this.status,
     required this.plan,
     required this.createdAt,
     this.startDate,
@@ -226,9 +237,13 @@ class MembershipHistoryItem {
 
   factory MembershipHistoryItem.fromJson(Map<String, dynamic> json) {
     return MembershipHistoryItem(
+      membershipId: json['membership_id'] ?? 0,
       packageName: json['package_name']?.toString() ?? '',
       amount: json['amount']?.toString() ?? '0',
+      price: json['price']?.toString() ?? '0',
+      platformCharge: json['platform_charge']?.toString() ?? '0',
       paymentStatus: json['payment_status']?.toString() ?? 'pending',
+      status: json['status']?.toString() ?? 'unknown',
       plan: json['plan']?.toString() ?? '',
       createdAt: json['created_at']?.toString() ?? '',
       startDate: json['start_date']?.toString(),

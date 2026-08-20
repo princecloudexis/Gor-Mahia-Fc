@@ -1,14 +1,14 @@
-import 'package:gormahiafc/pages/splashscreen.dart';
-import 'package:gormahiafc/providers/theme_provider.dart';
-import 'package:gormahiafc/theme/apptheme.dart';
-import 'package:gormahiafc/widgets/connectivity_wrapper.dart';
+import 'package:kogalo_network/pages/splashscreen.dart';
+import 'package:kogalo_network/providers/theme_provider.dart';
+import 'package:kogalo_network/theme/apptheme.dart';
+import 'package:kogalo_network/widgets/connectivity_wrapper.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gormahiafc/services/fcm_service.dart';
-import 'package:gormahiafc/firebase_options.dart';
+import 'package:kogalo_network/services/fcm_service.dart';
+import 'package:kogalo_network/firebase_options.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
@@ -57,7 +57,7 @@ class MyApp extends ConsumerWidget {
       navigatorKey: NavigationService.navigatorKey,
       scaffoldMessengerKey: scaffoldMessengerKey,
       debugShowCheckedModeBanner: false,
-      title: 'GormahiaFc',
+      title: 'Kogalo network',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,

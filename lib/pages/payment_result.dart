@@ -1,7 +1,7 @@
-import 'package:gormahiafc/pages/details.dart';
-import 'package:gormahiafc/pages/main_shell.dart';
-import 'package:gormahiafc/pages/tickets.dart';
-import 'package:gormahiafc/theme/apptheme.dart';
+import 'package:kogalo_network/pages/details.dart';
+import 'package:kogalo_network/pages/main_shell.dart';
+import 'package:kogalo_network/pages/tickets.dart';
+import 'package:kogalo_network/theme/apptheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 

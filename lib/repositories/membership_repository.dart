@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
-import 'package:gormahiafc/api/api_client.dart';
-import 'package:gormahiafc/models/membership_models.dart';
-import 'package:gormahiafc/utils/app_exception.dart';
+import 'package:kogalo_network/api/api_client.dart';
+import 'package:kogalo_network/models/membership_models.dart';
+import 'package:kogalo_network/utils/app_exception.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -25,7 +25,6 @@ class MembershipRepository {
   }
 
   Future<MembershipSubmitResponse> submitMembership({
-    required String userId,
     required String country,
     required String branchId,
     required String packageId,
@@ -34,10 +33,9 @@ class MembershipRepository {
       final response = await _apiClient.dio.post(
         '/user/membership',
         data: {
-          'user_id': userId,
           'country': country,
-          'branch_id': branchId,
-          'package_type_id': packageId,
+          'branch_id': int.tryParse(branchId) ?? branchId,
+          'package_type_id': int.tryParse(packageId) ?? packageId,
         },
       );
 
@@ -63,10 +61,7 @@ class MembershipRepository {
         '/user/pay',
         data: {
           'email': email,
-          'payment_status': 'pending',
-          'membership_id': membershipId,
-          'amount': amount,
-          'package_name': packageName,
+          'membership_id': int.tryParse(membershipId) ?? membershipId,
         },
       );
       debugPrint('💳 [MembershipPay] /user/pay RAW RESPONSE: ${response.data}');
@@ -135,12 +130,15 @@ class MembershipRepository {
     required String branchId,
   }) async {
     try {
+      final Map<String, dynamic> requestData = {};
+      final pId = int.tryParse(packageId);
+      final bId = int.tryParse(branchId);
+      if (pId != null) requestData['package_type_id'] = pId;
+      if (bId != null) requestData['branch_id'] = bId;
+
       final response = await _apiClient.dio.post(
         '/user/membership/renew',
-        data: {
-          'package_type_id': packageId,
-          'branch_id': branchId,
-        },
+        data: requestData,
       );
 
       if (response.data != null && response.data['success'] == true) {

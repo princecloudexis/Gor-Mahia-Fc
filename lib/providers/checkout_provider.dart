@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:gormahiafc/models/checkout_model.dart';
-import 'package:gormahiafc/models/holder_info_model.dart';
-import 'package:gormahiafc/models/payment_model.dart';
-import 'package:gormahiafc/models/payment_result_model.dart';
-import 'package:gormahiafc/repositories/event_repositories.dart';
+import 'package:kogalo_network/models/checkout_model.dart';
+import 'package:kogalo_network/models/holder_info_model.dart';
+import 'package:kogalo_network/models/payment_model.dart';
+import 'package:kogalo_network/models/payment_result_model.dart';
+import 'package:kogalo_network/repositories/event_repositories.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

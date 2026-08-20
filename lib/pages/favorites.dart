@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:gormahiafc/pages/details.dart';
+import 'package:kogalo_network/pages/details.dart';
 import 'package:flutter/material.dart';
+import 'package:kogalo_network/config/app_config.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
@@ -8,8 +9,8 @@ import 'package:shimmer_animation/shimmer_animation.dart';
 import '../api/api_client.dart';
 import '../models/event_model.dart';
 import '../providers/event_providers.dart';
-import 'package:gormahiafc/theme/apptheme.dart';
-import 'package:gormahiafc/theme/app_colors.dart';
+import 'package:kogalo_network/theme/apptheme.dart';
+import 'package:kogalo_network/theme/app_colors.dart';
 import '../models/shop_models.dart';
 import '../providers/shop_providers.dart';
 import '../pages/shop_product_details.dart';
@@ -232,7 +233,7 @@ class _FavoriteCard extends ConsumerWidget {
         background: Container(
           padding: const EdgeInsets.only(right: 20),
           decoration: BoxDecoration(
-            color: AppTheme.accentRed.withOpacity(0.1),
+            color: AppTheme.accentRed.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(16),
           ),
           child: const Align(
@@ -443,7 +444,7 @@ class _ShopFavoriteCard extends ConsumerWidget {
   String _getImageUrl(String? path) {
     if (path == null || path.isEmpty) return '';
     if (path.startsWith('http')) return path;
-    return 'https://footballclub.staging-workhub.com/' +
+    return AppConfig.storageBaseUrl +
         path.replaceFirst(RegExp(r'^/+'), '');
   }
 
@@ -477,7 +478,7 @@ class _ShopFavoriteCard extends ConsumerWidget {
         background: Container(
           padding: const EdgeInsets.only(right: 20),
           decoration: BoxDecoration(
-            color: AppTheme.accentRed.withOpacity(0.1),
+            color: AppTheme.accentRed.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(16),
           ),
           child: const Align(
@@ -502,7 +503,7 @@ class _ShopFavoriteCard extends ConsumerWidget {
               borderRadius: BorderRadius.circular(16),
               boxShadow: isDark ? [] : [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -515,7 +516,7 @@ class _ShopFavoriteCard extends ConsumerWidget {
                   child: Container(
                     width: 80,
                     height: 80,
-                    color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.withOpacity(0.1),
+                    color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.withValues(alpha: 0.1),
                     child: imageUrl.isNotEmpty
                         ? CachedNetworkImage(
                             imageUrl: imageUrl,

@@ -1,6 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'dart:async';
-import 'package:gormahiafc/models/category_model.dart';
-import 'package:gormahiafc/repositories/event_repositories.dart';
+import 'package:kogalo_network/models/category_model.dart';
+import 'package:kogalo_network/repositories/event_repositories.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/event_model.dart';
 
@@ -78,7 +79,7 @@ class SearchNotifier extends StateNotifier<SearchState> {
         areCategoriesLoading: false,
       );
     } catch (e) {
-      print('Error loading categories: $e');
+      debugPrint('Error loading categories: $e');
       state = state.copyWith(areCategoriesLoading: false);
     }
   }

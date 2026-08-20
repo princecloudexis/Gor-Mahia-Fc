@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
-import 'package:gormahiafc/api/api_client.dart';
-import 'package:gormahiafc/models/policy_model.dart';
-import 'package:gormahiafc/utils/app_exception.dart';
+import 'package:kogalo_network/api/api_client.dart';
+import 'package:kogalo_network/models/policy_model.dart';
+import 'package:kogalo_network/utils/app_exception.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final policyRepositoryProvider = Provider<PolicyRepository>((ref) {

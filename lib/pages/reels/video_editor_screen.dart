@@ -1,6 +1,6 @@
 import 'dart:io';
-import 'package:gormahiafc/pages/reels/upload_reel_screen.dart';
-import 'package:gormahiafc/pages/reels/video_edit_details_screen.dart';
+import 'package:kogalo_network/pages/reels/upload_reel_screen.dart';
+import 'package:kogalo_network/pages/reels/video_edit_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:video_editor/video_editor.dart';
 import 'package:ffmpeg_kit_flutter_new_min_gpl/ffmpeg_kit.dart';

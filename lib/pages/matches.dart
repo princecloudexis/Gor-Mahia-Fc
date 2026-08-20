@@ -96,7 +96,7 @@ class _MatchesState extends ConsumerState<Matches> with SingleTickerProviderStat
           controller: _tabController,
           indicatorColor: AppColors.primaryGreen,
           indicatorWeight: 3,
-          labelColor: AppColors.primaryGreen,
+          labelColor: isDark ? Colors.white : AppColors.primaryGreen,
           unselectedLabelColor: isDark
               ? AppColors.textMutedDark
               : AppColors.textMutedLight,
@@ -396,8 +396,8 @@ class LiveMatchCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isDark
-              ? Colors.white.withOpacity(0.12)
-              : Colors.black.withOpacity(0.08),
+              ? Colors.white.withValues(alpha: 0.12)
+              : Colors.black.withValues(alpha: 0.08),
         ),
       ),
       child: Column(
@@ -427,13 +427,13 @@ class LiveMatchCard extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: match.status == 'finished'
-                          ? Colors.grey.withOpacity(0.2)
-                          : Colors.red.withOpacity(0.1),
+                          ? Colors.grey.withValues(alpha: 0.2)
+                          : Colors.red.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                           color: match.status == 'finished'
-                              ? Colors.grey.withOpacity(0.4)
-                              : Colors.red.withOpacity(0.3)),
+                              ? Colors.grey.withValues(alpha: 0.4)
+                              : Colors.red.withValues(alpha: 0.3)),
                     ),
                     child: Text(
                       _getBadgeText(match.status, match.isLive),
@@ -537,8 +537,8 @@ class LiveMatchCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Divider(
                 color: isDark
-                    ? Colors.white.withOpacity(0.05)
-                    : Colors.black.withOpacity(0.05),
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : Colors.black.withValues(alpha: 0.05),
               ),
             ),
             const SizedBox(height: 16),
@@ -635,7 +635,7 @@ class TeamBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.greenDarkest,
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white.withOpacity(0.1)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         image: logoUrl != null
             ? DecorationImage(image: NetworkImage(logoUrl!), fit: BoxFit.cover)
             : null,
@@ -709,13 +709,13 @@ class MatchListTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       decoration: BoxDecoration(
         color: isDark
-            ? Colors.black.withOpacity(0.3)
-            : Colors.white.withOpacity(0.6),
+            ? Colors.black.withValues(alpha: 0.3)
+            : Colors.white.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isDark
-              ? Colors.white.withOpacity(0.12)
-              : Colors.black.withOpacity(0.08),
+              ? Colors.white.withValues(alpha: 0.12)
+              : Colors.black.withValues(alpha: 0.08),
         ),
       ),
       child: Row(
@@ -814,13 +814,13 @@ class ResultListTile extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
         color: isDark
-            ? Colors.black.withOpacity(0.3)
-            : Colors.white.withOpacity(0.6),
+            ? Colors.black.withValues(alpha: 0.3)
+            : Colors.white.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isDark
-              ? Colors.white.withOpacity(0.12)
-              : Colors.black.withOpacity(0.08),
+              ? Colors.white.withValues(alpha: 0.12)
+              : Colors.black.withValues(alpha: 0.08),
         ),
       ),
       child: Row(

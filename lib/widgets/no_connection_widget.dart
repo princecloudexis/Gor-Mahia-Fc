@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gormahiafc/providers/connectivity_provider.dart';
-import 'package:gormahiafc/theme/apptheme.dart';
+import 'package:kogalo_network/providers/connectivity_provider.dart';
+import 'package:kogalo_network/theme/apptheme.dart';
 
 class NoConnectionFullScreen extends ConsumerWidget {
   const NoConnectionFullScreen({super.key});
@@ -66,7 +66,7 @@ class NoConnectionSplashBar extends ConsumerWidget {
       left: 0,
       right: 0,
       child: Container(
-        color: Colors.black.withOpacity(0.6),
+        color: Colors.black.withValues(alpha: 0.6),
         padding: const EdgeInsets.all(16.0),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

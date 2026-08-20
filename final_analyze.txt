@@ -1,0 +1,175 @@
+Analyzing gor_mahia_FC...                                       
+
+   info • Unnecessary braces in a string interpolation. Try removing the braces • lib/api/api_client.dart:36:32 • unnecessary_brace_in_string_interps
+   info • Dangling library doc comment. Add a 'library' directive after the library comment • lib/config/app_config.dart:1:1 • dangling_library_doc_comments
+warning • The declaration '_safeParseDateTime' isn't referenced. Try removing the declaration of '_safeParseDateTime' • lib/models/checkout_model.dart:22:11 • unused_element
+   info • Unnecessary 'this.' qualifier. Try removing 'this.' • lib/models/checkout_model.dart:50:11 • unnecessary_this
+   info • Unnecessary 'this.' qualifier. Try removing 'this.' • lib/models/checkout_model.dart:51:19 • unnecessary_this
+   info • Unnecessary 'this.' qualifier. Try removing 'this.' • lib/models/checkout_model.dart:52:14 • unnecessary_this
+   info • Unnecessary 'this.' qualifier. Try removing 'this.' • lib/models/checkout_model.dart:53:17 • unnecessary_this
+   info • Unnecessary 'this.' qualifier. Try removing 'this.' • lib/models/checkout_model.dart:54:19 • unnecessary_this
+   info • Unnecessary 'this.' qualifier. Try removing 'this.' • lib/models/checkout_model.dart:55:21 • unnecessary_this
+   info • Unnecessary 'this.' qualifier. Try removing 'this.' • lib/models/checkout_model.dart:56:23 • unnecessary_this
+   info • Unnecessary 'this.' qualifier. Try removing 'this.' • lib/models/checkout_model.dart:57:18 • unnecessary_this
+warning • The declaration '_asMap' isn't referenced. Try removing the declaration of '_asMap' • lib/models/checkout_model.dart:205:23 • unused_element
+warning • The declaration '_readDoubleFromSources' isn't referenced. Try removing the declaration of '_readDoubleFromSources' • lib/models/checkout_model.dart:225:8 • unused_element
+   info • The import of 'package:flutter/foundation.dart' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart'. Try removing the import directive • lib/pages/booking.dart:1:8 • unnecessary_import
+warning • The value of the local variable 'isDark' isn't used. Try removing the variable or using it • lib/pages/booking.dart:519:11 • unused_local_variable
+warning • The value of the local variable 'isDark' isn't used. Try removing the variable or using it • lib/pages/booking.dart:708:11 • unused_local_variable
+   info • 'Share' is deprecated and shouldn't be used. Use SharePlus instead. Try replacing the use of the deprecated member with the replacement • lib/pages/booking.dart:2137:13 • deprecated_member_use
+   info • 'shareXFiles' is deprecated and shouldn't be used. Use SharePlus.instance.share() instead. Try replacing the use of the deprecated member with the replacement • lib/pages/booking.dart:2137:19 • deprecated_member_use
+warning • Unused import: 'package:kogalo_network/pages/search.dart'. Try removing the import directive • lib/pages/categoryevents.dart:7:8 • unused_import
+warning • Unused import: 'package:flutter_svg/svg.dart'. Try removing the import directive • lib/pages/categoryevents.dart:14:8 • unused_import
+warning • The value of 'refresh' should be used. Try using the result by invoking a member, passing it to a function, or returning it from this function • lib/pages/categoryevents.dart:80:23 • unused_result
+   info • Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check • lib/pages/checkout.dart:171:9 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check • lib/pages/checkout.dart:196:33 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check • lib/pages/checkout.dart:214:28 • use_build_context_synchronously
+   info • 'onPopInvoked' is deprecated and shouldn't be used. Use onPopInvokedWithResult instead. This feature was deprecated after v3.22.0-12.0.pre. Try replacing the use of the deprecated member with the replacement • lib/pages/checkout.dart:233:7 • deprecated_member_use
+   info • Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check • lib/pages/checkout.dart:258:35 • use_build_context_synchronously
+warning • A value for optional parameter 'title' isn't ever given. Try removing the unused parameter • lib/pages/checkout.dart:434:28 • unused_element_parameter
+warning • A value for optional parameter 'padding' isn't ever given. Try removing the unused parameter • lib/pages/checkout.dart:434:64 • unused_element_parameter
+warning • The value of the local variable 'textColor' isn't used. Try removing the variable or using it • lib/pages/checkout.dart:439:11 • unused_local_variable
+warning • The value of the local variable 'isDark' isn't used. Try removing the variable or using it • lib/pages/checkout.dart:487:11 • unused_local_variable
+warning • The value of the local variable 'isDark' isn't used. Try removing the variable or using it • lib/pages/checkout.dart:1655:11 • unused_local_variable
+warning • Unused import: 'package:kogalo_network/pages/search.dart'. Try removing the import directive • lib/pages/community.dart:3:8 • unused_import
+warning • Duplicate import. Try removing all but one import of the library • lib/pages/community.dart:15:8 • duplicate_import
+warning • Unused import: 'search.dart'. Try removing the import directive • lib/pages/community.dart:15:8 • unused_import
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check. Guard a 'State.context' use with a 'mounted' check on the State, and other BuildContext use with a 'mounted' check on the BuildContext • lib/pages/community.dart:685:50 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check. Guard a 'State.context' use with a 'mounted' check on the State, and other BuildContext use with a 'mounted' check on the BuildContext • lib/pages/community.dart:687:46 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check. Guard a 'State.context' use with a 'mounted' check on the State, and other BuildContext use with a 'mounted' check on the BuildContext • lib/pages/community.dart:702:46 • use_build_context_synchronously
+warning • Unused import: 'dart:ui'. Try removing the import directive • lib/pages/create_post.dart:2:8 • unused_import
+   info • The private field _pollOptions could be 'final'. Try making the field 'final' • lib/pages/create_post.dart:35:31 • prefer_final_fields
+warning • The value of 'refresh' should be used. Try using the result by invoking a member, passing it to a function, or returning it from this function • lib/pages/create_post.dart:1051:13 • unused_result
+warning • A value for optional parameter 'key' isn't ever given. Try removing the unused parameter • lib/pages/details.dart:811:44 • unused_element_parameter
+   info • The import of 'package:flutter/foundation.dart' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart'. Try removing the import directive • lib/pages/editprofile.dart:1:8 • unnecessary_import
+warning • The declaration '_formatTimestamp' isn't referenced. Try removing the declaration of '_formatTimestamp' • lib/pages/group_details.dart:66:10 • unused_element
+warning • The value of the local variable 'members' isn't used. Try removing the variable or using it • lib/pages/group_details.dart:274:11 • unused_local_variable
+warning • The value of 'refresh' should be used. Try using the result by invoking a member, passing it to a function, or returning it from this function • lib/pages/group_details.dart:531:35 • unused_result
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check. Guard a 'State.context' use with a 'mounted' check on the State, and other BuildContext use with a 'mounted' check on the BuildContext • lib/pages/group_details.dart:535:52 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check. Guard a 'State.context' use with a 'mounted' check on the State, and other BuildContext use with a 'mounted' check on the BuildContext • lib/pages/group_details.dart:549:52 • use_build_context_synchronously
+   info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/pages/group_details.dart:1016:33 • curly_braces_in_flow_control_structures
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check. Guard a 'State.context' use with a 'mounted' check on the State, and other BuildContext use with a 'mounted' check on the BuildContext • lib/pages/group_details.dart:1016:47 • use_build_context_synchronously
+   info • 'Share' is deprecated and shouldn't be used. Use SharePlus instead. Try replacing the use of the deprecated member with the replacement • lib/pages/group_details.dart:1026:53 • deprecated_member_use
+   info • 'shareXFiles' is deprecated and shouldn't be used. Use SharePlus.instance.share() instead. Try replacing the use of the deprecated member with the replacement • lib/pages/group_details.dart:1026:59 • deprecated_member_use
+   info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/pages/group_details.dart:1034:33 • curly_braces_in_flow_control_structures
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check. Guard a 'State.context' use with a 'mounted' check on the State, and other BuildContext use with a 'mounted' check on the BuildContext • lib/pages/group_details.dart:1034:47 • use_build_context_synchronously
+   info • The 'if' statement could be replaced by a null-aware assignment. Try using the '??=' operator to conditionally assign a value • lib/pages/group_details.dart:1039:27 • prefer_conditional_assignment
+   info • 'Share' is deprecated and shouldn't be used. Use SharePlus instead. Try replacing the use of the deprecated member with the replacement • lib/pages/group_details.dart:1040:49 • deprecated_member_use
+   info • 'share' is deprecated and shouldn't be used. Use SharePlus.instance.share() instead. Try replacing the use of the deprecated member with the replacement • lib/pages/group_details.dart:1040:55 • deprecated_member_use
+   info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/pages/group_details.dart:1242:7 • curly_braces_in_flow_control_structures
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check. Guard a 'State.context' use with a 'mounted' check on the State, and other BuildContext use with a 'mounted' check on the BuildContext • lib/pages/group_details.dart:1297:50 • use_build_context_synchronously
+warning • Unused import: 'package:kogalo_network/pages/search.dart'. Try removing the import directive • lib/pages/home.dart:11:8 • unused_import
+warning • Unused import: 'package:kogalo_network/pages/shop.dart'. Try removing the import directive • lib/pages/home.dart:12:8 • unused_import
+warning • Unused import: 'package:flutter_svg/svg.dart'. Try removing the import directive • lib/pages/home.dart:18:8 • unused_import
+warning • The value of the local variable 'mainDataProvider' isn't used. Try removing the variable or using it • lib/pages/home.dart:45:11 • unused_local_variable
+warning • The declaration '_buildUpcomingHeader' isn't referenced. Try removing the declaration of '_buildUpcomingHeader' • lib/pages/home.dart:82:10 • unused_element
+warning • The value of the local variable 'storageBaseUrl' isn't used. Try removing the variable or using it • lib/pages/home.dart:105:11 • unused_local_variable
+warning • The declaration '_buildCategoriesHeader' isn't referenced. Try removing the declaration of '_buildCategoriesHeader' • lib/pages/home.dart:225:10 • unused_element
+warning • The declaration '_buildSectionHeader' isn't referenced. Try removing the declaration of '_buildSectionHeader' • lib/pages/home.dart:342:10 • unused_element
+warning • The declaration '_buildCategories' isn't referenced. Try removing the declaration of '_buildCategories' • lib/pages/home.dart:355:10 • unused_element
+warning • The declaration '_buildBannerSection' isn't referenced. Try removing the declaration of '_buildBannerSection' • lib/pages/home.dart:396:10 • unused_element
+warning • The declaration '_buildDiscoverThisWeek' isn't referenced. Try removing the declaration of '_buildDiscoverThisWeek' • lib/pages/home.dart:406:10 • unused_element
+warning • The declaration '_buildHorizontalEvents' isn't referenced. Try removing the declaration of '_buildHorizontalEvents' • lib/pages/home.dart:425:10 • unused_element
+warning • The declaration '_buildUpcomingEvents' isn't referenced. Try removing the declaration of '_buildUpcomingEvents' • lib/pages/home.dart:454:10 • unused_element
+warning • The declaration '_buildNearbyEvents' isn't referenced. Try removing the declaration of '_buildNearbyEvents' • lib/pages/home.dart:471:10 • unused_element
+warning • The receiver can't be null, so the null-aware operator '?.' is unnecessary. Try replacing the operator '?.' with '.' • lib/pages/home.dart:568:46 • invalid_null_aware_operator
+warning • The '!' will have no effect because the receiver can't be null. Try removing the '!' operator • lib/pages/home.dart:569:35 • unnecessary_non_null_assertion
+warning • The receiver can't be null, so the null-aware operator '?.' is unnecessary. Try replacing the operator '?.' with '.' • lib/pages/home.dart:570:36 • invalid_null_aware_operator
+warning • The declaration '_HomeContentShimmer' isn't referenced. Try removing the declaration of '_HomeContentShimmer' • lib/pages/home.dart:1442:7 • unused_element
+warning • Unused import: 'tickets.dart'. Try removing the import directive • lib/pages/home_dashboard_sections.dart:12:8 • unused_import
+warning • Unused import: 'community.dart'. Try removing the import directive • lib/pages/home_dashboard_sections.dart:15:8 • unused_import
+warning • Unused import: 'package:kogalo_network/providers/user_providers.dart'. Try removing the import directive • lib/pages/home_dashboard_sections.dart:21:8 • unused_import
+warning • Unused import: 'package:kogalo_network/repositories/shop_repository.dart'. Try removing the import directive • lib/pages/home_dashboard_sections.dart:23:8 • unused_import
+   info • Parameter 'key' could be a super parameter. Trying converting 'key' to a super parameter • lib/pages/home_dashboard_sections.dart:47:9 • use_super_parameters
+   info • Parameter 'key' could be a super parameter. Trying converting 'key' to a super parameter • lib/pages/home_dashboard_sections.dart:63:9 • use_super_parameters
+   info • Parameter 'key' could be a super parameter. Trying converting 'key' to a super parameter • lib/pages/home_dashboard_sections.dart:174:9 • use_super_parameters
+   info • Parameter 'key' could be a super parameter. Trying converting 'key' to a super parameter • lib/pages/home_dashboard_sections.dart:327:9 • use_super_parameters
+   info • Parameter 'key' could be a super parameter. Trying converting 'key' to a super parameter • lib/pages/home_dashboard_sections.dart:368:9 • use_super_parameters
+   info • Parameter 'key' could be a super parameter. Trying converting 'key' to a super parameter • lib/pages/home_dashboard_sections.dart:440:9 • use_super_parameters
+   info • Parameter 'key' could be a super parameter. Trying converting 'key' to a super parameter • lib/pages/home_dashboard_sections.dart:485:9 • use_super_parameters
+   info • Parameter 'key' could be a super parameter. Trying converting 'key' to a super parameter • lib/pages/home_dashboard_sections.dart:545:9 • use_super_parameters
+   info • Parameter 'key' could be a super parameter. Trying converting 'key' to a super parameter • lib/pages/home_dashboard_sections.dart:809:9 • use_super_parameters
+   info • Parameter 'key' could be a super parameter. Trying converting 'key' to a super parameter • lib/pages/home_dashboard_sections.dart:899:9 • use_super_parameters
+warning • The left operand can't be null, so the right operand is never executed. Try removing the operator and the right operand • lib/pages/home_dashboard_sections.dart:1007:49 • dead_null_aware_expression
+warning • The left operand can't be null, so the right operand is never executed. Try removing the operator and the right operand • lib/pages/home_dashboard_sections.dart:1021:57 • dead_null_aware_expression
+warning • Unused import: 'shop.dart'. Try removing the import directive • lib/pages/main_shell.dart:6:8 • unused_import
+   info • The import of 'package:flutter/foundation.dart' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart'. Try removing the import directive • lib/pages/main_shell.dart:10:8 • unnecessary_import
+warning • Unused import: '../providers/reels_providers.dart'. Try removing the import directive • lib/pages/main_shell.dart:15:8 • unused_import
+   info • 'translate' is deprecated and shouldn't be used. Use translateByVector3, translateByVector4, or translateByDouble instead. Try replacing the use of the deprecated member with the replacement • lib/pages/main_shell.dart:175:9 • deprecated_member_use
+   info • 'scale' is deprecated and shouldn't be used. Use scaleByVector3, scaleByVector4, or scaleByDouble instead. Try replacing the use of the deprecated member with the replacement • lib/pages/main_shell.dart:176:9 • deprecated_member_use
+   info • 'translate' is deprecated and shouldn't be used. Use translateByVector3, translateByVector4, or translateByDouble instead. Try replacing the use of the deprecated member with the replacement • lib/pages/main_shell.dart:177:9 • deprecated_member_use
+warning • The declaration '_buildCardEventRow' isn't referenced. Try removing the declaration of '_buildCardEventRow' • lib/pages/match_center.dart:441:10 • unused_element
+   info • Unnecessary use of 'toList' in a spread. Try removing the invocation of 'toList' • lib/pages/match_center.dart:586:18 • unnecessary_to_list_in_spreads
+warning • Unused import: 'search.dart'. Try removing the import directive • lib/pages/matches.dart:8:8 • unused_import
+warning • The value of the field '_currentPage' isn't used. Try removing the field, or using it • lib/pages/matches.dart:295:7 • unused_field
+   info • 'Share' is deprecated and shouldn't be used. Use SharePlus instead. Try replacing the use of the deprecated member with the replacement • lib/pages/media_viewer.dart:387:39 • deprecated_member_use
+   info • 'share' is deprecated and shouldn't be used. Use SharePlus.instance.share() instead. Try replacing the use of the deprecated member with the replacement • lib/pages/media_viewer.dart:387:45 • deprecated_member_use
+   info • The import of 'package:flutter/foundation.dart' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart'. Try removing the import directive • lib/pages/membership_payment.dart:1:8 • unnecessary_import
+warning • Unused import: 'package:kogalo_network/pages/main_shell.dart'. Try removing the import directive • lib/pages/membership_payment.dart:2:8 • unused_import
+warning • The operand can't be 'null', so the condition is always 'true'. Remove the condition • lib/pages/membership_payment.dart:107:40 • unnecessary_null_comparison
+warning • The '!' will have no effect because the receiver can't be null. Try removing the '!' operator • lib/pages/membership_payment.dart:108:39 • unnecessary_non_null_assertion
+warning • The '!' will have no effect because the receiver can't be null. Try removing the '!' operator • lib/pages/membership_payment.dart:109:39 • unnecessary_non_null_assertion
+warning • The value of the local variable 'isDark' isn't used. Try removing the variable or using it • lib/pages/membership_payment.dart:542:11 • unused_local_variable
+warning • Unused import: 'search.dart'. Try removing the import directive • lib/pages/monthly_contribution.dart:10:8 • unused_import
+warning • The value of the field '_currentPayingContribution' isn't used. Try removing the field, or using it • lib/pages/monthly_contribution.dart:27:17 • unused_field
+   info • The import of 'dart:ui' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart'. Try removing the import directive • lib/pages/notifications.dart:1:8 • unnecessary_import
+warning • Unused import: 'package:kogalo_network/pages/login.dart'. Try removing the import directive • lib/pages/otp.dart:2:8 • unused_import
+warning • Unused import: 'package:kogalo_network/providers/fcm_providers.dart'. Try removing the import directive • lib/pages/otp.dart:4:8 • unused_import
+   info • 'onPopInvoked' is deprecated and shouldn't be used. Use onPopInvokedWithResult instead. This feature was deprecated after v3.22.0-12.0.pre. Try replacing the use of the deprecated member with the replacement • lib/pages/payment_result.dart:23:7 • deprecated_member_use
+   info • 'onPopInvoked' is deprecated and shouldn't be used. Use onPopInvokedWithResult instead. This feature was deprecated after v3.22.0-12.0.pre. Try replacing the use of the deprecated member with the replacement • lib/pages/payment_result.dart:104:7 • deprecated_member_use
+   info • The import of 'dart:ui' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart'. Try removing the import directive • lib/pages/profile.dart:1:8 • unnecessary_import
+warning • Unused import: 'package:kogalo_network/pages/tickets.dart'. Try removing the import directive • lib/pages/profile.dart:13:8 • unused_import
+warning • The declaration '_StatsRow' isn't referenced. Try removing the declaration of '_StatsRow' • lib/pages/profile.dart:260:7 • unused_element
+warning • The left operand can't be null, so the right operand is never executed. Try removing the operator and the right operand • lib/pages/profile.dart:278:53 • dead_null_aware_expression
+warning • The left operand can't be null, so the right operand is never executed. Try removing the operator and the right operand • lib/pages/profile.dart:286:53 • dead_null_aware_expression
+   info • The import of 'package:flutter/foundation.dart' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart'. Try removing the import directive • lib/pages/reels/custom_camera_screen.dart:1:8 • unnecessary_import
+   info • 'value' is deprecated and shouldn't be used. Use initialValue instead. This will set the initial value for the form field. This feature was deprecated after v3.33.0-1.0.pre. Try replacing the use of the deprecated member with the replacement • lib/pages/reels/my_reels_page.dart:135:21 • deprecated_member_use
+   info • The import of 'package:flutter/foundation.dart' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart'. Try removing the import directive • lib/pages/reels/reels_feed.dart:1:8 • unnecessary_import
+   info • 'Share' is deprecated and shouldn't be used. Use SharePlus instead. Try replacing the use of the deprecated member with the replacement • lib/pages/reels/reels_feed.dart:109:19 • deprecated_member_use
+   info • 'shareXFiles' is deprecated and shouldn't be used. Use SharePlus.instance.share() instead. Try replacing the use of the deprecated member with the replacement • lib/pages/reels/reels_feed.dart:109:25 • deprecated_member_use
+warning • The value of the local variable 'displayPosition' isn't used. Try removing the variable or using it • lib/pages/reels/video_edit_details_screen.dart:277:39 • unused_local_variable
+warning • The value of the local variable 'theme' isn't used. Try removing the variable or using it • lib/pages/reels/widgets/reel_details_view.dart:119:11 • unused_local_variable
+warning • Unused import: 'package:intl/intl.dart'. Try removing the import directive • lib/pages/reels/widgets/reels_overlay_ui.dart:3:8 • unused_import
+   info • 'Share' is deprecated and shouldn't be used. Use SharePlus instead. Try replacing the use of the deprecated member with the replacement • lib/pages/reels/widgets/video_player_item.dart:365:39 • deprecated_member_use
+   info • 'share' is deprecated and shouldn't be used. Use SharePlus.instance.share() instead. Try replacing the use of the deprecated member with the replacement • lib/pages/reels/widgets/video_player_item.dart:365:45 • deprecated_member_use
+warning • Unused import: 'package:flutter_svg/svg.dart'. Try removing the import directive • lib/pages/search.dart:7:8 • unused_import
+warning • The operand can't be 'null', so the condition is always 'true'. Remove the condition • lib/pages/search.dart:725:49 • unnecessary_null_comparison
+warning • The '!' will have no effect because the receiver can't be null. Try removing the '!' operator • lib/pages/search.dart:734:50 • unnecessary_non_null_assertion
+   info • 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre. Try replacing the use of the deprecated member with the replacement • lib/pages/settings.dart:169:7 • deprecated_member_use
+   info • 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre. Try replacing the use of the deprecated member with the replacement • lib/pages/settings.dart:171:7 • deprecated_member_use
+   info • The import of 'package:flutter/foundation.dart' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart'. Try removing the import directive • lib/pages/shop.dart:1:8 • unnecessary_import
+warning • Unused import: 'search.dart'. Try removing the import directive • lib/pages/shop.dart:15:8 • unused_import
+   info • The import of 'package:flutter/foundation.dart' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart'. Try removing the import directive • lib/pages/shop_payment_processing.dart:1:8 • unnecessary_import
+   info • The import of 'package:flutter/foundation.dart' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart'. Try removing the import directive • lib/pages/splashscreen.dart:1:8 • unnecessary_import
+warning • The value of the local variable 'r3' isn't used. Try removing the variable or using it • lib/pages/splashscreen.dart:444:26 • unused_local_variable
+warning • The declaration '_formatTimestamp' isn't referenced. Try removing the declaration of '_formatTimestamp' • lib/pages/widgets/post_comments_sheet.dart:61:10 • unused_element
+   info • Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check • lib/pages/widgets/post_comments_sheet.dart:409:51 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps, guarded by an unrelated 'mounted' check. Guard a 'State.context' use with a 'mounted' check on the State, and other BuildContext use with a 'mounted' check on the BuildContext • lib/pages/widgets/post_comments_sheet.dart:413:41 • use_build_context_synchronously
+   info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/pages/widgets/post_comments_sheet.dart:424:39 • curly_braces_in_flow_control_structures
+warning • Unused import: 'package:kogalo_network/models/payment_model.dart'. Try removing the import directive • lib/providers/checkout_provider.dart:5:8 • unused_import
+warning • Unused import: 'package:flutter/foundation.dart'. Try removing the import directive • lib/providers/checkout_provider.dart:8:8 • unused_import
+warning • The declaration '_fallbackStripePublishableKey' isn't referenced. Try removing the declaration of '_fallbackStripePublishableKey' • lib/providers/checkout_provider.dart:13:7 • unused_element
+warning • The value of the local variable 'prevPosts' isn't used. Try removing the variable or using it • lib/providers/community_providers.dart:326:11 • unused_local_variable
+   info • The 'if' statement could be replaced by a null-aware assignment. Try using the '??=' operator to conditionally assign a value • lib/providers/community_providers.dart:376:9 • prefer_conditional_assignment
+   info • The 'if' statement could be replaced by a null-aware assignment. Try using the '??=' operator to conditionally assign a value • lib/providers/community_providers.dart:735:11 • prefer_conditional_assignment
+warning • The value of the field '_ref' isn't used. Try removing the field, or using it • lib/providers/preregistration_provider.dart:27:13 • unused_field
+   info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/providers/reels_providers.dart:96:7 • curly_braces_in_flow_control_structures
+warning • The stack trace variable 'stackTrace' isn't used and can be removed. Try removing the stack trace variable, or using it • lib/providers/reels_providers.dart:108:17 • unused_catch_stack
+   info • The import of 'dart:ui' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart'. Try removing the import directive • lib/providers/seat_provider.dart:4:8 • unnecessary_import
+warning • The value of the local variable 'selectedInGroup' isn't used. Try removing the variable or using it • lib/providers/seat_provider.dart:75:15 • unused_local_variable
+warning • The left operand can't be null, so the right operand is never executed. Try removing the operator and the right operand • lib/providers/seat_provider.dart:500:48 • dead_null_aware_expression
+warning • The '!' will have no effect because the receiver can't be null. Try removing the '!' operator • lib/providers/seat_provider.dart:693:40 • unnecessary_non_null_assertion
+  error • Target of URI doesn't exist: 'package:kogalo_network/utils/shared_prefs.dart'. Try creating the file referenced by the URI, or try using a URI for a file that does exist • lib/services/echo_service.dart:5:8 • uri_does_not_exist
+   info • The private field _listeners could be 'final'. Try making the field 'final' • lib/services/echo_service.dart:22:49 • prefer_final_fields
+   info • The import of 'package:flutter/foundation.dart' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart'. Try removing the import directive • lib/services/fcm_service.dart:1:8 • unnecessary_import
+   info • 'ProviderRef' is deprecated and shouldn't be used. will be removed in 3.0.0. Use Ref instead. Try replacing the use of the deprecated member with the replacement • lib/services/fcm_service.dart:31:9 • deprecated_member_use
+   info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/theme/apptheme.dart:221:11 • curly_braces_in_flow_control_structures
+   info • Parameter 'key' could be a super parameter. Trying converting 'key' to a super parameter • lib/widgets/safe_svg_network.dart:12:9 • use_super_parameters
+   info • The import of 'package:flutter/foundation.dart' is unnecessary because all of the used elements are also provided by the import of 'package:flutter/material.dart'. Try removing the import directive • lib/widgets/seat_map_widget.dart:1:8 • unnecessary_import
+   info • 'translate' is deprecated and shouldn't be used. Use translateByVector3, translateByVector4, or translateByDouble instead. Try replacing the use of the deprecated member with the replacement • lib/widgets/seat_map_widget.dart:57:9 • deprecated_member_use
+   info • 'scale' is deprecated and shouldn't be used. Use scaleByVector3, scaleByVector4, or scaleByDouble instead. Try replacing the use of the deprecated member with the replacement • lib/widgets/seat_map_widget.dart:58:9 • deprecated_member_use
+warning • The value of the local variable 'textWidth' isn't used. Try removing the variable or using it • lib/widgets/seat_map_widget.dart:205:31 • unused_local_variable
+warning • The '!' will have no effect because the receiver can't be null. Try removing the '!' operator • lib/widgets/seat_map_widget.dart:366:43 • unnecessary_non_null_assertion
+warning • The '!' will have no effect because the receiver can't be null. Try removing the '!' operator • lib/widgets/seat_map_widget.dart:402:64 • unnecessary_non_null_assertion
+   info • 'opacity' is deprecated and shouldn't be used. Use .a. Try replacing the use of the deprecated member with the replacement • lib/widgets/seat_map_widget.dart:721:27 • deprecated_member_use
+

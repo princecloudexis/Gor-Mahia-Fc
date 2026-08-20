@@ -30,8 +30,6 @@ class _CreatePostState extends ConsumerState<CreatePost> {
   bool _hasImage = false;
   XFile? _selectedMedia;
   bool _hasPoll = false;
-  bool _hasLocation = false;
-  String _selectedLocation = '';
   List<TextEditingController> _pollOptions = [
     TextEditingController(text: ''),
     TextEditingController(text: ''),
@@ -52,6 +50,7 @@ class _CreatePostState extends ConsumerState<CreatePost> {
 
   @override
   void dispose() {
+    FocusManager.instance.primaryFocus?.unfocus();
     _textController.dispose();
     _pollQuestionController.dispose();
     for (var c in _pollOptions) {
@@ -79,79 +78,6 @@ class _CreatePostState extends ConsumerState<CreatePost> {
     if (_remainingChars <= 0) return Colors.red;
     if (_remainingChars <= 20) return Colors.orange;
     return AppColors.primaryGreen;
-  }
-
-  void _showLocationPicker() {
-    final locations = [
-      'New York, USA',
-      'London, UK',
-      'Tokyo, Japan',
-      'Paris, France',
-      'Sydney, Australia',
-      'Toronto, Canada',
-    ];
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
-        return Container(
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.bgDark : AppColors.bgLight,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const SizedBox(height: 12),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey.withValues(alpha: 0.4),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Select Location',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: isDark ? AppColors.textOnDark : AppColors.textOnLight,
-                ),
-              ),
-              const SizedBox(height: 8),
-              ...locations.map(
-                (loc) => ListTile(
-                  leading: Icon(
-                    Icons.location_on_outlined,
-                    color: AppColors.primaryGreen,
-                  ),
-                  title: Text(
-                    loc,
-                    style: TextStyle(
-                      color: isDark
-                          ? AppColors.textOnDark
-                          : AppColors.textOnLight,
-                    ),
-                  ),
-                  onTap: () {
-                    setState(() {
-                      _hasLocation = true;
-                      _selectedLocation = loc;
-                    });
-                    Navigator.pop(ctx);
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
-        );
-      },
-    );
   }
 
   void _showGifPicker() {
@@ -260,6 +186,7 @@ class _CreatePostState extends ConsumerState<CreatePost> {
             color: isDark ? AppColors.textOnDark : AppColors.textOnLight,
           ),
           onPressed: () {
+            FocusManager.instance.primaryFocus?.unfocus();
             if (_textController.text.isNotEmpty || _hasImage || _hasPoll) {
               _showDiscardDialog();
             } else {
@@ -427,11 +354,6 @@ class _CreatePostState extends ConsumerState<CreatePost> {
                           if (_hasPoll) ...[
                             const SizedBox(height: 12),
                             _buildPollSection(isDark),
-                          ],
-                          // Location Tag
-                          if (_hasLocation && _selectedLocation.isNotEmpty) ...[
-                            const SizedBox(height: 12),
-                            _buildLocationTag(isDark),
                           ],
                         ],
                       ),
@@ -711,42 +633,6 @@ class _CreatePostState extends ConsumerState<CreatePost> {
     );
   }
 
-  Widget _buildLocationTag(bool isDark) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: AppColors.primaryGreen.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppColors.primaryGreen.withValues(alpha: 0.3),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.location_on, color: AppColors.primaryGreen, size: 16),
-          const SizedBox(width: 6),
-          Text(
-            _selectedLocation,
-            style: TextStyle(
-              color: AppColors.primaryGreen,
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: () => setState(() {
-              _hasLocation = false;
-              _selectedLocation = '';
-            }),
-            child: Icon(Icons.close, color: AppColors.primaryGreen, size: 14),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildBottomToolbar(bool isDark) {
     return Container(
       margin: const EdgeInsets.all(16),
@@ -890,13 +776,7 @@ class _CreatePostState extends ConsumerState<CreatePost> {
                   }),
                   isActive: _hasPoll,
                 ),
-                const SizedBox(width: 4),
-                _buildToolbarButton(
-                  icon: Icons.location_on_outlined,
-                  label: 'Location',
-                  onTap: _showLocationPicker,
-                  isActive: _hasLocation,
-                ),
+
                 const Spacer(),
                 // Character counter
                 ValueListenableBuilder(
@@ -926,28 +806,6 @@ class _CreatePostState extends ConsumerState<CreatePost> {
                             valueColor: AlwaysStoppedAnimation<Color>(
                               _counterColor,
                             ),
-                          ),
-                        ),
-                        Container(
-                          height: 24,
-                          width: 1,
-                          margin: const EdgeInsets.symmetric(horizontal: 12),
-                          color: isDark ? Colors.white24 : Colors.black26,
-                        ),
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: AppColors.primaryGreen.withValues(
-                                alpha: 0.5,
-                              ),
-                            ),
-                          ),
-                          child: Icon(
-                            Icons.add,
-                            color: AppColors.primaryGreen,
-                            size: 16,
                           ),
                         ),
                       ],
@@ -1052,6 +910,7 @@ class _CreatePostState extends ConsumerState<CreatePost> {
       }
 
       if (mounted) {
+        FocusManager.instance.primaryFocus?.unfocus();
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1122,6 +981,7 @@ class _CreatePostState extends ConsumerState<CreatePost> {
           ),
           ElevatedButton(
             onPressed: () {
+              FocusManager.instance.primaryFocus?.unfocus();
               Navigator.pop(ctx);
               Navigator.pop(context);
             },

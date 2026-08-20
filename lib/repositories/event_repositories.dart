@@ -1,15 +1,15 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
-import 'package:gormahiafc/models/checkout_model.dart';
-import 'package:gormahiafc/models/holder_info_model.dart';
-import 'package:gormahiafc/models/map_booking_response.dart';
-import 'package:gormahiafc/models/payment_model.dart';
-import 'package:gormahiafc/models/search_model.dart';
-import 'package:gormahiafc/models/ticket_holder_model.dart';
-import 'package:gormahiafc/models/ticket_model.dart';
-import 'package:gormahiafc/models/user_ticket_model.dart';
-import 'package:gormahiafc/providers/user_providers.dart';
-import 'package:gormahiafc/utils/app_exception.dart';
+import 'package:kogalo_network/models/checkout_model.dart';
+import 'package:kogalo_network/models/holder_info_model.dart';
+import 'package:kogalo_network/models/map_booking_response.dart';
+import 'package:kogalo_network/models/payment_model.dart';
+import 'package:kogalo_network/models/search_model.dart';
+import 'package:kogalo_network/models/ticket_holder_model.dart';
+import 'package:kogalo_network/models/ticket_model.dart';
+import 'package:kogalo_network/models/user_ticket_model.dart';
+import 'package:kogalo_network/providers/user_providers.dart';
+import 'package:kogalo_network/utils/app_exception.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -828,12 +828,15 @@ class EventRepository {
 
       final Map<String, dynamic> body = response.data as Map<String, dynamic>;
       // Assuming backend returns success: true and maybe some M-Pesa fields
-      final success = body['success'] == true || body['CheckoutRequestID'] != null;
+      final success =
+          body['success'] == true || body['CheckoutRequestID'] != null;
 
       if (success) {
         return PaymentIntentModel.fromJson(body);
       } else {
-        throw Exception(body['message'] ?? 'Failed to initiate M-Pesa payment.');
+        throw Exception(
+          body['message'] ?? 'Failed to initiate M-Pesa payment.',
+        );
       }
     } on DioException catch (e) {
       throw AppException.fromDioException(e);
@@ -842,15 +845,21 @@ class EventRepository {
 
   Future<String> checkMpesaPaymentStatus(String checkoutRequestId) async {
     try {
-      final response = await _apiClient.dio.get('/user/mpesa/status/$checkoutRequestId');
-      
+      final response = await _apiClient.dio.get(
+        '/user/mpesa/status/$checkoutRequestId',
+      );
+
       if (response.data is Map) {
         final data = response.data as Map<String, dynamic>;
         final status = (data['status']?.toString() ?? '').toLowerCase();
-        
-        if (status == 'success' || status == 'completed' || data['success'] == true) {
+
+        if (status == 'success' ||
+            status == 'completed' ||
+            data['success'] == true) {
           return 'success';
-        } else if (status == 'failed' || status == 'cancelled' || status == 'error') {
+        } else if (status == 'failed' ||
+            status == 'cancelled' ||
+            status == 'error') {
           return 'failed';
         }
         // Otherwise assume it's still pending
@@ -880,7 +889,7 @@ class EventRepository {
           'street_address': streetAddress,
           'order_id': orderId,
           'email': email,
-          'callback_url': 'gormahiafc://payment-callback',
+          'callback_url': 'kogalonetwork://payment-callback',
         },
       );
 
@@ -895,7 +904,9 @@ class EventRepository {
 
   Future<String> checkPaystackPaymentStatus(String reference) async {
     try {
-      final response = await _apiClient.dio.get('/user/payment/paystack/status/$reference');
+      final response = await _apiClient.dio.get(
+        '/user/payment/paystack/status/$reference',
+      );
       if (response.data is Map) {
         final data = response.data as Map<String, dynamic>;
         if (data['status'] == true && data['payment'] != 'failed') {
@@ -940,7 +951,7 @@ class EventRepository {
       if (reference != null && reference.isNotEmpty) {
         data['reference'] = reference;
       }
-      
+
       if (!data.containsKey('paymentIntentId') &&
           !data.containsKey('checkoutRequestId') &&
           !data.containsKey('reference')) {

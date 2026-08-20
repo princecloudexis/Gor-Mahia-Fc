@@ -1,11 +1,14 @@
+import 'package:flutter/foundation.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:gormahiafc/pages/main_shell.dart';
+import 'package:kogalo_network/pages/main_shell.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../controllers/auth_controller.dart';
 import '../providers/fcm_providers.dart';
 import '../theme/app_colors.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:kogalo_network/api/api_client.dart';
 import 'login.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -318,6 +321,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       await Future.wait([
         Future.delayed(const Duration(milliseconds: 3200)),
         _checkAuth(),
+        _checkInstallDeepLink().timeout(
+          const Duration(seconds: 5),
+          onTimeout: () => debugPrint('Deep link check timed out'),
+        ),
       ]);
       await Future.delayed(const Duration(milliseconds: 100));
       _navigate();
@@ -350,6 +357,36 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   Future<void> _checkAuth() async {
     await ref.read(authControllerProvider.notifier).checkInitialAuthStatus();
+  }
+
+  Future<void> _checkInstallDeepLink() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hasChecked = prefs.getBool('has_checked_install_deeplink') ?? false;
+      if (hasChecked) return;
+
+      final response = await ref
+          .read(apiClientProvider)
+          .dio
+          .post('/deeplink/resolve');
+
+      if (response.statusCode == 200 && response.data != null) {
+        if (response.data['matched'] == true) {
+          final reelId = response.data['reel_id'];
+          if (reelId != null) {
+            await prefs.setString(
+              'pending_deeplink_reel_id',
+              reelId.toString(),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Deep link resolve error: $e');
+    } finally {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('has_checked_install_deeplink', true);
+    }
   }
 
   void _navigateToHome() {
@@ -634,8 +671,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         .slideY(begin: 0.3, end: 0, curve: Curves.easeOutCubic);
   }
 
-
-
   // ── Divider ───────────────────────────────────────────────────────────────
   Widget _buildDivider() {
     return Row(
@@ -683,72 +718,72 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   // ── Branch Badge ────────────────────────────────────────────────────────
   Widget _buildBranchBadge() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.15),
-        border: Border.all(
-          color: AppColors.gold.withOpacity(0.4),
-          width: 0.8,
-        ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Image.asset(
-            'assets/images/branch-logo.png',
-            width: 48,
-            height: 48,
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) =>
-                const Icon(Icons.shield, color: Colors.white54, size: 48),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.15),
+            border: Border.all(
+              color: AppColors.gold.withValues(alpha: 0.4),
+              width: 0.8,
+            ),
+            borderRadius: BorderRadius.circular(12),
           ),
-          const SizedBox(width: 18),
-          Container(
-            width: 1,
-            height: 38,
-            color: Colors.white.withOpacity(0.2),
-          ),
-          const SizedBox(width: 18),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                'MACHAKOS',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  letterSpacing: 2.5,
-                  fontFamily: 'Manrope',
-                ),
+              Image.asset(
+                'assets/images/branch-logo.png',
+                width: 48,
+                height: 48,
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) =>
+                    const Icon(Icons.shield, color: Colors.white54, size: 48),
               ),
-              const SizedBox(height: 4),
-              Text(
-                'BRANCH',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white70,
-                  letterSpacing: 3.5,
-                  fontFamily: 'Manrope',
-                ),
+              const SizedBox(width: 18),
+              Container(
+                width: 1,
+                height: 38,
+                color: Colors.white.withValues(alpha: 0.2),
+              ),
+              const SizedBox(width: 18),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'MACHAKOS',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 2.5,
+                      fontFamily: 'Manrope',
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'BRANCH',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white70,
+                      letterSpacing: 3.5,
+                      fontFamily: 'Manrope',
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
-    )
-    .animate()
-    .fadeIn(duration: 500.ms, delay: 1100.ms)
-    .scale(
-      begin: const Offset(0.9, 0.9),
-      end: const Offset(1.0, 1.0),
-      duration: 500.ms,
-      delay: 1100.ms,
-      curve: Curves.easeOutBack,
-    );
+        )
+        .animate()
+        .fadeIn(duration: 500.ms, delay: 1100.ms)
+        .scale(
+          begin: const Offset(0.9, 0.9),
+          end: const Offset(1.0, 1.0),
+          duration: 500.ms,
+          delay: 1100.ms,
+          curve: Curves.easeOutBack,
+        );
   }
 
   // ── Footer ────────────────────────────────────────────────────────────────

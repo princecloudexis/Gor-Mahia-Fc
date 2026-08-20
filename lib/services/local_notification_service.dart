@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -64,6 +65,6 @@ class LocalNotificationService {
 @pragma('vm:entry-point')
 void onSelectNotification(NotificationResponse response) {
   if (response.payload != null) {
-    print('Notification tapped with payload: ${response.payload}');
+    debugPrint('Notification tapped with payload: ${response.payload}');
   }
 }

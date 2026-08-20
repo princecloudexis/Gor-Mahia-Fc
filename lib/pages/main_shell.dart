@@ -13,6 +13,8 @@ import '../providers/community_providers.dart';
 import '../providers/navigation_providers.dart';
 import '../providers/contribution_providers.dart';
 import '../providers/reels_providers.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../repositories/reels_repository.dart';
 
 class MainShell extends ConsumerStatefulWidget {
   const MainShell({super.key});
@@ -69,6 +71,28 @@ class _MainShellState extends ConsumerState<MainShell>
       vsync: this,
       duration: const Duration(milliseconds: 250),
     );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkPendingDeeplink();
+    });
+  }
+
+  Future<void> _checkPendingDeeplink() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final reelIdStr = prefs.getString('pending_deeplink_reel_id');
+      if (reelIdStr != null && reelIdStr.isNotEmpty) {
+        await prefs.remove('pending_deeplink_reel_id');
+        
+        // Fetch the reel
+        final reel = await ref.read(reelsRepositoryProvider).fetchReel(reelIdStr);
+        // Add to feed
+        ref.read(reelsFeedProvider.notifier).addReel(reel);
+        // Navigate to reels tab
+        ref.read(mainShellTabIndexProvider.notifier).state = 1;
+      }
+    } catch (e) {
+      debugPrint('Failed to load pending deeplink reel: $e');
+    }
   }
 
   @override
@@ -106,6 +130,7 @@ class _MainShellState extends ConsumerState<MainShell>
   @override
   Widget build(BuildContext context) {
     final currentIndex = ref.watch(mainShellTabIndexProvider);
+    final hideBottomNav = ref.watch(hideBottomNavProvider);
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -128,10 +153,15 @@ class _MainShellState extends ConsumerState<MainShell>
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         extendBody: true,
         body: IndexedStack(index: currentIndex, children: _pages),
-        bottomNavigationBar: _GlassNavBar(
-          items: _navItems,
-          currentIndex: currentIndex,
-          onTap: _onTap,
+        bottomNavigationBar: AnimatedSlide(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
+          offset: hideBottomNav ? const Offset(0, 1.5) : Offset.zero,
+          child: _GlassNavBar(
+            items: _navItems,
+            currentIndex: currentIndex,
+            onTap: _onTap,
+          ),
         ),
       ),
     );

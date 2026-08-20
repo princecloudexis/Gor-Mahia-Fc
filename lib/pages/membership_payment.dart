@@ -1,11 +1,12 @@
-import 'package:gormahiafc/pages/main_shell.dart';
-import 'package:gormahiafc/pages/payment_success.dart';
-import 'package:gormahiafc/theme/app_colors.dart';
+import 'package:flutter/foundation.dart';
+import 'package:kogalo_network/pages/main_shell.dart';
+import 'package:kogalo_network/pages/payment_success.dart';
+import 'package:kogalo_network/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gormahiafc/providers/user_providers.dart';
-import 'package:gormahiafc/repositories/membership_repository.dart';
+import 'package:kogalo_network/providers/user_providers.dart';
+import 'package:kogalo_network/repositories/membership_repository.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class MembershipPayment extends ConsumerStatefulWidget {
@@ -163,10 +164,16 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> with Widg
 
       _currentPaymentReference = response.reference;
 
+      if (response.authorizationUrl.isEmpty) {
+        _paymentLaunched = true;
+        _verifyPaymentStatus();
+        return;
+      }
+
       final Uri url = Uri.parse(response.authorizationUrl);
       if (await canLaunchUrl(url)) {
         _paymentLaunched = true;
-        await launchUrl(url, mode: LaunchMode.externalApplication);
+        await launchUrl(url, mode: LaunchMode.inAppBrowserView);
       } else {
         throw Exception('Could not launch payment page.');
       }
@@ -287,7 +294,7 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> with Widg
         color: isDark ? AppColors.bgSurfaceDark : Colors.grey.shade100,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade300,
+          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade300,
         ),
       ),
       padding: const EdgeInsets.all(16),
@@ -326,7 +333,7 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> with Widg
                       widget.period,
                       style: TextStyle(
                         color: isDark
-                            ? Colors.white.withOpacity(0.7)
+                            ? Colors.white.withValues(alpha: 0.7)
                             : Colors.black54,
                         fontSize: 13,
                       ),
@@ -346,7 +353,7 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> with Widg
           ),
           const SizedBox(height: 16),
           Divider(
-            color: isDark ? Colors.white.withOpacity(0.1) : Colors.black12,
+            color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black12,
           ),
           const SizedBox(height: 16),
           Row(
@@ -356,7 +363,7 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> with Widg
                 'Total Amount',
                 style: TextStyle(
                   color: isDark
-                      ? Colors.white.withOpacity(0.7)
+                      ? Colors.white.withValues(alpha: 0.7)
                       : Colors.black54,
                   fontSize: 14,
                 ),
@@ -390,7 +397,7 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> with Widg
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: AppColors.primaryGreen.withOpacity(0.1),
+              color: AppColors.primaryGreen.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: const Icon(
@@ -416,7 +423,7 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> with Widg
                   'Pay securely via Card, Mobile Money or USSD',
                   style: TextStyle(
                     color: isDark
-                        ? Colors.white.withOpacity(0.7)
+                        ? Colors.white.withValues(alpha: 0.7)
                         : Colors.black54,
                     fontSize: 13,
                   ),
@@ -445,7 +452,7 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> with Widg
             borderRadius: BorderRadius.circular(10),
             border: Border.all(
               color: isDark
-                  ? Colors.white.withOpacity(0.04)
+                  ? Colors.white.withValues(alpha: 0.04)
                   : Colors.grey.shade300,
             ),
           ),
@@ -457,7 +464,7 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> with Widg
                 'Email Address',
                 style: TextStyle(
                   color: isDark
-                      ? AppColors.textSecondaryDark.withOpacity(0.7)
+                      ? AppColors.textSecondaryDark.withValues(alpha: 0.7)
                       : Colors.black54,
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
@@ -481,7 +488,7 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> with Widg
                   hintText: 'e.g. jimjacksports@gmail.com',
                   hintStyle: TextStyle(
                     color: isDark
-                        ? Colors.white.withOpacity(0.2)
+                        ? Colors.white.withValues(alpha: 0.2)
                         : Colors.black26,
                     fontSize: 16,
                   ),
@@ -499,9 +506,9 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> with Widg
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.primaryGreen.withOpacity(0.05),
+            color: AppColors.primaryGreen.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.primaryGreen.withOpacity(0.2)),
+            border: Border.all(color: AppColors.primaryGreen.withValues(alpha: 0.2)),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -517,7 +524,7 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> with Widg
                   'Instructions: Enter your email address and tap Pay. You will be redirected to the secure Paystack portal to complete the transaction.',
                   style: TextStyle(
                     color: isDark
-                        ? Colors.white.withOpacity(0.8)
+                        ? Colors.white.withValues(alpha: 0.8)
                         : Colors.black87,
                     fontSize: 13,
                     height: 1.4,

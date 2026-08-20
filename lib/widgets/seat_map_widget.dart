@@ -1,5 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'dart:math' as math;
-import 'package:gormahiafc/models/ticket_model.dart';
+import 'package:kogalo_network/models/ticket_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/seat_layout_model.dart';
@@ -388,7 +389,7 @@ class _SingleSeatWidget extends ConsumerWidget {
         ? Colors.grey.shade500
         : isSelected
         ? Colors.white
-        : bg.withOpacity(0.85);
+        : bg.withValues(alpha: 0.85);
 
     return Positioned(
       left: seat.x,
@@ -417,7 +418,7 @@ class _SingleSeatWidget extends ConsumerWidget {
               boxShadow: isSelected
                   ? [
                       BoxShadow(
-                        color: AppTheme.primaryPink.withOpacity(0.45),
+                        color: AppTheme.primaryPink.withValues(alpha: 0.45),
                         blurRadius: 6,
                         spreadRadius: 1,
                       ),
@@ -426,7 +427,7 @@ class _SingleSeatWidget extends ConsumerWidget {
                   ? [] // no shadow when limit reached
                   : [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
+                        color: Colors.black.withValues(alpha: 0.08),
                         blurRadius: 2,
                         offset: const Offset(0, 1),
                       ),
@@ -558,7 +559,7 @@ class _SectionHighlighter extends CustomPainter {
     canvas.drawPath(
       path,
       Paint()
-        ..color = AppTheme.primaryPink.withOpacity(0.22)
+        ..color = AppTheme.primaryPink.withValues(alpha: 0.22)
         ..style = PaintingStyle.fill,
     );
 
@@ -868,10 +869,10 @@ void _showSectionSheet(
                       margin: const EdgeInsets.symmetric(horizontal: 20),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: sectionColor.withOpacity(0.15),
+                        color: sectionColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: sectionColor.withOpacity(0.4),
+                          color: sectionColor.withValues(alpha: 0.4),
                           width: 1.5,
                         ),
                       ),
@@ -923,13 +924,13 @@ void _showSectionSheet(
                             ),
                             decoration: BoxDecoration(
                               color: isFree
-                                  ? Colors.green.withOpacity(0.2)
-                                  : AppTheme.primaryPink.withOpacity(0.15),
+                                  ? Colors.green.withValues(alpha: 0.2)
+                                  : AppTheme.primaryPink.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
                                 color: isFree
-                                    ? Colors.green.withOpacity(0.4)
-                                    : AppTheme.primaryPink.withOpacity(0.4),
+                                    ? Colors.green.withValues(alpha: 0.4)
+                                    : AppTheme.primaryPink.withValues(alpha: 0.4),
                               ),
                             ),
                             child: Text(
@@ -1047,10 +1048,10 @@ void _showSectionSheet(
                           vertical: 10,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.red.withOpacity(0.08),
+                          color: Colors.red.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: Colors.red.withOpacity(0.25),
+                            color: Colors.red.withValues(alpha: 0.25),
                           ),
                         ),
                         child: Row(
@@ -1203,9 +1204,9 @@ class _InfoChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.25)),
+        border: Border.all(color: color.withValues(alpha: 0.25)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1248,7 +1249,7 @@ class _QtyButton extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: enabled
-              ? AppTheme.primaryPink.withOpacity(0.15)
+              ? AppTheme.primaryPink.withValues(alpha: 0.15)
               : Colors.transparent,
         ),
         child: Icon(

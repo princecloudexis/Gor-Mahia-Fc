@@ -1,5 +1,5 @@
-import 'package:gormahiafc/models/contribution_models.dart';
-import 'package:gormahiafc/repositories/contribution_repository.dart';
+import 'package:kogalo_network/models/contribution_models.dart';
+import 'package:kogalo_network/repositories/contribution_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final contributionCountProvider = FutureProvider.autoDispose<ContributionCount>(

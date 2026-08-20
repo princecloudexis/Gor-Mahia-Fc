@@ -1,6 +1,6 @@
-import 'package:gormahiafc/models/ticket_holder_model.dart';
-import 'package:gormahiafc/providers/event_providers.dart';
-import 'package:gormahiafc/theme/apptheme.dart';
+import 'package:kogalo_network/models/ticket_holder_model.dart';
+import 'package:kogalo_network/providers/event_providers.dart';
+import 'package:kogalo_network/theme/apptheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -250,7 +250,7 @@ class _QrCodeTicketView extends StatelessWidget {
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.05),
+                                  color: Colors.black.withValues(alpha: 0.05),
                                   blurRadius: 10,
                                 ),
                               ],
@@ -289,10 +289,10 @@ class _QrCodeTicketView extends StatelessWidget {
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: AppTheme.primaryPurple.withOpacity(0.08),
+                                color: AppTheme.primaryPurple.withValues(alpha: 0.08),
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: AppTheme.primaryPurple.withOpacity(
+                                  color: AppTheme.primaryPurple.withValues(alpha: 
                                     0.5,
                                   ),
                                 ),

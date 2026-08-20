@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gormahiafc/theme/app_colors.dart';
-import 'package:gormahiafc/models/shop_models.dart';
-import 'package:gormahiafc/providers/shop_providers.dart';
+import 'package:kogalo_network/theme/app_colors.dart';
+import 'package:kogalo_network/config/app_config.dart';
+import 'package:kogalo_network/models/shop_models.dart';
+import 'package:kogalo_network/providers/shop_providers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:gormahiafc/pages/shop_checkout.dart';
+import 'package:kogalo_network/pages/shop_checkout.dart';
 
 class ShopCartPage extends ConsumerStatefulWidget {
   const ShopCartPage({super.key});
@@ -19,7 +20,7 @@ class _ShopCartPageState extends ConsumerState<ShopCartPage> {
   String _getImageUrl(String? path) {
     if (path == null || path.isEmpty) return '';
     if (path.startsWith('http')) return path;
-    return 'https://footballclub.staging-workhub.com/' + path.replaceFirst(RegExp(r'^/+'), '');
+    return AppConfig.storageBaseUrl + path.replaceFirst(RegExp(r'^/+'), '');
   }
 
   Future<void> _updateQuantity(ShopCartItem item, int newQuantity) async {
@@ -122,7 +123,7 @@ class _ShopCartPageState extends ConsumerState<ShopCartPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.shopping_cart_outlined, size: 80, color: Colors.grey.withOpacity(0.5)),
+                      Icon(Icons.shopping_cart_outlined, size: 80, color: Colors.grey.withValues(alpha: 0.5)),
                       const SizedBox(height: 16),
                       const Text(
                         'Your cart is empty',
@@ -202,7 +203,7 @@ class _ShopCartPageState extends ConsumerState<ShopCartPage> {
                                     ],
                                     const SizedBox(height: 8),
                                     Text(
-                                      'KSh ${(item.effectivePrice > 0 ? item.effectivePrice : item.product.price).toStringAsFixed(0)}',
+                                      'KSh ${(item.effectivePrice > 0 ? item.effectivePrice : item.product.price).toStringAsFixed(2)}',
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         color: AppColors.primaryGreen,
@@ -262,7 +263,7 @@ class _ShopCartPageState extends ConsumerState<ShopCartPage> {
                       color: isDark ? AppColors.bgSurfaceDark : Colors.white,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 10,
                           offset: const Offset(0, -5),
                         ),
@@ -274,9 +275,9 @@ class _ShopCartPageState extends ConsumerState<ShopCartPage> {
                         children: [
                           Builder(
                             builder: (context) {
-                              final totalSubtotal = cart.items.fold(0.0, (sum, item) => sum + item.subtotal);
-                              final totalVat = cart.items.fold(0.0, (sum, item) => sum + item.vat);
-                              final totalPlatformCharge = cart.items.fold(0.0, (sum, item) => sum + item.platformCharge);
+                              final totalSubtotal = cart.subtotal;
+                              final totalPaymentCharge = cart.totalPaymentCharge;
+                              final totalPlatformCharge = cart.platformCharge;
 
                               return Column(
                                 children: [
@@ -285,25 +286,29 @@ class _ShopCartPageState extends ConsumerState<ShopCartPage> {
                                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text('Subtotal:', style: TextStyle(color: isDark ? Colors.white70 : Colors.black54)),
-                                        Text('KSh ${totalSubtotal.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                        Text('KSh ${totalSubtotal.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold)),
                                       ],
                                     ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text('VAT:', style: TextStyle(color: isDark ? Colors.white70 : Colors.black54)),
-                                        Text('KSh ${totalVat.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text('Platform Charge:', style: TextStyle(color: isDark ? Colors.white70 : Colors.black54)),
-                                        Text('KSh ${totalPlatformCharge.toStringAsFixed(0)}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                                      ],
-                                    ),
+                                    if (totalPaymentCharge > 0) ...[
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text('Payment Charge:', style: TextStyle(color: isDark ? Colors.white70 : Colors.black54)),
+                                          Text('KSh ${totalPaymentCharge.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                        ],
+                                      ),
+                                    ],
+                                    if (totalPlatformCharge > 0) ...[
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text('Platform Charge:', style: TextStyle(color: isDark ? Colors.white70 : Colors.black54)),
+                                          Text('KSh ${totalPlatformCharge.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                        ],
+                                      ),
+                                    ],
                                     const SizedBox(height: 12),
                                     Divider(color: isDark ? Colors.white24 : Colors.grey.shade200),
                                     const SizedBox(height: 12),
@@ -316,7 +321,7 @@ class _ShopCartPageState extends ConsumerState<ShopCartPage> {
                                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                                       ),
                                       Text(
-                                        'KSh ${cart.cartTotal.toStringAsFixed(0)}',
+                                        'KSh ${cart.cartTotal.toStringAsFixed(2)}',
                                         style: const TextStyle(
                                           fontSize: 22,
                                           fontWeight: FontWeight.bold,
@@ -365,7 +370,7 @@ class _ShopCartPageState extends ConsumerState<ShopCartPage> {
           ),
           if (_isLoading)
             Container(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               child: const Center(child: CircularProgressIndicator()),
             ),
         ],

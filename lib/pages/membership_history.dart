@@ -168,7 +168,7 @@ class _HistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final statusColor = _getStatusColor(item.paymentStatus);
+    final statusColor = _getStatusColor(item.status);
 
     return Container(
       decoration: BoxDecoration(
@@ -178,7 +178,7 @@ class _HistoryCard extends StatelessWidget {
             ? []
             : [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -220,11 +220,11 @@ class _HistoryCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.15),
+                    color: statusColor.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    item.paymentStatus.toUpperCase(),
+                    item.status.toUpperCase(),
                     style: TextStyle(
                       color: statusColor,
                       fontSize: 11,
@@ -249,6 +249,12 @@ class _HistoryCard extends StatelessWidget {
                 _buildRowRow(
                   label: 'Plan:',
                   value: item.plan.toUpperCase(),
+                  isDark: isDark,
+                ),
+                const SizedBox(height: 8),
+                _buildRowRow(
+                  label: 'Payment:',
+                  value: item.paymentStatus.toUpperCase(),
                   isDark: isDark,
                 ),
                 const SizedBox(height: 8),

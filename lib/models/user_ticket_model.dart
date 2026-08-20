@@ -1,4 +1,4 @@
-import 'package:gormahiafc/models/event_model.dart';
+import 'package:kogalo_network/models/event_model.dart';
 
 class UserTicketModel {
   final int eventId;

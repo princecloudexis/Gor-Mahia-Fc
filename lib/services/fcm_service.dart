@@ -1,12 +1,14 @@
+import 'package:flutter/foundation.dart';
 import 'dart:convert';
 import 'dart:io';
-import 'package:gormahiafc/controllers/auth_controller.dart';
-import 'package:gormahiafc/firebase_options.dart';
-import 'package:gormahiafc/models/notification_model.dart';
-import 'package:gormahiafc/providers/community_providers.dart';
-import 'package:gormahiafc/providers/notifications_providers.dart';
-import 'package:gormahiafc/providers/user_providers.dart';
-import 'package:gormahiafc/services/local_notification_service.dart';
+import 'package:kogalo_network/controllers/auth_controller.dart';
+import 'package:kogalo_network/config/app_config.dart';
+import 'package:kogalo_network/firebase_options.dart';
+import 'package:kogalo_network/models/notification_model.dart';
+import 'package:kogalo_network/providers/community_providers.dart';
+import 'package:kogalo_network/providers/notifications_providers.dart';
+import 'package:kogalo_network/providers/user_providers.dart';
+import 'package:kogalo_network/services/local_notification_service.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +18,7 @@ import 'package:http/http.dart' as http;
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  print("Handling a background message: ${message.messageId}");
+  debugPrint("Handling a background message: ${message.messageId}");
 }
 
 class NavigationService {
@@ -57,17 +59,19 @@ class FcmService {
     try {
       fcmToken = await _firebaseMessaging.getToken();
     } catch (e) {
-      print("Warning: Failed to get FCM token. This is expected on iOS Simulators without APNs configured. Error: $e");
+      debugPrint(
+        "Warning: Failed to get FCM token. This is expected on iOS Simulators without APNs configured. Error: $e",
+      );
     }
 
     if (fcmToken != null) {
-      print("Attempting to send FCM token to server...");
+      debugPrint("Attempting to send FCM token to server...");
       await _sendTokenToBackend(
         token: fcmToken,
         userAuthToken: userAuthToken,
         userId: userId,
       );
-      print("FCM token sent to server. Token: $fcmToken");
+      debugPrint("FCM token sent to server. Token: $fcmToken");
     }
     _firebaseMessaging.onTokenRefresh.listen((newToken) {
       final currentAuthState = _ref.read(authControllerProvider);
@@ -83,8 +87,8 @@ class FcmService {
 
   void _setupMessageListeners() async {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print('Got a message whilst in the foreground!');
-      print('Message data: ${message.data}');
+      debugPrint('Got a message whilst in the foreground!');
+      debugPrint('Message data: ${message.data}');
       final notification = message.notification;
       final data = message.data;
 
@@ -113,7 +117,7 @@ class FcmService {
       }
     });
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print('A new onMessageOpenedApp event was published!');
+      debugPrint('A new onMessageOpenedApp event was published!');
       _handleNotificationTap(message.data);
     });
     final initialMessage = await _firebaseMessaging.getInitialMessage();
@@ -147,7 +151,7 @@ class FcmService {
     int? userId,
   }) async {
     if (token == null || userAuthToken == null || userId == null) {
-      print('Cannot send FCM token: Token, Auth, or UserID is null.');
+      debugPrint('Cannot send FCM token: Token, Auth, or UserID is null.');
       return;
     }
     String platformValue;
@@ -156,12 +160,11 @@ class FcmService {
     } else if (Platform.isIOS) {
       platformValue = 'ios';
     } else {
-      print('Unsupported platform for FCM token saving.');
+      debugPrint('Unsupported platform for FCM token saving.');
       return;
     }
 
-    const String apiUrl =
-        'https://footballclub.staging-workhub.com/api/user/save-token';
+    final String apiUrl = '${AppConfig.baseApiUrl}/user/save-token';
 
     try {
       final response = await http.post(
@@ -179,22 +182,22 @@ class FcmService {
       );
 
       if (response.statusCode == 200) {
-        print(
+        debugPrint(
           'FCM token sent to backend successfully for platform: $platformValue',
         );
       } else {
-        print(
+        debugPrint(
           'Failed to send FCM token.'
           'Status: ${response.statusCode}, Body: ${response.body}',
         );
       }
     } catch (e) {
-      print('Error sending FCM token to backend: $e');
+      debugPrint('Error sending FCM token to backend: $e');
     }
   }
 
   void _handleNotificationTap(Map<String, dynamic> data) {
-    print("Notification tapped! Data payload: $data");
+    debugPrint("Notification tapped! Data payload: $data");
     final navigator = NavigationService.navigatorKey.currentState;
     if (navigator == null) return;
 
@@ -204,7 +207,7 @@ class FcmService {
     final String? postId = data['post_id']?.toString();
 
     if (slug != null) {
-      print("Navigating to event details for slug: $slug");
+      debugPrint("Navigating to event details for slug: $slug");
       navigator.pushNamed('/event-details', arguments: slug);
       return;
     }
@@ -231,12 +234,12 @@ class FcmService {
       // Navigate to notifications page — it will pick up the tap via FCM
       // and the user can tap the notification card to deep-link into the group.
       // For a richer UX we push /notifications so the unread badge is visible.
-      print(
+      debugPrint(
         "Navigating to notifications page (group: $resolvedGroupId, post: $resolvedPostId)",
       );
       navigator.pushNamed('/notifications');
     } else {
-      print("Navigating to default notifications page.");
+      debugPrint("Navigating to default notifications page.");
       navigator.pushNamed('/notifications');
     }
   }

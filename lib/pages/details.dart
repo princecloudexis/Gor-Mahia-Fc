@@ -1,12 +1,12 @@
 import 'dart:ui';
-import 'package:gormahiafc/providers/categoryevents_providers.dart';
+import 'package:kogalo_network/providers/categoryevents_providers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:gormahiafc/api/api_client.dart';
-import 'package:gormahiafc/pages/booking.dart';
-import 'package:gormahiafc/pages/login.dart';
-import 'package:gormahiafc/providers/location_providers.dart';
-import 'package:gormahiafc/providers/seat_provider.dart';
-import 'package:gormahiafc/providers/user_providers.dart';
+import 'package:kogalo_network/api/api_client.dart';
+import 'package:kogalo_network/pages/booking.dart';
+import 'package:kogalo_network/pages/login.dart';
+import 'package:kogalo_network/providers/location_providers.dart';
+import 'package:kogalo_network/providers/seat_provider.dart';
+import 'package:kogalo_network/providers/user_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -90,7 +90,7 @@ class _EventSliverAppBar extends ConsumerWidget {
       leading: _GlassIconButton(
         icon: Icons.arrow_back,
         onTap: () => Navigator.pop(context),
-        backgroundColor: Colors.black.withOpacity(0.4),
+        backgroundColor: Colors.black.withValues(alpha: 0.4),
       ),
       actions: [
         _FavoriteButton(event: event),
@@ -161,7 +161,7 @@ class _EventContentSheet extends StatelessWidget {
             //               side: BorderSide(
             //                 color: Theme.of(
             //                   context,
-            //                 ).colorScheme.onSurface.withOpacity(0.1),
+            //                 ).colorScheme.onSurface.withValues(alpha: 0.1),
             //               ),
             //             ),
             //           )
@@ -298,7 +298,7 @@ class _InfoPill extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.cardColor,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: theme.shadowColor.withOpacity(0.5)),
+        border: Border.all(color: theme.shadowColor.withValues(alpha: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -415,10 +415,10 @@ class _BookingBottomBar extends ConsumerWidget {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             decoration: BoxDecoration(
-              color: Theme.of(context).cardColor.withOpacity(0.8),
+              color: Theme.of(context).cardColor.withValues(alpha: 0.8),
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
-                color: Theme.of(context).shadowColor.withOpacity(0.5),
+                color: Theme.of(context).shadowColor.withValues(alpha: 0.5),
               ),
             ),
             child: SafeArea(
@@ -459,7 +459,7 @@ class _BookingBottomBar extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: AppTheme.primaryPink.withOpacity(0.35),
+                              color: AppTheme.primaryPink.withValues(alpha: 0.35),
                               blurRadius: 12,
                               offset: const Offset(0, 4),
                             ),
@@ -737,7 +737,7 @@ class _FavoriteButton extends ConsumerWidget {
       },
       icon: isFavorite ? Icons.favorite_rounded : Icons.favorite_border_rounded,
       color: isFavorite ? AppTheme.accentRed : Colors.white,
-      backgroundColor: Colors.black.withOpacity(0.4),
+      backgroundColor: Colors.black.withValues(alpha: 0.4),
     );
   }
 }
@@ -767,7 +767,7 @@ class _GlassIconButton extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: backgroundColor ?? Colors.white.withOpacity(0.3),
+                color: backgroundColor ?? Colors.white.withValues(alpha: 0.3),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(icon, color: color ?? Colors.white),

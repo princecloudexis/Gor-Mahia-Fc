@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 class MatchLiveResponse {
   final bool status;
   final String message;
@@ -372,33 +373,33 @@ class MatchChatResponse {
   });
 
   factory MatchChatResponse.fromJson(Map<String, dynamic> json) {
-    print('DEBUG CHAT: Full JSON response keys: ${json.keys}');
+    debugPrint('DEBUG CHAT: Full JSON response keys: ${json.keys}');
     final dataField = json['data'];
-    print('DEBUG CHAT: dataField type: ${dataField.runtimeType}');
+    debugPrint('DEBUG CHAT: dataField type: ${dataField.runtimeType}');
 
     List<dynamic> rawList = [];
     if (dataField is List) {
       rawList = dataField;
-      print('DEBUG CHAT: dataField is a List of length ${rawList.length}');
+      debugPrint('DEBUG CHAT: dataField is a List of length ${rawList.length}');
     } else if (dataField is Map && dataField['data'] is List) {
       rawList = dataField['data'];
-      print('DEBUG CHAT: dataField is a Map containing a List of length ${rawList.length}');
+      debugPrint('DEBUG CHAT: dataField is a Map containing a List of length ${rawList.length}');
     } else {
-      print('DEBUG CHAT: dataField is neither a List nor a Map containing a List! It is: $dataField');
+      debugPrint('DEBUG CHAT: dataField is neither a List nor a Map containing a List! It is: $dataField');
     }
 
     final parsedList = rawList.map((e) {
       try {
         return MatchChatMessage.fromJson(e);
       } catch (err) {
-        print('DEBUG CHAT: Error parsing message: $err. Raw data: $e');
+        debugPrint('DEBUG CHAT: Error parsing message: $err. Raw data: $e');
         rethrow;
       }
     }).toList();
 
     // Ensure chronological order by sorting by ID ascending (oldest at top, newest at bottom)
     parsedList.sort((a, b) => a.id.compareTo(b.id));
-    print('DEBUG CHAT: Successfully parsed and sorted ${parsedList.length} messages');
+    debugPrint('DEBUG CHAT: Successfully parsed and sorted ${parsedList.length} messages');
 
     return MatchChatResponse(
       status: json['status'] ?? false,

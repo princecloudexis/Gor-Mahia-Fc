@@ -1,6 +1,6 @@
 import 'dart:ui';
 import 'dart:io';
-import 'package:gormahiafc/repositories/community_repository.dart';
+import 'package:kogalo_network/repositories/community_repository.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -154,10 +154,14 @@ class _GroupDetailsState extends ConsumerState<GroupDetails> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.12),
+                color: Colors.red.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.exit_to_app_rounded, color: Colors.red, size: 24),
+              child: const Icon(
+                Icons.exit_to_app_rounded,
+                color: Colors.red,
+                size: 24,
+              ),
             ),
             const SizedBox(width: 12),
             const Expanded(
@@ -242,7 +246,9 @@ class _GroupDetailsState extends ConsumerState<GroupDetails> {
             content: Text(message),
             backgroundColor: AppColors.primaryGreen,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
         Navigator.pop(context);
@@ -295,7 +301,11 @@ class _GroupDetailsState extends ConsumerState<GroupDetails> {
                 elevation: 0,
                 iconTheme: const IconThemeData(color: Colors.white),
                 flexibleSpace: FlexibleSpaceBar(
-                  titlePadding: const EdgeInsets.only(left: 16, bottom: 16, right: 48),
+                  titlePadding: const EdgeInsets.only(
+                    left: 16,
+                    bottom: 16,
+                    right: 48,
+                  ),
                   centerTitle: false,
                   title: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -422,8 +432,12 @@ class _GroupDetailsState extends ConsumerState<GroupDetails> {
                             ),
                           )
                         : PopupMenuButton<String>(
-                            icon: const Icon(Icons.more_vert, color: Colors.white),
-                            color: Theme.of(context).brightness == Brightness.dark
+                            icon: const Icon(
+                              Icons.more_vert,
+                              color: Colors.white,
+                            ),
+                            color:
+                                Theme.of(context).brightness == Brightness.dark
                                 ? const Color(0xFF1E2126)
                                 : Colors.white,
                             shape: RoundedRectangleBorder(
@@ -434,7 +448,8 @@ class _GroupDetailsState extends ConsumerState<GroupDetails> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => GroupInfo(group: widget.group),
+                                    builder: (context) =>
+                                        GroupInfo(group: widget.group),
                                   ),
                                 );
                               } else if (value == 'leave') {
@@ -457,9 +472,16 @@ class _GroupDetailsState extends ConsumerState<GroupDetails> {
                                 value: 'leave',
                                 child: Row(
                                   children: [
-                                    Icon(Icons.exit_to_app_rounded, size: 20, color: Colors.red),
+                                    Icon(
+                                      Icons.exit_to_app_rounded,
+                                      size: 20,
+                                      color: Colors.red,
+                                    ),
                                     SizedBox(width: 12),
-                                    Text('Leave Group', style: TextStyle(color: Colors.red)),
+                                    Text(
+                                      'Leave Group',
+                                      style: TextStyle(color: Colors.red),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -472,7 +494,8 @@ class _GroupDetailsState extends ConsumerState<GroupDetails> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => GroupInfo(group: widget.group),
+                            builder: (context) =>
+                                GroupInfo(group: widget.group),
                           ),
                         );
                       },
@@ -530,7 +553,13 @@ class _GroupDetailsState extends ConsumerState<GroupDetails> {
                               });
                               ref.refresh(joinedGroupsProvider);
                               ref.invalidate(exploreGroupsProvider);
-                              ref.read(groupPostsProvider(widget.group.id).notifier).fetchInitial();
+                              ref
+                                  .read(
+                                    groupPostsProvider(
+                                      widget.group.id,
+                                    ).notifier,
+                                  )
+                                  .fetchInitial();
 
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
@@ -690,7 +719,8 @@ class _GroupDetailsState extends ConsumerState<GroupDetails> {
       padding: const EdgeInsets.only(top: 8, bottom: 80),
       itemCount:
           state.posts.length +
-          ((!_hasJoined && state.posts.isNotEmpty) || (state.hasNextPage && state.isLoading)
+          ((!_hasJoined && state.posts.isNotEmpty) ||
+                  (state.hasNextPage && state.isLoading)
               ? 1
               : 0),
       separatorBuilder: (context, index) => Divider(
@@ -1036,12 +1066,10 @@ class _GroupDetailsState extends ConsumerState<GroupDetails> {
                           }
 
                           // Fallback to sharing just text if no image or image download failed
-                          if (shareResult == null) {
-                            shareResult = await Share.share(
-                              shareText,
-                              subject: 'Gor Mahia FC',
-                            );
-                          }
+                          shareResult ??= await Share.share(
+                            shareText,
+                            subject: 'Gor Mahia FC',
+                          );
 
                           if (shareResult.status == ShareResultStatus.success) {
                             ref
@@ -1307,7 +1335,7 @@ class _GroupDetailsState extends ConsumerState<GroupDetails> {
                     height: 40,
                     decoration: BoxDecoration(
                       border: Border.all(
-                        color: AppColors.primaryGreen.withOpacity(0.5),
+                        color: AppColors.primaryGreen.withValues(alpha: 0.5),
                       ),
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -1319,7 +1347,9 @@ class _GroupDetailsState extends ConsumerState<GroupDetails> {
                           widthFactor: percentage,
                           child: Container(
                             decoration: BoxDecoration(
-                              color: AppColors.primaryGreen.withOpacity(0.2),
+                              color: AppColors.primaryGreen.withValues(
+                                alpha: 0.2,
+                              ),
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),

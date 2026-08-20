@@ -1,6 +1,6 @@
-import 'package:gormahiafc/api/api_client.dart';
-import 'package:gormahiafc/models/contribution_models.dart';
-import 'package:gormahiafc/utils/app_exception.dart';
+import 'package:kogalo_network/api/api_client.dart';
+import 'package:kogalo_network/models/contribution_models.dart';
+import 'package:kogalo_network/utils/app_exception.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -53,14 +53,14 @@ class ContributionRepository {
           'amount': amount,
         },
       );
-      print(
+      debugPrint(
         '--- POST Pay Contribution HTTP Status: ${response.statusCode} ---',
       );
-      print('--- POST Pay Contribution Body: ${response.data} ---');
+      debugPrint('--- POST Pay Contribution Body: ${response.data} ---');
 
       if (response.statusCode == 200 && response.data != null) {
-        print('--- POST Pay Contribution Response ---');
-        print(response.data);
+        debugPrint('--- POST Pay Contribution Response ---');
+        debugPrint(response.data.toString());
         final data = response.data['data'];
         if (data != null) {
           return PaymentResponse.fromJson(data);
@@ -68,7 +68,7 @@ class ContributionRepository {
       }
       throw AppException('Payment initiation failed');
     } catch (e) {
-      print('--- ERROR in POST Pay Contribution: $e ---');
+      debugPrint('--- ERROR in POST Pay Contribution: $e ---');
       if (e is DioException) {
         throw AppException.fromDioException(e);
       }
@@ -84,17 +84,17 @@ class ContributionRepository {
       final response = await _apiClient.dio.get(
         '/user/contributions/payment/status/$checkoutRequestId',
       );
-      print('--- GET Payment Status HTTP Status: ${response.statusCode} ---');
-      print('--- GET Payment Status Body: ${response.data} ---');
+      debugPrint('--- GET Payment Status HTTP Status: ${response.statusCode} ---');
+      debugPrint('--- GET Payment Status Body: ${response.data} ---');
 
       if (response.statusCode == 200 && response.data != null) {
-        print('--- GET Payment Status Response ---');
-        print(response.data);
+        debugPrint('--- GET Payment Status Response ---');
+        debugPrint(response.data.toString());
         return PaymentStatusResponse.fromJson(response.data);
       }
       throw AppException('Failed to fetch payment status');
     } catch (e) {
-      print('--- ERROR in GET Payment Status: $e ---');
+      debugPrint('--- ERROR in GET Payment Status: $e ---');
       if (e is DioException) {
         throw AppException.fromDioException(e);
       }
@@ -106,14 +106,14 @@ class ContributionRepository {
   Future<ContributionCount> getContributionCount() async {
     try {
       final response = await _apiClient.dio.get('/user/contributions/count');
-      print(
+      debugPrint(
         '--- GET Contribution Count HTTP Status: ${response.statusCode} ---',
       );
-      print('--- GET Contribution Count Body: ${response.data} ---');
+      debugPrint('--- GET Contribution Count Body: ${response.data} ---');
 
       if (response.statusCode == 200 && response.data != null) {
-        print('--- GET Contribution Count Response ---');
-        print(response.data);
+        debugPrint('--- GET Contribution Count Response ---');
+        debugPrint(response.data.toString());
         final data = response.data['data'];
         if (data != null) {
           return ContributionCount.fromJson(data);
@@ -121,7 +121,7 @@ class ContributionRepository {
       }
       throw AppException('Failed to fetch contribution counts');
     } catch (e) {
-      print('--- ERROR in GET Contribution Count: $e ---');
+      debugPrint('--- ERROR in GET Contribution Count: $e ---');
       if (e is DioException) {
         throw AppException.fromDioException(e);
       }

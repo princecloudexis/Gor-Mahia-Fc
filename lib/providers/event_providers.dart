@@ -1,18 +1,18 @@
 import 'dart:async';
-import 'package:gormahiafc/models/category_model.dart';
-import 'package:gormahiafc/models/checkout_model.dart';
-import 'package:gormahiafc/models/ticket_holder_model.dart';
-import 'package:gormahiafc/models/ticket_model.dart';
-import 'package:gormahiafc/models/user_ticket_model.dart';
-import 'package:gormahiafc/providers/location_providers.dart';
-import 'package:gormahiafc/repositories/event_repositories.dart';
+import 'package:kogalo_network/models/category_model.dart';
+import 'package:kogalo_network/models/checkout_model.dart';
+import 'package:kogalo_network/models/ticket_holder_model.dart';
+import 'package:kogalo_network/models/ticket_model.dart';
+import 'package:kogalo_network/models/user_ticket_model.dart';
+import 'package:kogalo_network/providers/location_providers.dart';
+import 'package:kogalo_network/repositories/event_repositories.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/event_model.dart';
-import 'package:gormahiafc/main.dart';
-import 'package:gormahiafc/services/fcm_service.dart';
-import 'package:gormahiafc/controllers/auth_controller.dart';
-import 'package:gormahiafc/pages/login.dart';
+import 'package:kogalo_network/main.dart';
+import 'package:kogalo_network/services/fcm_service.dart';
+import 'package:kogalo_network/controllers/auth_controller.dart';
+import 'package:kogalo_network/pages/login.dart';
 
 class HomePageData {
   final List<CategoryModel> categories;

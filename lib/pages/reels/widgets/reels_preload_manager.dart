@@ -4,24 +4,30 @@ import '../../../models/reels_model.dart';
 
 /// Manages VideoPlayerController lifecycle for the reels feed.
 ///
-/// Strategy — "Window of 3":
-///   Always keeps (currentIndex - 1), currentIndex, (currentIndex + 1)
-///   controllers initialized and ready. All others are disposed to free memory.
+/// Strategy — "Window of 5 + LRU cache":
+///   • Always keeps (currentIndex - 2) → (currentIndex + 2) controllers alive.
+///   • Additionally caches up to [_lruCacheSize] recently-seen controllers
+///     beyond the active window, so scrolling back is instant.
+///   • Total live controllers is capped at [_maxControllers] to bound memory.
 ///
-/// This means:
-///   • The current reel plays instantly (already initialized).
-///   • The next reel is already buffering before the user swipes.
-///   • Swiping back is also instant (previous is still alive).
-///   • Memory stays bounded — max 3 controllers at any time.
+/// Result:
+///   • Scrolling forward: next 2 reels are already buffering.
+///   • Scrolling back:    previous 2 reels are already ready (instant replay).
+///   • Going back further: LRU cache keeps the last 3 watched reels alive.
 class ReelsPreloadManager extends ChangeNotifier {
-  // Active controllers keyed by the reel ID.
+  // Active controllers keyed by reel ID.
   final Map<String, VideoPlayerController> _controllers = {};
 
-  // Tracks which reel IDs have encountered an unrecoverable error.
-  final Map<String, bool> _errorStates = {};
+  // LRU access order: most-recently used is at the END of the list.
+  final List<String> _lruOrder = [];
 
-  // Tracks which reel IDs are currently being initialized (to avoid double-init).
+  // Reel IDs currently being async-initialised (prevents double-init).
   final Set<String> _initializing = {};
+
+  // Reel IDs that permanently failed to load.
+  final Map<String, bool> _errorStates = {};
+  // Human-readable reason for each error (for display in the UI).
+  final Map<String, String> _errorReasons = {};
 
   int _currentIndex = -1;
   List<Reel> _reels = [];
@@ -29,7 +35,17 @@ class ReelsPreloadManager extends ChangeNotifier {
   bool _disposed = false;
   bool _isActive = true;
 
-  // ─── Public API ────────────────────────────────────────────────────────────
+  // ─── Tunables ───────────────────────────────────────────────────────────────
+  /// Half-width of the active window on each side of the current index.
+  static const int _halfWindow = 2;
+
+  /// Extra controllers to keep alive via LRU beyond the active window.
+  static const int _lruCacheSize = 5;
+
+  /// Hard cap — never hold more than this many controllers simultaneously.
+  static const int _maxControllers = (2 * _halfWindow + 1) + _lruCacheSize; // 10
+
+  // ─── Public API ─────────────────────────────────────────────────────────────
 
   void setActive(bool active) {
     if (_isActive == active) return;
@@ -37,28 +53,26 @@ class ReelsPreloadManager extends ChangeNotifier {
     _syncPlayback(_currentIndex);
   }
 
-  /// Called by [ReelsFeed] when the reels list first loads or updates.
   void setReels(List<Reel> reels) {
     _reels = reels;
-    // If we already have a current index, refresh the window.
     if (_currentIndex >= 0 && _isActive) {
       _updateWindow(_currentIndex);
     }
   }
 
-  /// Temporarily releases all hardware decoders (e.g. when opening camera or upload screen)
-  /// to prevent OMX_ErrorInsufficientResources on older devices.
+  /// Release all hardware decoders (e.g. when opening camera / upload screen).
   void releaseResources() {
     _isActive = false;
-    for (final controller in _controllers.values) {
-      controller.dispose();
+    for (final c in _controllers.values) {
+      c.dispose();
     }
     _controllers.clear();
+    _lruOrder.clear();
     _initializing.clear();
     notifyListeners();
   }
 
-  /// Restores decoders after returning from camera/upload screen.
+  /// Restore decoders after returning from camera / upload screen.
   void restoreResources() {
     if (_disposed) return;
     _isActive = true;
@@ -68,7 +82,6 @@ class ReelsPreloadManager extends ChangeNotifier {
     }
   }
 
-  /// Called by [ReelsFeed] on every page change.
   void setCurrentIndex(int index) {
     if (_currentIndex == index) return;
     _currentIndex = index;
@@ -76,74 +89,82 @@ class ReelsPreloadManager extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Returns the initialized controller for [index], or null if not ready yet.
   VideoPlayerController? getController(int index) {
     if (index < 0 || index >= _reels.length) return null;
     return _controllers[_reels[index].id];
   }
 
-  /// Returns true if the video at [index] has a permanent load error.
   bool hasError(int index) {
     if (index < 0 || index >= _reels.length) return false;
     return _errorStates[_reels[index].id] ?? false;
   }
 
-  /// Retry loading a video that previously errored.
+  /// Returns a human-readable error reason, e.g. 'codec' or 'network'.
+  String errorReason(int index) {
+    if (index < 0 || index >= _reels.length) return 'network';
+    return _errorReasons[_reels[index].id] ?? 'network';
+  }
+
   void retry(int index) {
     if (index < 0 || index >= _reels.length) return;
     final id = _reels[index].id;
     _errorStates.remove(id);
+    _errorReasons.remove(id);
     _initializing.remove(id);
     final old = _controllers.remove(id);
+    _lruOrder.remove(id);
     old?.dispose();
+    notifyListeners(); // Immediately clear error state in UI
     _initController(index);
   }
 
-  // ─── Internal ──────────────────────────────────────────────────────────────
+  // ─── Internal ───────────────────────────────────────────────────────────────
 
-  /// Ensures only [index-1, index, index+1] are alive (window of 3).
-  ///
-  /// Mobile network strategy:
-  ///   1. Always initialize the CURRENT reel immediately (full bandwidth).
-  ///   2. Delay neighbors (prev/next) by 3 seconds so they don't compete
-  ///      with the current reel for bandwidth on slow mobile connections.
-  ///   3. On fast connections (WiFi) the delay is unnoticeable.
+  /// Computes which reel IDs should stay alive in the active window.
+  Set<String> _windowIds(int index) {
+    final ids = <String>{};
+    for (int i = index - _halfWindow; i <= index + _halfWindow; i++) {
+      if (i >= 0 && i < _reels.length) ids.add(_reels[i].id);
+    }
+    return ids;
+  }
+
+  /// Main entry point — called on every page change and on initial load.
   void _updateWindow(int index) {
-    final windowIds = <String>{};
-    for (int i = index - 1; i <= index + 1; i++) {
-      if (i >= 0 && i < _reels.length) {
-        windowIds.add(_reels[i].id);
+    final wIds = _windowIds(index);
+
+    // ── Eviction: remove controllers beyond the hard cap ────────────────────
+    // Keep active-window IDs; evict least-recently-used extras first.
+    if (_controllers.length > _maxControllers) {
+      for (final id in List<String>.from(_lruOrder)) {
+        if (_controllers.length <= _maxControllers) break;
+        if (wIds.contains(id)) continue; // never evict active window
+        _evict(id);
       }
     }
 
-    // Dispose controllers that are outside the window.
-    final toRemove = _controllers.keys
-        .where((id) => !windowIds.contains(id))
-        .toList();
-    for (final id in toRemove) {
-      _controllers[id]?.dispose();
-      _controllers.remove(id);
-      _initializing.remove(id);
-    }
-
-    // ── Step 1: Initialize current reel immediately ──────────────────────────
+    // ── Step 1: Init current reel immediately ────────────────────────────────
     _initIfNeeded(index);
 
-    // ── Step 2: Delay neighbors so current gets full bandwidth first ─────────
-    // On mobile networks this prevents bandwidth starvation of the current reel.
-    // On WiFi the 3-second delay is imperceptible.
+    // ── Step 2: Init nearby reels with a short stagger ──────────────────────
+    // Slight stagger so current reel gets priority bandwidth, but neighbors
+    // begin buffering very quickly so swiping feels instant.
     final capturedIndex = index;
-    Future.delayed(const Duration(seconds: 3), () {
+    Future.delayed(const Duration(milliseconds: 500), () {
       if (_disposed || _currentIndex != capturedIndex) return;
       _initIfNeeded(capturedIndex - 1);
       _initIfNeeded(capturedIndex + 1);
     });
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (_disposed || _currentIndex != capturedIndex) return;
+      _initIfNeeded(capturedIndex - 2);
+      _initIfNeeded(capturedIndex + 2);
+    });
 
-    // Play current, pause all others.
+    // ── Step 3: Sync play/pause ──────────────────────────────────────────────
     _syncPlayback(index);
   }
 
-  /// Initializes the controller at [i] only if it isn't already created/pending/errored.
   void _initIfNeeded(int i) {
     if (i < 0 || i >= _reels.length) return;
     final id = _reels[i].id;
@@ -151,31 +172,32 @@ class ReelsPreloadManager extends ChangeNotifier {
         !_initializing.contains(id) &&
         !(_errorStates[id] ?? false)) {
       _initController(i);
+    } else if (_controllers.containsKey(id)) {
+      // Already alive — bump it to the most-recently-used position.
+      _touchLru(id);
     }
   }
 
-  /// Initializes and starts buffering the controller at [index].
-  /// Uses up to 3 auto-retries before marking as an error.
   Future<void> _initController(int index, {int attempt = 0}) async {
     if (_disposed) return;
     if (index < 0 || index >= _reels.length) return;
 
     final reel = _reels[index];
-    if (reel.type == 'ad' && reel.mediaType != 'video') return; // Skip video controller for non-video ads
+    if (reel.type == 'ad' && reel.mediaType != 'video') return;
 
     final id = reel.id;
-
     _initializing.add(id);
 
-    VideoPlayerController controller;
+    final urlToPlay = (reel.type == 'ad' && reel.mediaType == 'video')
+        ? (reel.mediaUrl ?? reel.videoUrl)
+        : reel.videoUrl;
 
-    final urlToPlay = (reel.type == 'ad' && reel.mediaType == 'video') ? (reel.mediaUrl ?? reel.videoUrl) : reel.videoUrl;
-    
     if (urlToPlay.isEmpty) {
       _initializing.remove(id);
       return;
     }
 
+    late VideoPlayerController controller;
     if (urlToPlay.startsWith('assets/')) {
       controller = VideoPlayerController.asset(urlToPlay);
     } else {
@@ -183,6 +205,7 @@ class ReelsPreloadManager extends ChangeNotifier {
         Uri.parse(urlToPlay),
         videoPlayerOptions: VideoPlayerOptions(
           mixWithOthers: false,
+          allowBackgroundPlayback: false,
         ),
       );
     }
@@ -190,31 +213,36 @@ class ReelsPreloadManager extends ChangeNotifier {
     try {
       await controller.initialize();
 
+      // Seek to start to kick off immediate buffering on some decoders.
+      await controller.seekTo(Duration.zero);
+
       if (_disposed) {
         controller.dispose();
         return;
       }
 
-      // Only store if this index is still in the current window.
-      final windowIds = <String>{};
-      for (int i = _currentIndex - 1; i <= _currentIndex + 1; i++) {
-        if (i >= 0 && i < _reels.length) {
-          windowIds.add(_reels[i].id);
-        }
-      }
+      // Check the reel is still needed (active window or LRU budget).
+      final wIds = _windowIds(_currentIndex);
+      final isInWindow = wIds.contains(id);
+      final hasLruBudget =
+          _controllers.length < _maxControllers || _lruOrder.contains(id);
 
-      if (!windowIds.contains(id)) {
-        // Window slid away while we were initializing — discard.
+      if (!isInWindow && !hasLruBudget) {
         controller.dispose();
         _initializing.remove(id);
         return;
       }
 
+      // If at cap, evict LRU before storing.
+      if (_controllers.length >= _maxControllers && !_controllers.containsKey(id)) {
+        _evictLru(exclude: _windowIds(_currentIndex));
+      }
+
       controller.setLooping(true);
       _controllers[id] = controller;
+      _touchLru(id);
       _initializing.remove(id);
 
-      // Sync playback: play if current, pause otherwise.
       _syncPlayback(_currentIndex);
       notifyListeners();
     } catch (e) {
@@ -223,28 +251,67 @@ class ReelsPreloadManager extends ChangeNotifier {
 
       if (_disposed) return;
 
+      // Detect hardware decoder failures — retrying won't help these.
+      // The error message contains 'DecoderInitializationException' or
+      // 'CodecException' or 'MediaCodecVideoRenderer' on Android.
+      final errStr = e.toString();
+      final isCodecFailure = errStr.contains('DecoderInitializationException') ||
+          errStr.contains('CodecException') ||
+          errStr.contains('MediaCodecVideoRenderer') ||
+          errStr.contains('0xfffffff') ||
+          errStr.contains('format_supported=YES'); // ExoPlayer codec init fail
+
+      if (isCodecFailure) {
+        // Fail immediately — the device cannot decode this format.
+        _errorStates[id] = true;
+        _errorReasons[id] = 'codec';
+        debugPrint('[ReelsPreloadManager] Codec/hardware failure for reel $id: $e');
+        notifyListeners();
+        return;
+      }
+
       if (attempt < 2) {
-        // Exponential back-off: 2s, 5s before final failure.
-        // Gives mobile networks time to recover without hammering the connection.
         final delay = attempt == 0 ? 2 : 5;
         await Future.delayed(Duration(seconds: delay));
-        if (!_disposed) {
-          _initController(index, attempt: attempt + 1);
-        }
+        if (!_disposed) _initController(index, attempt: attempt + 1);
       } else {
-        // All retries exhausted — mark as error.
         _errorStates[id] = true;
-        debugPrint('[ReelsPreloadManager] Failed to load reel with ID $id after ${attempt + 1} attempts: $e');
+        _errorReasons[id] = 'network';
+        debugPrint(
+            '[ReelsPreloadManager] Failed to load reel $id after ${attempt + 1} attempts: $e');
         notifyListeners();
       }
     }
   }
 
-  /// Plays the current controller, pauses all others.
+  /// Moves [id] to the end of the LRU list (most recently used).
+  void _touchLru(String id) {
+    _lruOrder.remove(id);
+    _lruOrder.add(id);
+  }
+
+  /// Evicts a single controller, preferring the least-recently-used one
+  /// that is NOT in [exclude].
+  void _evictLru({required Set<String> exclude}) {
+    for (final id in List<String>.from(_lruOrder)) {
+      if (!exclude.contains(id) && _controllers.containsKey(id)) {
+        _evict(id);
+        return;
+      }
+    }
+  }
+
+  void _evict(String id) {
+    _controllers[id]?.dispose();
+    _controllers.remove(id);
+    _lruOrder.remove(id);
+  }
+
   void _syncPlayback(int currentIndex) {
-    final currentId = (currentIndex >= 0 && currentIndex < _reels.length) 
-        ? _reels[currentIndex].id 
-        : null;
+    final currentId =
+        (currentIndex >= 0 && currentIndex < _reels.length)
+            ? _reels[currentIndex].id
+            : null;
 
     for (final entry in _controllers.entries) {
       final controller = entry.value;
@@ -252,19 +319,14 @@ class ReelsPreloadManager extends ChangeNotifier {
 
       if (entry.key == currentId && _isActive) {
         controller.setVolume(1.0);
-        if (!controller.value.isPlaying) {
-          controller.play();
-        }
+        if (!controller.value.isPlaying) controller.play();
       } else {
-        if (controller.value.isPlaying) {
-          controller.pause();
-        }
+        if (controller.value.isPlaying) controller.pause();
         controller.setVolume(0.0);
       }
     }
   }
 
-  /// Pause the current reel (e.g., when overlay opens or tab changes).
   void pauseCurrent() {
     if (_currentIndex >= 0 && _currentIndex < _reels.length) {
       _controllers[_reels[_currentIndex].id]?.pause();
@@ -272,7 +334,6 @@ class ReelsPreloadManager extends ChangeNotifier {
     }
   }
 
-  /// Resume the current reel (e.g., when overlay closes or tab is active again).
   void resumeCurrent() {
     if (_currentIndex >= 0 && _currentIndex < _reels.length) {
       final controller = _controllers[_reels[_currentIndex].id];
@@ -287,10 +348,11 @@ class ReelsPreloadManager extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
-    for (final controller in _controllers.values) {
-      controller.dispose();
+    for (final c in _controllers.values) {
+      c.dispose();
     }
     _controllers.clear();
+    _lruOrder.clear();
     super.dispose();
   }
 }

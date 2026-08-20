@@ -1,18 +1,18 @@
 import 'dart:ui';
-import 'package:gormahiafc/models/payment_result_model.dart';
-import 'package:gormahiafc/pages/payment_result.dart';
-import 'package:gormahiafc/providers/event_providers.dart';
-import 'package:gormahiafc/providers/seat_provider.dart';
-import 'package:gormahiafc/theme/apptheme.dart';
+import 'package:kogalo_network/models/payment_result_model.dart';
+import 'package:kogalo_network/pages/payment_result.dart';
+import 'package:kogalo_network/providers/event_providers.dart';
+import 'package:kogalo_network/providers/seat_provider.dart';
+import 'package:kogalo_network/theme/apptheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gormahiafc/theme/app_colors.dart';
+import 'package:kogalo_network/theme/app_colors.dart';
 import 'package:intl/intl.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';
-import 'package:gormahiafc/models/checkout_model.dart';
-import 'package:gormahiafc/providers/checkout_provider.dart';
-import 'package:gormahiafc/providers/user_providers.dart';
+import 'package:kogalo_network/models/checkout_model.dart';
+import 'package:kogalo_network/providers/checkout_provider.dart';
+import 'package:kogalo_network/providers/user_providers.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class Checkout extends ConsumerStatefulWidget {
@@ -191,7 +191,7 @@ class _CheckoutState extends ConsumerState<Checkout> with WidgetsBindingObserver
              _paymentLaunched = true;
              _currentReference = result.reference;
            });
-           await launchUrl(url, mode: LaunchMode.externalApplication);
+           await launchUrl(url, mode: LaunchMode.inAppBrowserView);
         } else {
            ScaffoldMessenger.of(context).showSnackBar(
              const SnackBar(content: Text('Could not launch payment URL'), backgroundColor: AppColors.error),
@@ -445,8 +445,8 @@ class _SectionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
           color: isDark
-              ? Colors.white.withOpacity(0.08)
-              : Colors.black.withOpacity(0.07),
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.07),
         ),
       ),
       child: Padding(
@@ -491,9 +491,9 @@ class _EventHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppTheme.primaryPink.withOpacity(0.08),
+        color: AppTheme.primaryPink.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppTheme.primaryPink.withOpacity(0.2)),
+        border: Border.all(color: AppTheme.primaryPink.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -502,7 +502,7 @@ class _EventHeader extends StatelessWidget {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: AppTheme.primaryPink.withOpacity(0.15),
+              color: AppTheme.primaryPink.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Icon(
@@ -667,8 +667,8 @@ class _TicketHolderForms extends ConsumerWidget {
                         ),
                         decoration: BoxDecoration(
                           color: ticket.isSeasonalPass
-                              ? AppTheme.primaryPurple.withOpacity(0.1)
-                              : AppTheme.primaryPink.withOpacity(0.1),
+                              ? AppTheme.primaryPurple.withValues(alpha: 0.1)
+                              : AppTheme.primaryPink.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
@@ -790,8 +790,8 @@ class _MinimalField extends StatelessWidget {
         filled: true,
         // FIXED: subtle fill for both themes
         fillColor: isDark
-            ? Colors.white.withOpacity(0.05)
-            : Colors.black.withOpacity(0.03),
+            ? Colors.white.withValues(alpha: 0.05)
+            : Colors.black.withValues(alpha: 0.03),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide.none,
@@ -800,8 +800,8 @@ class _MinimalField extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(
             color: isDark
-                ? Colors.white.withOpacity(0.1)
-                : Colors.black.withOpacity(0.1),
+                ? Colors.white.withValues(alpha: 0.1)
+                : Colors.black.withValues(alpha: 0.1),
           ),
         ),
         focusedBorder: OutlineInputBorder(
@@ -921,8 +921,8 @@ class _MinimalFieldWithController extends StatelessWidget {
         ),
         filled: true,
         fillColor: isDark
-            ? Colors.white.withOpacity(0.05)
-            : Colors.black.withOpacity(0.03),
+            ? Colors.white.withValues(alpha: 0.05)
+            : Colors.black.withValues(alpha: 0.03),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide.none,
@@ -931,8 +931,8 @@ class _MinimalFieldWithController extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(
             color: isDark
-                ? Colors.white.withOpacity(0.1)
-                : Colors.black.withOpacity(0.1),
+                ? Colors.white.withValues(alpha: 0.1)
+                : Colors.black.withValues(alpha: 0.1),
           ),
         ),
         focusedBorder: OutlineInputBorder(
@@ -977,9 +977,9 @@ class _PromoCodeSection extends ConsumerWidget {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: Colors.green.withOpacity(0.08),
+          color: Colors.green.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.green.withOpacity(0.3)),
+          border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
@@ -1032,8 +1032,8 @@ class _PromoCodeSection extends ConsumerWidget {
               ),
               filled: true,
               fillColor: isDark
-                  ? Colors.white.withOpacity(0.05)
-                  : Colors.black.withOpacity(0.03),
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.black.withValues(alpha: 0.03),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
                 borderSide: BorderSide.none,
@@ -1042,8 +1042,8 @@ class _PromoCodeSection extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(10),
                 borderSide: BorderSide(
                   color: isDark
-                      ? Colors.white.withOpacity(0.1)
-                      : Colors.black.withOpacity(0.1),
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.black.withValues(alpha: 0.1),
                 ),
               ),
               focusedBorder: OutlineInputBorder(
@@ -1449,10 +1449,10 @@ class _BookingFeeExpandableState extends State<_BookingFeeExpandable>
               margin: const EdgeInsets.only(top: 8, left: 8),
               padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
               decoration: BoxDecoration(
-                color: AppTheme.primaryPink.withOpacity(0.05),
+                color: AppTheme.primaryPink.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: AppTheme.primaryPink.withOpacity(0.12),
+                  color: AppTheme.primaryPink.withValues(alpha: 0.12),
                 ),
               ),
               child: Column(
@@ -1543,13 +1543,13 @@ class _BottomPayBar extends StatelessWidget {
           decoration: BoxDecoration(
             // FIXED: proper theme-aware bottom bar
             color: isDark
-                ? const Color(0xFF1C1C1E).withOpacity(0.97)
-                : Colors.white.withOpacity(0.97),
+                ? const Color(0xFF1C1C1E).withValues(alpha: 0.97)
+                : Colors.white.withValues(alpha: 0.97),
             border: Border(
               top: BorderSide(
                 color: isDark
-                    ? Colors.white.withOpacity(0.08)
-                    : Colors.black.withOpacity(0.08),
+                    ? Colors.white.withValues(alpha: 0.08)
+                    : Colors.black.withValues(alpha: 0.08),
               ),
             ),
           ),
@@ -1680,8 +1680,8 @@ class _CheckoutLoadingSkeleton extends StatelessWidget {
       decoration: BoxDecoration(
         // FIXED: theme-aware skeleton
         color: isDark
-            ? Colors.white.withOpacity(0.08)
-            : Colors.black.withOpacity(0.06),
+            ? Colors.white.withValues(alpha: 0.08)
+            : Colors.black.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(12),
       ),
     );

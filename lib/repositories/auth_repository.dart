@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -231,17 +232,17 @@ class AuthRepository {
   }
 
   Future<LoginResponse> login(String email, String password) async {
-    // print("Attempting to login...");
-    // print("Endpoint: /user/login");
-    // print("Request Body: {'email': '$email', 'password': '$password'}");
+    // debugPrint("Attempting to login...");
+    // debugPrint("Endpoint: /user/login");
+    // debugPrint("Request Body: {'email': '$email', 'password': '$password'}");
 
     try {
       final response = await _apiClient.dio.post(
         '/user/login',
         data: {'login_email': email, 'login_password': password},
       );
-      // print("Login successful! Status Code: ${response.statusCode}");
-      // print("Response Data: ${response.data}");
+      // debugPrint("Login successful! Status Code: ${response.statusCode}");
+      // debugPrint("Response Data: ${response.data}");
 
       if (response.data['success'] == true) {
         final user = UserModel.fromJson(response.data);
@@ -253,7 +254,7 @@ class AuthRepository {
         throw Exception(response.data['message'] ?? 'Login failed.');
       }
     } on DioException catch (e) {
-      // print("LOGIN FAILED (DioException)");
+      // debugPrint("LOGIN FAILED (DioException)");
       if (e.response != null && e.response?.data is Map) {
         final errorMessage =
             e.response?.data['message'] ?? 'Invalid email or password.';
@@ -263,8 +264,8 @@ class AuthRepository {
         'Failed to connect to the server. Please check your connection.',
       );
     } catch (e) {
-      print("LOGIN FAILED (General Exception)");
-      print("Error: ${e.toString()}");
+      debugPrint("LOGIN FAILED (General Exception)");
+      debugPrint("Error: ${e.toString()}");
       throw Exception('An unknown error occurred: ${e.toString()}');
     }
   }

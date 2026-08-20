@@ -168,13 +168,16 @@ class PaymentStatusResponse {
   });
 
   factory PaymentStatusResponse.fromJson(Map<String, dynamic> json) {
+    final data = json['data'] as Map<String, dynamic>? ?? {};
     return PaymentStatusResponse(
       payment: json['payment'] ?? '',
-      mpesaReceipt: json['mpesa_receipt'] ?? '',
-      amount: Contribution._toInt(json['amount']),
-      participant: json['participant'] != null
-          ? Contribution.fromJson(json['participant'])
-          : null,
+      mpesaReceipt: data['paystack_receipt'] ?? data['mpesa_receipt'] ?? json['paystack_receipt'] ?? json['mpesa_receipt'] ?? '',
+      amount: Contribution._toInt(data['amount'] ?? json['amount']),
+      participant: data['participant'] != null
+          ? Contribution.fromJson(data['participant'])
+          : (json['participant'] != null
+              ? Contribution.fromJson(json['participant'])
+              : null),
     );
   }
 }

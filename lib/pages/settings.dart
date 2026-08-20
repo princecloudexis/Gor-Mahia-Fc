@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gormahiafc/providers/theme_provider.dart';
-import 'package:gormahiafc/theme/apptheme.dart';
-import 'package:gormahiafc/controllers/auth_controller.dart';
-import 'package:gormahiafc/pages/login.dart';
+import 'package:kogalo_network/providers/theme_provider.dart';
+import 'package:kogalo_network/theme/apptheme.dart';
+import 'package:kogalo_network/controllers/auth_controller.dart';
+import 'package:kogalo_network/pages/login.dart';
 
 class Settings extends ConsumerWidget {
   const Settings({super.key});
@@ -66,7 +66,7 @@ class Settings extends ConsumerWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, 4),
               ),
@@ -199,7 +199,7 @@ class _LogoutButton extends ConsumerWidget {
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 14),
           side: BorderSide(
-            color: AppTheme.accentRed.withOpacity(0.5),
+            color: AppTheme.accentRed.withValues(alpha: 0.5),
             width: 1,
           ),
           shape: RoundedRectangleBorder(

@@ -203,8 +203,8 @@ class ShopCartItem {
   final ShopCartVariant? variant;
   final double effectivePrice;
   final double subtotal;
-  final double vat;
-  final double vatRate;
+  final double paymentCharge;
+  final double paymentChargeRate;
   final double platformCharge;
   final double platformChargeRate;
   final double total;
@@ -216,8 +216,8 @@ class ShopCartItem {
     this.variant,
     this.effectivePrice = 0.0,
     this.subtotal = 0.0,
-    this.vat = 0.0,
-    this.vatRate = 0.0,
+    this.paymentCharge = 0.0,
+    this.paymentChargeRate = 0.0,
     this.platformCharge = 0.0,
     this.platformChargeRate = 0.0,
     this.total = 0.0,
@@ -231,8 +231,8 @@ class ShopCartItem {
       variant: json['variant'] != null ? ShopCartVariant.fromJson(json['variant']) : null,
       effectivePrice: double.tryParse(json['effective_price']?.toString() ?? '0') ?? 0.0,
       subtotal: double.tryParse(json['subtotal']?.toString() ?? '0') ?? 0.0,
-      vat: double.tryParse(json['vat']?.toString() ?? '0') ?? 0.0,
-      vatRate: double.tryParse(json['vat_rate']?.toString() ?? '0') ?? 0.0,
+      paymentCharge: double.tryParse((json['payment_charge'] ?? json['vat'])?.toString() ?? '0') ?? 0.0,
+      paymentChargeRate: double.tryParse((json['payment_charge_rate'] ?? json['vat_rate'])?.toString() ?? '0') ?? 0.0,
       platformCharge: double.tryParse(json['platform_charge']?.toString() ?? '0') ?? 0.0,
       platformChargeRate: double.tryParse(json['platform_charge_rate']?.toString() ?? '0') ?? 0.0,
       total: double.tryParse(json['total']?.toString() ?? '0') ?? 0.0,
@@ -243,9 +243,21 @@ class ShopCartItem {
 class ShopCart {
   final int id;
   final List<ShopCartItem> items;
+  final int totalItems;
+  final double subtotal;
+  final double totalPaymentCharge;
+  final double platformCharge;
   final double cartTotal;
 
-  ShopCart({required this.id, required this.items, required this.cartTotal});
+  ShopCart({
+    required this.id,
+    required this.items,
+    this.totalItems = 0,
+    this.subtotal = 0.0,
+    this.totalPaymentCharge = 0.0,
+    this.platformCharge = 0.0,
+    required this.cartTotal,
+  });
 
   factory ShopCart.fromJson(Map<String, dynamic> json) {
     var itemsList = <ShopCartItem>[];
@@ -261,7 +273,11 @@ class ShopCart {
     return ShopCart(
       id: json['cart_id'] ?? json['id'] ?? 0,
       items: itemsList,
-      cartTotal: double.tryParse((json['total_price'] ?? json['cart_total'])?.toString() ?? '') ?? calculatedTotal,
+      totalItems: json['total_items'] ?? itemsList.length,
+      subtotal: json['subtotal'] != null ? (double.tryParse(json['subtotal'].toString()) ?? 0.0) : itemsList.fold(0.0, (sum, item) => sum + item.subtotal),
+      totalPaymentCharge: json['total_payment_charge'] != null ? (double.tryParse(json['total_payment_charge'].toString()) ?? 0.0) : itemsList.fold(0.0, (sum, item) => sum + item.paymentCharge),
+      platformCharge: json['platform_charge'] != null ? (double.tryParse(json['platform_charge'].toString()) ?? 0.0) : itemsList.fold(0.0, (sum, item) => sum + item.platformCharge),
+      cartTotal: (json['total_price'] ?? json['cart_total']) != null ? (double.tryParse((json['total_price'] ?? json['cart_total']).toString()) ?? 0.0) : calculatedTotal,
     );
   }
 }
@@ -387,10 +403,12 @@ class ShopOrderItem {
   final int quantity;
   final String? image;
   final double subtotal;
-  final double vat;
-  final double vatRate;
+  final double paymentCharge;
+  final double paymentChargeRate;
   final double platformCharge;
   final double platformChargeRate;
+
+  double get total => subtotal + paymentCharge + platformCharge;
 
   ShopOrderItem({
     required this.id,
@@ -399,8 +417,8 @@ class ShopOrderItem {
     required this.quantity,
     this.image,
     this.subtotal = 0.0,
-    this.vat = 0.0,
-    this.vatRate = 0.0,
+    this.paymentCharge = 0.0,
+    this.paymentChargeRate = 0.0,
     this.platformCharge = 0.0,
     this.platformChargeRate = 0.0,
   });
@@ -418,8 +436,8 @@ class ShopOrderItem {
       quantity: int.tryParse(json['quantity']?.toString() ?? '1') ?? 1,
       image: parsedImage,
       subtotal: double.tryParse(json['subtotal']?.toString() ?? '0') ?? 0.0,
-      vat: double.tryParse(json['vat']?.toString() ?? '0') ?? 0.0,
-      vatRate: double.tryParse(json['vat_rate']?.toString() ?? '0') ?? 0.0,
+      paymentCharge: double.tryParse((json['payment_charge'] ?? json['vat'])?.toString() ?? '0') ?? 0.0,
+      paymentChargeRate: double.tryParse((json['payment_charge_rate'] ?? json['vat_rate'])?.toString() ?? '0') ?? 0.0,
       platformCharge: double.tryParse(json['platform_charge']?.toString() ?? '0') ?? 0.0,
       platformChargeRate: double.tryParse(json['platform_charge_rate']?.toString() ?? '0') ?? 0.0,
     );
@@ -429,18 +447,36 @@ class ShopOrderItem {
 class ShopOrder {
   final int id;
   final String orderNumber;
+  final double subtotal;
+  final double paymentCharge;
+  final double platformCharge;
   final double totalAmount;
   final String status;
   final String paymentStatus;
+  final String? paymentMethod;
+  final String? paymentReference;
+  final String? deliveryName;
+  final String? deliveryPhone;
+  final String? deliveryAddress;
+  final String? notes;
   final DateTime? createdAt;
   final List<ShopOrderItem> items;
 
   ShopOrder({
     required this.id,
     required this.orderNumber,
+    this.subtotal = 0.0,
+    this.paymentCharge = 0.0,
+    this.platformCharge = 0.0,
     required this.totalAmount,
     required this.status,
     required this.paymentStatus,
+    this.paymentMethod,
+    this.paymentReference,
+    this.deliveryName,
+    this.deliveryPhone,
+    this.deliveryAddress,
+    this.notes,
     this.createdAt,
     required this.items,
   });
@@ -464,12 +500,23 @@ class ShopOrder {
       }
     }
 
+    final pricing = json['pricing'] as Map<String, dynamic>?;
+
     return ShopOrder(
       id: json['id'] ?? 0,
       orderNumber: json['order_number'] ?? json['reference'] ?? '',
-      totalAmount: double.tryParse(json['total_amount']?.toString() ?? '0') ?? 0.0,
+      subtotal: (pricing?['subtotal'] ?? json['subtotal']) != null ? (double.tryParse((pricing?['subtotal'] ?? json['subtotal']).toString()) ?? 0.0) : itemsList.fold(0.0, (sum, item) => sum + item.subtotal),
+      paymentCharge: (pricing?['payment_charge'] ?? json['payment_charge']) != null ? (double.tryParse((pricing?['payment_charge'] ?? json['payment_charge']).toString()) ?? 0.0) : itemsList.fold(0.0, (sum, item) => sum + item.paymentCharge),
+      platformCharge: (pricing?['platform_charge'] ?? json['platform_charge']) != null ? (double.tryParse((pricing?['platform_charge'] ?? json['platform_charge']).toString()) ?? 0.0) : itemsList.fold(0.0, (sum, item) => sum + item.platformCharge),
+      totalAmount: (pricing?['total'] ?? json['total'] ?? json['total_amount']) != null ? (double.tryParse((pricing?['total'] ?? json['total'] ?? json['total_amount']).toString()) ?? 0.0) : itemsList.fold(0.0, (sum, item) => sum + item.total),
       status: json['status'] ?? json['order_status'] ?? 'pending',
       paymentStatus: json['payment_status'] ?? 'pending',
+      paymentMethod: json['payment_method'],
+      paymentReference: json['payment_reference'],
+      deliveryName: json['delivery_name'],
+      deliveryPhone: json['delivery_phone'],
+      deliveryAddress: json['delivery_address'],
+      notes: json['notes'],
       createdAt: parsedDate,
       items: itemsList,
     );

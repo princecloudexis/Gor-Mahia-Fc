@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kogalo_network/config/app_config.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import '../repositories/match_repository.dart';
 import '../models/match_models.dart';
@@ -34,37 +36,39 @@ class EchoService {
 
       // Workaround for dev environment config returned by backend
       if (host == '127.0.0.1' || host == 'localhost') {
-        host = 'footballclub.staging-workhub.com';
+        host = AppConfig.wsHost;
         // The staging server uses WSS (HTTPS), so we need to use port 443:
         port = '443';
         useTls = true;
       }
 
       final scheme = useTls ? 'wss' : 'ws';
-      final uri = Uri.parse('$scheme://$host:$port/app/$appKey?protocol=7&client=flutter&version=1.0&flash=false');
+      final uri = Uri.parse(
+        '$scheme://$host:$port/app/$appKey?protocol=7&client=flutter&version=1.0&flash=false',
+      );
 
       _channel = WebSocketChannel.connect(uri);
-      
+
       // Wait for the connection to be established to catch any SocketException
       // and prevent the app from crashing due to unhandled exceptions.
       await _channel!.ready;
 
       _isConnected = true;
-      print('[EchoService] Connected to WebSocket: $uri');
+      debugPrint('[EchoService] Connected to WebSocket: $uri');
 
       _subscription = _channel!.stream.listen(
         (message) => _handleMessage(message),
         onError: (error) {
-          print('[EchoService] WebSocket error: $error');
+          debugPrint('[EchoService] WebSocket error: $error');
           _isConnected = false;
         },
         onDone: () {
-          print('[EchoService] WebSocket connection closed.');
+          debugPrint('[EchoService] WebSocket connection closed.');
           _isConnected = false;
         },
       );
     } catch (e) {
-      print('[EchoService] Failed to connect to WebSocket: $e');
+      debugPrint('[EchoService] Failed to connect to WebSocket: $e');
       _isConnected = false;
     }
   }
@@ -76,15 +80,18 @@ class EchoService {
       final channel = msg['channel'] ?? '';
 
       // Ignore system events
-      if (event == 'pusher:connection_established' || event == 'pusher_internal:subscription_succeeded') {
-        print('[EchoService] [$channel] System event: $event');
+      if (event == 'pusher:connection_established' ||
+          event == 'pusher_internal:subscription_succeeded') {
+        debugPrint('[EchoService] [$channel] System event: $event');
         return;
       }
 
       // Dispatch to listeners registered for this channel
       if (_listeners.containsKey(channel)) {
         final dataRaw = msg['data'];
-        final Map<String, dynamic> data = dataRaw is String ? jsonDecode(dataRaw) : (dataRaw ?? {});
+        final Map<String, dynamic> data = dataRaw is String
+            ? jsonDecode(dataRaw)
+            : (dataRaw ?? {});
 
         // The payload is the message object directly
         final payload = data['message'] ?? data;
@@ -95,15 +102,18 @@ class EchoService {
             listener(chatMessage);
           }
         } catch (e) {
-          print('[EchoService] Error parsing chat message: $e');
+          debugPrint('[EchoService] Error parsing chat message: $e');
         }
       }
     } catch (e) {
-      print('[EchoService] Error handling message: $e');
+      debugPrint('[EchoService] Error handling message: $e');
     }
   }
 
-  Future<void> subscribeToMatchChat(int matchId, Function(MatchChatMessage) onMessageReceived) async {
+  Future<void> subscribeToMatchChat(
+    int matchId,
+    Function(MatchChatMessage) onMessageReceived,
+  ) async {
     try {
       await _ensureConnected();
 
@@ -113,12 +123,12 @@ class EchoService {
       // Send Pusher subscribe command
       final subscribePayload = jsonEncode({
         'event': 'pusher:subscribe',
-        'data': {'channel': channelName}
+        'data': {'channel': channelName},
       });
       _channel!.sink.add(subscribePayload);
-      print('[EchoService] Subscribed to channel: $channelName');
+      debugPrint('[EchoService] Subscribed to channel: $channelName');
     } catch (e) {
-      print('[EchoService] Error subscribing to match chat: $e');
+      debugPrint('[EchoService] Error subscribing to match chat: $e');
     }
   }
 
@@ -129,10 +139,10 @@ class EchoService {
     if (_channel != null) {
       final unsubscribePayload = jsonEncode({
         'event': 'pusher:unsubscribe',
-        'data': {'channel': channelName}
+        'data': {'channel': channelName},
       });
       _channel!.sink.add(unsubscribePayload);
-      print('[EchoService] Unsubscribed from channel: $channelName');
+      debugPrint('[EchoService] Unsubscribed from channel: $channelName');
     }
 
     // If no more listeners, disconnect

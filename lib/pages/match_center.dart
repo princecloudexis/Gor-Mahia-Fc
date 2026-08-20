@@ -1,4 +1,4 @@
-import 'package:gormahiafc/repositories/match_repository.dart';
+import 'package:kogalo_network/repositories/match_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/app_colors.dart';
@@ -29,7 +29,7 @@ class MatchCenter extends StatelessWidget {
               child: TabBar(
                 indicatorColor: AppColors.primaryGreen,
                 indicatorWeight: 3,
-                labelColor: AppColors.primaryGreen,
+                labelColor: isDark ? Colors.white : AppColors.primaryGreen,
                 unselectedLabelColor: isDark ? Colors.white70 : Colors.black54,
                 labelPadding: const EdgeInsets.symmetric(horizontal: 2),
                 labelStyle: const TextStyle(
@@ -212,7 +212,7 @@ class _MatchHeaderState extends ConsumerState<_MatchHeader> with SingleTickerPro
                           Text(
                             '-',
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.7),
+                              color: Colors.white.withValues(alpha: 0.7),
                               fontSize: 48,
                               height: 1.0,
                             ),
@@ -367,13 +367,13 @@ class _OverviewTab extends ConsumerWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: isDark
-            ? Colors.black.withOpacity(0.3)
-            : Colors.white.withOpacity(0.6),
+            ? Colors.black.withValues(alpha: 0.3)
+            : Colors.white.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isDark
-              ? Colors.white.withOpacity(0.12)
-              : Colors.black.withOpacity(0.08),
+              ? Colors.white.withValues(alpha: 0.12)
+              : Colors.black.withValues(alpha: 0.08),
         ),
       ),
       child: Column(
@@ -646,8 +646,8 @@ class _StatsTab extends ConsumerWidget {
                   height: 4,
                   decoration: BoxDecoration(
                     color: isDark
-                        ? Colors.white.withOpacity(0.15)
-                        : Colors.black.withOpacity(0.1),
+                        ? Colors.white.withValues(alpha: 0.15)
+                        : Colors.black.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(2),
                   ),
                   child: Row(
@@ -754,13 +754,13 @@ class _LineupTab extends ConsumerWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: isDark
-            ? Colors.black.withOpacity(0.3)
-            : Colors.white.withOpacity(0.6),
+            ? Colors.black.withValues(alpha: 0.3)
+            : Colors.white.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isDark
-              ? Colors.white.withOpacity(0.12)
-              : Colors.black.withOpacity(0.08),
+              ? Colors.white.withValues(alpha: 0.12)
+              : Colors.black.withValues(alpha: 0.08),
         ),
       ),
       child: Column(
@@ -945,7 +945,7 @@ class _ChatTabState extends ConsumerState<_ChatTab> {
             color: widget.isDark ? const Color(0xFF0A140F) : Colors.white,
             boxShadow: [
               BoxShadow(
-                color: widget.isDark ? Colors.black26 : Colors.black.withOpacity(0.05),
+                color: widget.isDark ? Colors.black26 : Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
                 offset: const Offset(0, -4),
               ),
@@ -965,7 +965,7 @@ class _ChatTabState extends ConsumerState<_ChatTab> {
                       borderRadius: BorderRadius.circular(24),
                       border: Border.all(
                         color: widget.isDark
-                            ? Colors.white.withOpacity(0.08)
+                            ? Colors.white.withValues(alpha: 0.08)
                             : Colors.transparent,
                       ),
                     ),
@@ -1021,7 +1021,7 @@ class _ChatTabState extends ConsumerState<_ChatTab> {
                       shape: BoxShape.circle,
                       boxShadow: _isSending ? [] : [
                         BoxShadow(
-                          color: AppColors.primaryGreen.withOpacity(0.3),
+                          color: AppColors.primaryGreen.withValues(alpha: 0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         )

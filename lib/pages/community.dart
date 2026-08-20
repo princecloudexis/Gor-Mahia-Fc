@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:gormahiafc/pages/search.dart';
-import 'package:gormahiafc/pages/shop.dart';
+import 'package:kogalo_network/pages/search.dart';
+import 'package:kogalo_network/pages/shop.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';
@@ -40,7 +40,6 @@ class Community extends StatelessWidget {
           ),
           centerTitle: false,
           actions: [
-
             TopActionBtn(
               icon: Icons.shopping_bag_outlined,
               onTap: () {
@@ -290,7 +289,10 @@ class _MyGroupsTabState extends ConsumerState<_MyGroupsTab>
       backgroundColor: Colors.transparent,
       builder: (sheetCtx) => Container(
         padding: EdgeInsets.fromLTRB(
-          24, 24, 24, MediaQuery.of(sheetCtx).padding.bottom + 24,
+          24,
+          24,
+          24,
+          MediaQuery.of(sheetCtx).padding.bottom + 24,
         ),
         decoration: BoxDecoration(
           color: isDark ? const Color(0xFF1A1D22) : Colors.white,
@@ -306,8 +308,8 @@ class _MyGroupsTabState extends ConsumerState<_MyGroupsTab>
               margin: const EdgeInsets.only(bottom: 24),
               decoration: BoxDecoration(
                 color: isDark
-                    ? Colors.white.withOpacity(0.2)
-                    : Colors.black.withOpacity(0.1),
+                    ? Colors.white.withValues(alpha: 0.2)
+                    : Colors.black.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -316,7 +318,7 @@ class _MyGroupsTabState extends ConsumerState<_MyGroupsTab>
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
+                color: Colors.red.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -405,7 +407,9 @@ class _MyGroupsTabState extends ConsumerState<_MyGroupsTab>
             content: Text(message),
             backgroundColor: AppColors.primaryGreen,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
           ),
         );
       }
@@ -578,6 +582,7 @@ class _DiscoverTabState extends ConsumerState<_DiscoverTab>
 
   @override
   void dispose() {
+    FocusManager.instance.primaryFocus?.unfocus();
     WidgetsBinding.instance.removeObserver(this);
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
@@ -761,52 +766,65 @@ class _DiscoverTabState extends ConsumerState<_DiscoverTab>
         // Search Bar
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-          child: Container(
-            decoration: BoxDecoration(
-              color: isDark
+          child: TextField(
+            controller: _searchController,
+            cursorColor: AppColors.primaryGreen,
+            style: TextStyle(
+              color: isDark ? AppColors.textOnDark : AppColors.textOnLight,
+            ),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: isDark
                   ? Colors.white.withValues(alpha: 0.05)
                   : Colors.black.withValues(alpha: 0.03),
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(
+              hintText: 'Search for groups...',
+              hintStyle: TextStyle(
                 color: isDark
-                    ? Colors.white.withValues(alpha: 0.1)
-                    : Colors.black.withValues(alpha: 0.05),
+                    ? AppColors.textMutedDark
+                    : AppColors.textMutedLight,
               ),
-            ),
-            child: TextField(
-              controller: _searchController,
-              style: TextStyle(
-                color: isDark ? AppColors.textOnDark : AppColors.textOnLight,
+              prefixIcon: const Icon(
+                Icons.search,
+                color: AppColors.primaryGreen,
               ),
-              decoration: InputDecoration(
-                hintText: 'Search for groups...',
-                hintStyle: TextStyle(
+              suffixIcon: _searchController.text.isNotEmpty
+                  ? IconButton(
+                      icon: Icon(
+                        Icons.clear,
+                        color: isDark
+                            ? AppColors.textMutedDark
+                            : AppColors.textMutedLight,
+                      ),
+                      onPressed: () {
+                        _searchController.clear();
+                      },
+                    )
+                  : null,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30),
+                borderSide: BorderSide(
                   color: isDark
-                      ? AppColors.textMutedDark
-                      : AppColors.textMutedLight,
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.black.withValues(alpha: 0.05),
                 ),
-                prefixIcon: const Icon(
-                  Icons.search,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30),
+                borderSide: BorderSide(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.black.withValues(alpha: 0.05),
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30),
+                borderSide: const BorderSide(
                   color: AppColors.primaryGreen,
                 ),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: Icon(
-                          Icons.clear,
-                          color: isDark
-                              ? AppColors.textMutedDark
-                              : AppColors.textMutedLight,
-                        ),
-                        onPressed: () {
-                          _searchController.clear();
-                        },
-                      )
-                    : null,
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 14,
-                ),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 14,
               ),
             ),
           ),
@@ -866,11 +884,15 @@ class _DiscoverTabState extends ConsumerState<_DiscoverTab>
                         const SizedBox(height: 16),
                     itemBuilder: (context, index) {
                       if (index == state.groups.length) {
-                        return const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: CircularProgressIndicator(
-                              color: AppColors.primaryGreen,
+                        return Shimmer(
+                          duration: const Duration(seconds: 2),
+                          color: isDark ? Colors.white : Colors.black,
+                          colorOpacity: 0.1,
+                          child: Container(
+                            height: 100,
+                            decoration: BoxDecoration(
+                              color: isDark ? Colors.white10 : Colors.black12,
+                              borderRadius: BorderRadius.circular(16),
                             ),
                           ),
                         );
@@ -1050,7 +1072,12 @@ class _DiscoverTabState extends ConsumerState<_DiscoverTab>
                   decoration: BoxDecoration(
                     color: group.isPending
                         ? Colors.grey.withValues(alpha: 0.1)
-                        : AppColors.primaryGreen.withValues(alpha: 0.1),
+                        : const Color.fromARGB(
+                            255,
+                            69,
+                            172,
+                            86,
+                          ).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -1058,7 +1085,9 @@ class _DiscoverTabState extends ConsumerState<_DiscoverTab>
                     style: TextStyle(
                       color: group.isPending
                           ? (isDark ? Colors.grey[400] : Colors.grey[700])
-                          : AppColors.primaryGreen,
+                          : (isDark
+                                ? Colors.green[400]
+                                : AppColors.primaryGreen),
                       fontWeight: FontWeight.bold,
                       fontSize: 12,
                     ),

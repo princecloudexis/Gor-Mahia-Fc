@@ -1,22 +1,22 @@
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:gormahiafc/controllers/auth_controller.dart';
-import 'package:gormahiafc/models/user_model.dart';
-import 'package:gormahiafc/pages/editprofile.dart';
-import 'package:gormahiafc/pages/favorites.dart';
-import 'package:gormahiafc/pages/help_and_support.dart';
-import 'package:gormahiafc/pages/login.dart';
-import 'package:gormahiafc/pages/my_membership.dart';
-import 'package:gormahiafc/pages/policy.dart';
-import 'package:gormahiafc/pages/settings.dart';
-import 'package:gormahiafc/pages/signup.dart';
-import 'package:gormahiafc/pages/tickets.dart';
-import 'package:gormahiafc/pages/shop_orders.dart';
-import 'package:gormahiafc/pages/reels/my_reels_page.dart';
-import 'package:gormahiafc/providers/policy_provider.dart';
-import 'package:gormahiafc/providers/user_providers.dart';
-import 'package:gormahiafc/theme/app_colors.dart';
-import 'package:gormahiafc/theme/apptheme.dart';
+import 'package:kogalo_network/controllers/auth_controller.dart';
+import 'package:kogalo_network/models/user_model.dart';
+import 'package:kogalo_network/pages/editprofile.dart';
+import 'package:kogalo_network/pages/favorites.dart';
+import 'package:kogalo_network/pages/help_and_support.dart';
+import 'package:kogalo_network/pages/login.dart';
+import 'package:kogalo_network/pages/my_membership.dart';
+import 'package:kogalo_network/pages/policy.dart';
+import 'package:kogalo_network/pages/settings.dart';
+import 'package:kogalo_network/pages/signup.dart';
+import 'package:kogalo_network/pages/tickets.dart';
+import 'package:kogalo_network/pages/shop_orders.dart';
+import 'package:kogalo_network/pages/reels/my_reels_page.dart';
+import 'package:kogalo_network/providers/policy_provider.dart';
+import 'package:kogalo_network/providers/user_providers.dart';
+import 'package:kogalo_network/theme/app_colors.dart';
+import 'package:kogalo_network/theme/apptheme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -156,7 +156,7 @@ class _ProfileHeader extends StatelessWidget {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: AppTheme.primaryPink.withOpacity(0.4),
+                        color: AppTheme.primaryPink.withValues(alpha: 0.4),
                         width: 2,
                       ),
                     ),
@@ -546,9 +546,9 @@ class _GuestView extends StatelessWidget {
               height: 80,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppTheme.primaryPink.withOpacity(0.1),
+                color: AppTheme.primaryPink.withValues(alpha: 0.1),
                 border: Border.all(
-                  color: AppTheme.primaryPink.withOpacity(0.3),
+                  color: AppTheme.primaryPink.withValues(alpha: 0.3),
                   width: 2,
                 ),
               ),
@@ -622,7 +622,7 @@ class _GuestView extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   foregroundColor: AppTheme.primaryPink,
                   side: BorderSide(
-                    color: AppTheme.primaryPink.withOpacity(0.5),
+                    color: AppTheme.primaryPink.withValues(alpha: 0.5),
                     width: 1,
                   ),
                   shape: RoundedRectangleBorder(

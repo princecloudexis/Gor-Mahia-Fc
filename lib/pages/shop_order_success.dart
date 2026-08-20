@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:gormahiafc/theme/app_colors.dart';
+import 'package:kogalo_network/theme/app_colors.dart';
 
 class ShopOrderSuccessPage extends StatelessWidget {
   final String orderNumber;
@@ -22,7 +22,7 @@ class ShopOrderSuccessPage extends StatelessWidget {
                 width: 120,
                 height: 120,
                 decoration: BoxDecoration(
-                  color: AppColors.primaryGreen.withOpacity(0.1),
+                  color: AppColors.primaryGreen.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(

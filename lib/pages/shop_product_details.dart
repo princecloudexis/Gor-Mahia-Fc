@@ -1,9 +1,10 @@
-import 'package:gormahiafc/theme/app_colors.dart';
+import 'package:kogalo_network/theme/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:kogalo_network/config/app_config.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gormahiafc/models/shop_models.dart';
-import 'package:gormahiafc/providers/shop_providers.dart';
-import 'package:gormahiafc/pages/shop_cart.dart';
+import 'package:kogalo_network/models/shop_models.dart';
+import 'package:kogalo_network/providers/shop_providers.dart';
+import 'package:kogalo_network/pages/shop_cart.dart';
 
 class ProductDetailsPage extends ConsumerStatefulWidget {
   final ShopProduct product;
@@ -82,7 +83,7 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
     String imageUrl = widget.product.image ?? '';
     if (imageUrl.isNotEmpty && !imageUrl.startsWith('http')) {
       imageUrl =
-          'https://footballclub.staging-workhub.com/' +
+          AppConfig.storageBaseUrl +
           imageUrl.replaceFirst(RegExp(r'^/+'), '');
     }
 
@@ -160,8 +161,8 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
               height: 350,
               width: double.infinity,
               color: isDark
-                  ? Colors.white.withOpacity(0.05)
-                  : Colors.grey.withOpacity(0.1),
+                  ? Colors.white.withValues(alpha: 0.05)
+                  : Colors.grey.withValues(alpha: 0.1),
               child: imageUrl.isNotEmpty
                   ? Image.network(
                       imageUrl,
@@ -204,7 +205,7 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
                       ),
                       const SizedBox(width: 16),
                       Text(
-                        'KSh ${widget.product.price.toStringAsFixed(0)}',
+                        'KSh ${widget.product.price.toStringAsFixed(2)}',
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -262,7 +263,7 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
                                     ? [
                                         BoxShadow(
                                           color: AppColors.primaryGreen
-                                              .withOpacity(0.3),
+                                              .withValues(alpha: 0.3),
                                           blurRadius: 8,
                                           offset: const Offset(0, 4),
                                         ),
@@ -327,7 +328,7 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
           color: isDark ? AppColors.bgSurfaceDark : Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, -5),
             ),

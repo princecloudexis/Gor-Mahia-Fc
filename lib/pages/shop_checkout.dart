@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gormahiafc/theme/app_colors.dart';
-import 'package:gormahiafc/providers/shop_providers.dart';
-import 'package:gormahiafc/providers/user_providers.dart';
-import 'package:gormahiafc/pages/shop_payment_processing.dart';
+import 'package:kogalo_network/theme/app_colors.dart';
+import 'package:kogalo_network/providers/shop_providers.dart';
+import 'package:kogalo_network/providers/user_providers.dart';
+import 'package:kogalo_network/pages/shop_payment_processing.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ShopCheckoutPage extends ConsumerStatefulWidget {
@@ -122,7 +122,7 @@ class _ShopCheckoutPageState extends ConsumerState<ShopCheckoutPage>
           _paymentLaunched = true;
           _currentReference = paystackResponse.reference;
         });
-        await launchUrl(url, mode: LaunchMode.externalApplication);
+        await launchUrl(url, mode: LaunchMode.inAppBrowserView);
       } else {
         throw Exception('Could not launch payment page.');
       }
@@ -188,11 +188,11 @@ class _ShopCheckoutPageState extends ConsumerState<ShopCheckoutPage>
                           ),
                         ),
                         Text(
-                          'KSh ${widget.cartTotal.toStringAsFixed(0)}',
+                          'KSh ${widget.cartTotal.toStringAsFixed(2)}',
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.primaryGreen,
+                            color: AppColors.success,
                           ),
                         ),
                       ],
@@ -226,7 +226,7 @@ class _ShopCheckoutPageState extends ConsumerState<ShopCheckoutPage>
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+                          color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -351,7 +351,7 @@ class _ShopCheckoutPageState extends ConsumerState<ShopCheckoutPage>
           // Loading Overlay
           if (_isProcessing)
             Container(
-              color: Colors.black.withOpacity(0.4),
+              color: Colors.black.withValues(alpha: 0.4),
               child: const Center(
                 child: CircularProgressIndicator(color: AppColors.primaryGreen),
               ),

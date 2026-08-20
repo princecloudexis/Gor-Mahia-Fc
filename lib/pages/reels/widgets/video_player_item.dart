@@ -2,12 +2,14 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'reels_overlay_ui.dart';
-import 'comments_bottom_sheet.dart';
+import 'reel_details_view.dart';
 import '../../../models/reels_model.dart';
+import '../../../providers/navigation_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../providers/reels_providers.dart';
 import '../../../providers/user_providers.dart';
+import '../../../repositories/reels_repository.dart';
 import 'reels_preload_manager.dart';
 
 class VideoPlayerItem extends ConsumerStatefulWidget {
@@ -23,6 +25,9 @@ class VideoPlayerItem extends ConsumerStatefulWidget {
   /// Whether the manager reported a permanent load error for this reel.
   final bool hasError;
 
+  /// The reason for the error: 'codec' or 'network'.
+  final String errorReason;
+
   /// Called when the user taps "Retry" after an error.
   final VoidCallback? onRetry;
 
@@ -37,6 +42,7 @@ class VideoPlayerItem extends ConsumerStatefulWidget {
     required this.isCurrent,
     required this.controller,
     required this.hasError,
+    this.errorReason = 'network',
     this.onRetry,
     this.onLike,
     this.onComment,
@@ -50,6 +56,8 @@ class VideoPlayerItem extends ConsumerStatefulWidget {
 class _VideoPlayerItemState extends ConsumerState<VideoPlayerItem>
     with SingleTickerProviderStateMixin {
   bool _showLikeAnimation = false;
+  bool _isDetailsOpen = false;
+  DetailsPanelMode _panelMode = DetailsPanelMode.comments;
 
   // Tracks buffering state for the mid-play spinner.
   bool _isBuffering = false;
@@ -89,6 +97,14 @@ class _VideoPlayerItemState extends ConsumerState<VideoPlayerItem>
       if (oldWidget.isCurrent && !widget.isCurrent) {
         // Scrolled away or tab changed: log the activity progress
         _logActivity();
+        // Also close details if open
+        if (_isDetailsOpen) {
+          setState(() => _isDetailsOpen = false);
+          // Small delay before showing bottom nav to avoid visual clashing during scroll
+          Future.microtask(
+            () => ref.read(hideBottomNavProvider.notifier).state = false,
+          );
+        }
       }
 
       final controller = widget.controller;
@@ -198,138 +214,323 @@ class _VideoPlayerItemState extends ConsumerState<VideoPlayerItem>
     final isInitialized = controller != null && controller.value.isInitialized;
     final isPlaying = isInitialized && controller.value.isPlaying;
 
-    return GestureDetector(
-      onTap: _togglePlayPause,
-      onDoubleTap: _handleDoubleTap,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          // ── Layer 1: Video / Thumbnail / Error ──────────────────────────────
-          if (widget.hasError)
-            _ErrorView(onRetry: widget.onRetry)
-          else if (isInitialized)
-            _VideoView(controller: controller)
-          else
-            _ThumbnailLoadingView(reel: widget.reel),
+    final screenHeight = MediaQuery.of(context).size.height;
+    final viewInsetsBottom = MediaQuery.of(context).viewInsets.bottom;
+    final isKeyboardOpen = viewInsetsBottom > 0;
 
-          // ── Layer 2 & 3 removed for seamless UX (No loading spinners) ──
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final availableHeight = constraints.maxHeight;
 
-          // ── Layer 4: Play/Pause icon ─────────────────────────────────────
-          if (!isPlaying && isInitialized && !_isBuffering)
-            const Center(
-              child: Icon(Icons.play_arrow, color: Colors.white54, size: 80),
-            ),
+        // Calculate heights and margins based on keyboard state
+        final topPadding = MediaQuery.of(context).padding.top;
+        final videoHeightOpen = isKeyboardOpen ? screenHeight * 0.10 : screenHeight * 0.45;
+        final videoHorizontalMargin = isKeyboardOpen ? 130.0 : 16.0;
+        final videoTopMargin = isKeyboardOpen ? topPadding + 5 : topPadding + 10;
+        final videoBorderRadius = isKeyboardOpen ? 24.0 : 16.0;
 
-          // ── Layer 5: Double-tap like animation ──────────────────────────────
-          if (_showLikeAnimation) _LikeAnimation(),
+        // Ensure the details panel has enough space so it doesn't overflow (min 250px)
+        final double minSafePanelHeight = 250.0;
+        final double calculatedPanelTop = videoTopMargin + videoHeightOpen - 15;
+        final double panelTop = math.min(calculatedPanelTop, availableHeight - minSafePanelHeight);
+        final double safePanelHeight = math.max(minSafePanelHeight, availableHeight - panelTop);
 
-          // ── Layer 6: Reels overlay UI (right icons, bottom info) ────────────
-          Positioned.fill(
-            child: Consumer(
-              builder: (context, ref, _) {
-                final currentUser = ref.watch(userProvider);
-                final isMyReel =
-                    currentUser != null &&
-                    currentUser.id.toString() == widget.reel.authorId;
+        return GestureDetector(
+          onTap: _isDetailsOpen
+              ? () {
+                  FocusScope.of(context).unfocus();
+                  setState(() => _isDetailsOpen = false);
+                  ref.read(hideBottomNavProvider.notifier).state = false;
+                }
+              : _togglePlayPause,
+          onDoubleTap: _isDetailsOpen ? null : _handleDoubleTap,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // Background Color
+              Container(color: const Color(0xFF0A0A0A)),
 
-                // Always watch the provider so we get the freshest reel state
-                // (including isLikedByMe) even after an app restart where
-                // widget.reel might briefly be a stale snapshot.
-                final reelsState = ref.watch(reelsFeedProvider);
-                final freshReel =
-                    reelsState.valueOrNull?.data.firstWhere(
-                      (r) => r.id == widget.reel.id,
-                      orElse: () => widget.reel,
-                    ) ??
-                    widget.reel;
+              // ── Video Layer (Animated Position & Size) ────────────────────────
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutCubic,
+                top: _isDetailsOpen ? videoTopMargin : 0,
+                left: _isDetailsOpen ? videoHorizontalMargin : 0,
+                right: _isDetailsOpen ? videoHorizontalMargin : 0,
+                // Instead of using bottom, we set height directly when open
+                height: _isDetailsOpen ? videoHeightOpen : availableHeight,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOutCubic,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(_isDetailsOpen ? videoBorderRadius : 0),
+                  ),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      if (widget.hasError)
+                        _ErrorView(
+                          onRetry: widget.errorReason == 'codec'
+                              ? null
+                              : widget.onRetry,
+                          isCodecError: widget.errorReason == 'codec',
+                        )
+                      else if (isInitialized)
+                        _VideoView(controller: controller)
+                      else
+                        _ThumbnailLoadingView(reel: widget.reel),
 
-                return ReelsOverlayUI(
-                  reel: freshReel,
-                  isMyReel: isMyReel,
-                  onLikePressed:
-                      widget.onLike ??
-                      () => ref
-                          .read(reelsFeedProvider.notifier)
-                          .toggleLike(widget.reel.id),
-                  onCommentsPressed:
-                      widget.onComment ??
-                      () {
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          backgroundColor: Colors.transparent,
-                          builder: (context) {
-                            final mediaQuery = MediaQuery.of(context);
-                            final keyboardHeight = mediaQuery.viewInsets.bottom;
-                            final screenHeight = mediaQuery.size.height;
-                            
-                            // Calculate max available height above the keyboard
-                            final maxAvailableHeight = screenHeight - keyboardHeight - mediaQuery.padding.top;
-                            
-                            // Base height is 60% of screen, but shouldn't exceed available height
-                            final sheetHeight = (screenHeight * 0.6).clamp(0.0, maxAvailableHeight);
-                            
-                            return Padding(
-                              padding: EdgeInsets.only(bottom: keyboardHeight),
-                              child: SizedBox(
-                                height: sheetHeight,
-                                child: CommentsBottomSheet(reelId: widget.reel.id),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                  onSharePressed:
-                      widget.onShare ??
-                      () async {
-                        try {
-                          await Share.share(
-                            'Check out this reel by @${widget.reel.authorName} on Gor Mahia FC: ${widget.reel.videoUrl}',
-                            subject: 'Gor Mahia FC Reel',
-                          );
-                          ref
-                              .read(reelsFeedProvider.notifier)
-                              .shareReel(widget.reel.id);
-                        } catch (e) {
-                          debugPrint('Error sharing: $e');
-                        }
-                      },
-                  onMoreOptionsPressed: () {
-                    final currentUser = ref.read(userProvider);
-                    final isMyReel =
-                        currentUser != null &&
-                        currentUser.id.toString() == widget.reel.authorId;
-                    _showOptionsBottomSheet(context, ref, isMyReel);
-                  },
-                );
-              },
-            ),
-          ),
+                      if (!isPlaying && isInitialized && !_isBuffering)
+                        const Center(
+                          child: Icon(
+                            Icons.play_arrow,
+                            color: Colors.white54,
+                            size: 80,
+                          ),
+                        ),
 
-          // ── Layer 7: Progress bar ────────────────────────────────────────────
-          if (isInitialized)
-            Positioned(
-              bottom: navBarClearance,
-              left: 16,
-              right: 16,
-              height: 2,
-              child: VideoProgressIndicator(
-                controller,
-                allowScrubbing: true,
-                padding: EdgeInsets.zero,
-                colors: const VideoProgressColors(
-                  playedColor: Colors.white,
-                  bufferedColor: Colors.white24,
-                  backgroundColor: Colors.transparent,
+                      if (_showLikeAnimation) _LikeAnimation(),
+
+                      // Progress bar (only when full screen)
+                      if (isInitialized && !_isDetailsOpen)
+                        Positioned(
+                          bottom: navBarClearance,
+                          left: 16,
+                          right: 16,
+                          height: 2,
+                          child: VideoProgressIndicator(
+                            controller,
+                            allowScrubbing: true,
+                            padding: EdgeInsets.zero,
+                            colors: const VideoProgressColors(
+                              playedColor: Colors.white,
+                              bufferedColor: Colors.white24,
+                              backgroundColor: Colors.transparent,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-        ],
-      ),
+
+              // ── Reels Overlay UI (Icons on right, caption on bottom) ────────
+              AnimatedOpacity(
+                opacity: _isDetailsOpen ? 0.0 : 1.0,
+                duration: const Duration(milliseconds: 200),
+                child: IgnorePointer(
+                  ignoring: _isDetailsOpen,
+                  child: Consumer(
+                    builder: (context, ref, _) {
+                      final currentUser = ref.watch(userProvider);
+                      final isMyReel =
+                          currentUser != null &&
+                          currentUser.id.toString() == widget.reel.authorId;
+
+                      final reelsState = ref.watch(reelsFeedProvider);
+                      final freshReel =
+                          reelsState.valueOrNull?.data.firstWhere(
+                            (r) => r.id == widget.reel.id,
+                            orElse: () => widget.reel,
+                          ) ??
+                          widget.reel;
+
+                      return ReelsOverlayUI(
+                        reel: freshReel,
+                        isMyReel: isMyReel,
+                        onLikePressed:
+                            widget.onLike ??
+                            () => ref
+                                .read(reelsFeedProvider.notifier)
+                                .toggleLike(widget.reel.id),
+                        onCommentsPressed: () {
+                          setState(() {
+                            _panelMode = DetailsPanelMode.comments;
+                            _isDetailsOpen = true;
+                          });
+                          ref.read(hideBottomNavProvider.notifier).state = true;
+                        },
+                        onDescriptionPressed: () {
+                          setState(() {
+                            _panelMode = DetailsPanelMode.description;
+                            _isDetailsOpen = true;
+                          });
+                          ref.read(hideBottomNavProvider.notifier).state = true;
+                        },
+                        onSharePressed:
+                            widget.onShare ??
+                            () async {
+                              try {
+                                await Share.share(
+                                  'Check out this reel by @${widget.reel.authorName} on Gor Mahia FC: ${widget.reel.videoUrl}',
+                                  subject: 'Gor Mahia FC Reel',
+                                );
+                                ref
+                                    .read(reelsFeedProvider.notifier)
+                                    .shareReel(widget.reel.id);
+                              } catch (e) {
+                                debugPrint('Error sharing: $e');
+                              }
+                            },
+                        onMoreOptionsPressed: () {
+                          final currentUser = ref.read(userProvider);
+                          final isMyReel =
+                              currentUser != null &&
+                              currentUser.id.toString() == widget.reel.authorId;
+                          _showOptionsBottomSheet(context, ref, isMyReel);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ),
+
+              // ── Details View (Caption + Comments) ───────────────────────────
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutCubic,
+                left: 0,
+                right: 0,
+                // Top aligns it just below the top padding and video height (or pushed up if keyboard is large)
+                top: _isDetailsOpen ? panelTop : availableHeight,
+                height: safePanelHeight,
+                child: ReelDetailsView(
+                  reel: widget.reel,
+                  height: safePanelHeight,
+                  mode: _panelMode,
+                  onClose: () {
+                    setState(() => _isDetailsOpen = false);
+                    ref.read(hideBottomNavProvider.notifier).state = false;
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
-  void _showOptionsBottomSheet(BuildContext context, WidgetRef ref, bool isMyReel) {
+  void _showReportBottomSheet(BuildContext context, WidgetRef ref) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1E281F),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.6,
+          maxChildSize: 0.9,
+          builder: (context, scrollController) {
+            return Consumer(
+              builder: (context, ref, child) {
+                final reasonsAsync = ref.watch(reportReasonsProvider);
+
+                return Column(
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.symmetric(vertical: 8),
+                      height: 4,
+                      width: 40,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[600],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text(
+                        'Report',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const Divider(color: Colors.white24),
+                    Expanded(
+                      child: reasonsAsync.when(
+                        loading: () => const Center(
+                          child: CircularProgressIndicator(color: Colors.white),
+                        ),
+                        error: (err, stack) => Center(
+                          child: Text(
+                            'Failed to load reasons',
+                            style: const TextStyle(color: Colors.white54),
+                          ),
+                        ),
+                        data: (reasons) {
+                          return ListView.builder(
+                            controller: scrollController,
+                            itemCount: reasons.length,
+                            itemBuilder: (context, index) {
+                              final reason = reasons[index];
+                              return ListTile(
+                                title: Text(
+                                  reason['label']!,
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                                trailing: const Icon(
+                                  Icons.arrow_forward_ios,
+                                  color: Colors.white54,
+                                  size: 14,
+                                ),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  _submitReport(context, ref, reason['value']!);
+                                },
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _submitReport(
+    BuildContext context,
+    WidgetRef ref,
+    String reasonValue,
+  ) async {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Submitting report...')));
+    try {
+      await ref
+          .read(reelsRepositoryProvider)
+          .reportReel(widget.reel.id, reasonValue);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Report submitted successfully.')),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to submit report')));
+      }
+    }
+  }
+
+  void _showOptionsBottomSheet(
+    BuildContext context,
+    WidgetRef ref,
+    bool isMyReel,
+  ) {
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF1E281F),
@@ -411,15 +612,38 @@ class _VideoPlayerItemState extends ConsumerState<VideoPlayerItem>
                       } catch (e) {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Failed to delete reel: $e')),
+                            SnackBar(
+                              content: Text('Failed to delete reel: $e'),
+                            ),
                           );
                         }
                       }
                     }
                   },
                 ),
+              if (!isMyReel)
+                ListTile(
+                  leading: const Icon(
+                    Icons.report_problem_outlined,
+                    color: Colors.white,
+                  ),
+                  title: const Text(
+                    'Report',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showReportBottomSheet(context, ref);
+                  },
+                ),
               ListTile(
-                leading: const Icon(Icons.visibility_off_outlined, color: Colors.white),
+                leading: const Icon(
+                  Icons.visibility_off_outlined,
+                  color: Colors.white,
+                ),
                 title: const Text(
                   'Not Interested',
                   style: TextStyle(color: Colors.white),
@@ -441,9 +665,9 @@ class _VideoPlayerItemState extends ConsumerState<VideoPlayerItem>
                     }
                   } catch (e) {
                     if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Failed: $e')),
-                      );
+                      ScaffoldMessenger.of(
+                        context,
+                      ).showSnackBar(SnackBar(content: Text('Failed: $e')));
                     }
                   }
                 },
@@ -622,7 +846,8 @@ class _ThumbnailLoadingView extends StatelessWidget {
 /// Error view with a clear retry button.
 class _ErrorView extends StatelessWidget {
   final VoidCallback? onRetry;
-  const _ErrorView({this.onRetry});
+  final bool isCodecError;
+  const _ErrorView({this.onRetry, this.isCodecError = false});
 
   @override
   Widget build(BuildContext context) {
@@ -630,20 +855,29 @@ class _ErrorView extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.wifi_off_rounded, color: Colors.white54, size: 52),
+          Icon(
+            isCodecError ? Icons.videocam_off_rounded : Icons.wifi_off_rounded,
+            color: Colors.white54,
+            size: 52,
+          ),
           const SizedBox(height: 12),
-          const Text(
-            'Failed to load video',
-            style: TextStyle(
+          Text(
+            isCodecError
+                ? 'Video format not supported'
+                : 'Failed to load video',
+            style: const TextStyle(
               color: Colors.white70,
               fontSize: 15,
               fontWeight: FontWeight.w500,
             ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            'Check your connection and try again',
-            style: TextStyle(color: Colors.white38, fontSize: 13),
+          Text(
+            isCodecError
+                ? 'This video resolution is too high for your device'
+                : 'Check your connection and try again',
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white38, fontSize: 13),
           ),
           const SizedBox(height: 20),
           if (onRetry != null)

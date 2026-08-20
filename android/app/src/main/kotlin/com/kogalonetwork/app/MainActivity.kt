@@ -1,4 +1,4 @@
-package com.example.eventsbooking
+package com.kogalonetwork.app
 
 import android.graphics.Color
 import android.os.Build

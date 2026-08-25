@@ -411,10 +411,13 @@ class ShopRepository {
         data: {
           'shop_order_id': orderId,
           'email': email,
+          // Paystack will redirect to this URL on successful payment.
+          // The app intercepts kogalonetwork:// URLs and fires automatically.
+          'callback_url': 'kogalonetwork://payment/callback?type=shop',
         },
       );
       debugPrint('🛒 [ShopPaystack] ✅ POST $endpoint RAW RESPONSE: ${response.data}');
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 && (response.data['status'] == true || response.data['status'] == 200)) {
         final payload = response.data['data'] ?? response.data;
         return ShopPaystackResponse.fromJson(payload);
       }

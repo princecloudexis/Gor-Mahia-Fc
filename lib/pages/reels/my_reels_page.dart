@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shimmer_animation/shimmer_animation.dart';
 import 'package:video_player/video_player.dart';
 import '../../../models/reels_model.dart';
 import '../../../providers/reels_providers.dart';
@@ -67,9 +68,7 @@ class _MyReelsPageState extends ConsumerState<MyReelsPage> {
             ),
           );
         },
-        loading: () => Center(
-          child: CircularProgressIndicator(color: Theme.of(context).primaryColor),
-        ),
+        loading: () => const _MyReelsShimmer(),
         error: (error, _) => Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -498,6 +497,39 @@ class _SingleReelScreenState extends State<_SingleReelScreen> {
           )
         ],
       ),
+    );
+  }
+}
+
+class _MyReelsShimmer extends StatelessWidget {
+  const _MyReelsShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final shimmerColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.black.withValues(alpha: 0.05);
+
+    return GridView.builder(
+      padding: const EdgeInsets.all(2),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 2,
+        mainAxisSpacing: 2,
+        childAspectRatio: 3 / 4,
+      ),
+      itemCount: 12,
+      itemBuilder: (context, index) {
+        return Shimmer(
+          duration: const Duration(seconds: 2),
+          color: isDark ? Colors.white : Colors.black,
+          colorOpacity: 0.1,
+          child: Container(
+            color: shimmerColor,
+          ),
+        );
+      },
     );
   }
 }

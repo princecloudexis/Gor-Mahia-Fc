@@ -889,7 +889,7 @@ class EventRepository {
           'street_address': streetAddress,
           'order_id': orderId,
           'email': email,
-          'callback_url': 'kogalonetwork://payment-callback',
+          'callback_url': 'kogalonetwork://payment/callback?type=ticket',
         },
       );
 

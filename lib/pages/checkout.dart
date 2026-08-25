@@ -13,6 +13,7 @@ import 'package:shimmer_animation/shimmer_animation.dart';
 import 'package:kogalo_network/models/checkout_model.dart';
 import 'package:kogalo_network/providers/checkout_provider.dart';
 import 'package:kogalo_network/providers/user_providers.dart';
+import 'package:kogalo_network/services/payment_deep_link_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class Checkout extends ConsumerStatefulWidget {
@@ -22,7 +23,7 @@ class Checkout extends ConsumerStatefulWidget {
   ConsumerState<Checkout> createState() => _CheckoutState();
 }
 
-class _CheckoutState extends ConsumerState<Checkout> with WidgetsBindingObserver {
+class _CheckoutState extends ConsumerState<Checkout> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _promoController;
   late final TextEditingController _addressController;
@@ -33,7 +34,6 @@ class _CheckoutState extends ConsumerState<Checkout> with WidgetsBindingObserver
   final GlobalKey<FormFieldState> _phoneKey = GlobalKey<FormFieldState>();
   final Map<String, GlobalKey<FormFieldState>> _attendeeFieldKeys = {};
 
-  bool _paymentLaunched = false;
   bool _isCheckingStatus = false;
   String? _currentReference;
 
@@ -44,12 +44,24 @@ class _CheckoutState extends ConsumerState<Checkout> with WidgetsBindingObserver
     _addressController = TextEditingController();
     _phoneController = TextEditingController();
     _scrollController = ScrollController();
-    WidgetsBinding.instance.addObserver(this);
+    // Register deep link callback for ticket/event payments.
+    // Paystack redirects to kogalonetwork://payment/callback?reference=xxx&type=ticket
+    // which fires _onPaymentDeepLink automatically.
+    PaymentDeepLinkService.instance.registerCallback(_onPaymentDeepLink);
+
+    // Consume any pending deep link (cold-start case)
+    final pending = PaymentDeepLinkService.instance.consumePending();
+    if (pending != null && pending.type == 'ticket') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _currentReference = pending.reference;
+        _verifyPaymentStatus();
+      });
+    }
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
+    PaymentDeepLinkService.instance.unregisterCallback();
     _promoController.dispose();
     _addressController.dispose();
     _phoneController.dispose();
@@ -102,15 +114,12 @@ class _CheckoutState extends ConsumerState<Checkout> with WidgetsBindingObserver
     }
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.resumed && _paymentLaunched) {
-      _paymentLaunched = false;
-      if (_currentReference != null) {
-        _verifyPaymentStatus();
-      }
-    }
+  /// Called automatically when Paystack redirects back via deep link.
+  void _onPaymentDeepLink(String reference, String type) {
+    if (!mounted) return;
+    debugPrint('🔗 [Checkout] Deep link received: ref=$reference type=$type');
+    _currentReference = reference;
+    _verifyPaymentStatus();
   }
 
   Future<void> _verifyPaymentStatus() async {
@@ -123,10 +132,15 @@ class _CheckoutState extends ConsumerState<Checkout> with WidgetsBindingObserver
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const _ProcessingPaymentDialog(), // Use the same loader
+      builder: (context) => const _ProcessingPaymentDialog(),
     );
 
-    // Call verifyAndCompletePayment
+    // Give backend 4 seconds to process Paystack's webhook.
+    // Deep link fires after Paystack confirms payment, so webhook is usually already there.
+    await Future.delayed(const Duration(seconds: 4));
+
+    if (!mounted) return;
+
     final PaymentResult result = await ref
         .read(checkoutControllerProvider(widget.orderId).notifier)
         .verifyAndCompletePayment(
@@ -152,7 +166,6 @@ class _CheckoutState extends ConsumerState<Checkout> with WidgetsBindingObserver
         (route) => false,
       );
     } else {
-      // Payment failed or still pending, backend verification didn't pass
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(result.errorMessage ?? 'Payment not completed or still processing.'),
@@ -187,11 +200,13 @@ class _CheckoutState extends ConsumerState<Checkout> with WidgetsBindingObserver
       if (result.isSuccess && result.authorizationUrl != null) {
         final Uri url = Uri.parse(result.authorizationUrl!);
         if (await canLaunchUrl(url)) {
-           setState(() {
-             _paymentLaunched = true;
-             _currentReference = result.reference;
-           });
-           await launchUrl(url, mode: LaunchMode.inAppBrowserView);
+          setState(() {
+            _currentReference = result.reference;
+          });
+          // Launch in external browser. Paystack will redirect to
+          // kogalonetwork://payment/callback?reference=xxx&type=ticket
+          // on success, which fires _onPaymentDeepLink automatically.
+          await launchUrl(url, mode: LaunchMode.externalApplication);
         } else {
            ScaffoldMessenger.of(context).showSnackBar(
              const SnackBar(content: Text('Could not launch payment URL'), backgroundColor: AppColors.error),

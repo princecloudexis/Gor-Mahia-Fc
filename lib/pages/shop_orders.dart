@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer_animation/shimmer_animation.dart';
 
 import '../models/shop_models.dart';
 import '../providers/shop_providers.dart';
@@ -86,9 +87,7 @@ class ShopOrdersPage extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primaryGreen),
-        ),
+        loading: () => const _ShopOrdersShimmer(),
         error: (err, _) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -390,6 +389,40 @@ class _OrderCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ShopOrdersShimmer extends StatelessWidget {
+  const _ShopOrdersShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final shimmerColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.black.withValues(alpha: 0.05);
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: 4,
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Shimmer(
+            duration: const Duration(seconds: 2),
+            color: isDark ? Colors.white : Colors.black,
+            colorOpacity: 0.1,
+            child: Container(
+              height: 140,
+              decoration: BoxDecoration(
+                color: shimmerColor,
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

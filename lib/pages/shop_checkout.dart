@@ -4,6 +4,7 @@ import 'package:kogalo_network/theme/app_colors.dart';
 import 'package:kogalo_network/providers/shop_providers.dart';
 import 'package:kogalo_network/providers/user_providers.dart';
 import 'package:kogalo_network/pages/shop_payment_processing.dart';
+import 'package:kogalo_network/services/payment_deep_link_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ShopCheckoutPage extends ConsumerStatefulWidget {
@@ -15,8 +16,7 @@ class ShopCheckoutPage extends ConsumerStatefulWidget {
   ConsumerState<ShopCheckoutPage> createState() => _ShopCheckoutPageState();
 }
 
-class _ShopCheckoutPageState extends ConsumerState<ShopCheckoutPage>
-    with WidgetsBindingObserver {
+class _ShopCheckoutPageState extends ConsumerState<ShopCheckoutPage> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
@@ -27,26 +27,34 @@ class _ShopCheckoutPageState extends ConsumerState<ShopCheckoutPage>
   bool _isProcessing = false;
   int? _createdOrderId;
   String? _createdOrderNumber;
-
-  bool _paymentLaunched = false;
   String? _currentReference;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
-
     final user = ref.read(userProvider);
     if (user != null) {
       _nameController.text = user.fullName;
       _emailController.text = user.email;
       _phoneController.text = user.phoneNumber;
     }
+    // Register deep link callback for shop payments.
+    // Paystack redirects to kogalonetwork://payment/callback?reference=xxx&type=shop
+    // which fires _onPaymentDeepLink automatically.
+    PaymentDeepLinkService.instance.registerCallback(_onPaymentDeepLink);
+
+    // Consume any pending deep link (cold-start case)
+    final pending = PaymentDeepLinkService.instance.consumePending();
+    if (pending != null && pending.type == 'shop' && _createdOrderNumber != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _proceedToProcessingPage(pending.reference, _createdOrderNumber!);
+      });
+    }
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
+    PaymentDeepLinkService.instance.unregisterCallback();
     _nameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
@@ -55,14 +63,12 @@ class _ShopCheckoutPageState extends ConsumerState<ShopCheckoutPage>
     super.dispose();
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
-    if (state == AppLifecycleState.resumed && _paymentLaunched) {
-      _paymentLaunched = false;
-      if (_currentReference != null && _createdOrderNumber != null) {
-        _proceedToProcessingPage(_currentReference!, _createdOrderNumber!);
-      }
+  /// Called automatically when Paystack redirects back via deep link.
+  void _onPaymentDeepLink(String reference, String type) {
+    if (!mounted) return;
+    debugPrint('🔗 [ShopCheckout] Deep link received: ref=$reference type=$type');
+    if (_createdOrderNumber != null) {
+      _proceedToProcessingPage(reference, _createdOrderNumber!);
     }
   }
 
@@ -116,18 +122,22 @@ class _ShopCheckoutPageState extends ConsumerState<ShopCheckoutPage>
       );
 
       // 3. Launch Paystack checkout URL
+      if (paystackResponse.authorizationUrl.isEmpty) {
+        throw Exception('Payment gateway did not return a valid checkout URL.');
+      }
+      
       final Uri url = Uri.parse(paystackResponse.authorizationUrl);
       if (await canLaunchUrl(url)) {
         setState(() {
-          _paymentLaunched = true;
           _currentReference = paystackResponse.reference;
         });
-        await launchUrl(url, mode: LaunchMode.inAppBrowserView);
+        // Launch in external browser. Paystack will redirect to
+        // kogalonetwork://payment/callback?reference=xxx&type=shop
+        // on success, which fires _onPaymentDeepLink automatically.
+        await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {
         throw Exception('Could not launch payment page.');
       }
-
-      // We do NOT navigate here. We wait for the app to resume from the browser!
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

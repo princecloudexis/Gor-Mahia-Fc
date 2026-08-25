@@ -12,6 +12,7 @@ import '../models/community_models.dart';
 import '../providers/community_providers.dart';
 import '../repositories/community_repository.dart';
 import 'widgets/gif_picker_sheet.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class CreatePost extends ConsumerStatefulWidget {
   final CommunityGroup group;
@@ -318,8 +319,8 @@ class _CreatePostState extends ConsumerState<CreatePost> {
                                 children: [
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(16),
-                                    child: Image.network(
-                                      _selectedGifUrl!,
+                                    child: CachedNetworkImage(
+                                      imageUrl: _selectedGifUrl!,
                                       fit: BoxFit.cover,
                                     ),
                                   ),

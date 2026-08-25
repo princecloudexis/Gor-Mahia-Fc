@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../theme/app_colors.dart';
 import '../models/match_models.dart';
 import '../providers/match_providers.dart';
+import 'package:shimmer_animation/shimmer_animation.dart';
 import 'match_center.dart';
 import 'profile.dart';
 import 'search.dart';
@@ -199,9 +200,7 @@ class _FixturesTab extends ConsumerWidget {
             ],
           );
         },
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primaryGreen),
-        ),
+        loading: () => _FixturesShimmer(isDark: isDark),
         error: (error, stack) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -262,9 +261,7 @@ class _LiveTab extends ConsumerWidget {
             ],
           );
         },
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primaryGreen),
-        ),
+        loading: () => _LiveTabShimmer(isDark: isDark),
         error: (error, stack) => Center(
           child: Text(
             'Error loading live matches: $error',
@@ -788,9 +785,7 @@ class _ResultsTab extends ConsumerWidget {
             ],
           );
         },
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primaryGreen),
-        ),
+        loading: () => _ResultsShimmer(isDark: isDark),
         error: (error, stack) => Center(
           child: Text(
             'Error loading results: $error',
@@ -904,6 +899,148 @@ class ResultListTile extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _FixturesShimmer extends StatelessWidget {
+  final bool isDark;
+  const _FixturesShimmer({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final shimmerColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.black.withValues(alpha: 0.05);
+
+    return ListView(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Shimmer(
+            duration: const Duration(seconds: 2),
+            color: isDark ? Colors.white : Colors.black,
+            colorOpacity: 0.1,
+            child: Container(
+              height: 14,
+              width: 150,
+              decoration: BoxDecoration(
+                color: shimmerColor,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 16),
+        ...List.generate(5, (index) => Padding(
+          padding: const EdgeInsets.only(bottom: 12, left: 16, right: 16),
+          child: Shimmer(
+            duration: const Duration(seconds: 2),
+            color: isDark ? Colors.white : Colors.black,
+            colorOpacity: 0.1,
+            child: Container(
+              height: 60,
+              decoration: BoxDecoration(
+                color: shimmerColor,
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+          ),
+        )),
+      ],
+    );
+  }
+}
+
+class _LiveTabShimmer extends StatelessWidget {
+  final bool isDark;
+  const _LiveTabShimmer({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final shimmerColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.black.withValues(alpha: 0.05);
+
+    return ListView(
+      padding: const EdgeInsets.symmetric(vertical: 20),
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Shimmer(
+            duration: const Duration(seconds: 2),
+            color: isDark ? Colors.white : Colors.black,
+            colorOpacity: 0.1,
+            child: Container(
+              height: 450,
+              decoration: BoxDecoration(
+                color: shimmerColor,
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ResultsShimmer extends StatelessWidget {
+  final bool isDark;
+  const _ResultsShimmer({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final shimmerColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.black.withValues(alpha: 0.05);
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      itemCount: 6,
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Shimmer(
+            duration: const Duration(seconds: 2),
+            color: isDark ? Colors.white : Colors.black,
+            colorOpacity: 0.1,
+            child: Container(
+              height: 80,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: shimmerColor,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(height: 14, width: 80, color: shimmerColor),
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: shimmerColor,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  Container(height: 24, width: 40, color: shimmerColor),
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: shimmerColor,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  Container(height: 14, width: 80, color: shimmerColor),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

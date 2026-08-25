@@ -51,6 +51,9 @@ class ContributionRepository {
         data: {
           'email': email,
           'amount': amount,
+          // Paystack will redirect to this URL on successful payment.
+          // The app intercepts kogalonetwork:// URLs and fires automatically.
+          'callback_url': 'kogalonetwork://payment/callback?type=contribution',
         },
       );
       debugPrint(

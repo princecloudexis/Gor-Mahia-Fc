@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kogalo_network/models/shop_models.dart';
 import 'package:kogalo_network/providers/shop_providers.dart';
 import 'package:kogalo_network/pages/shop_cart.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ProductDetailsPage extends ConsumerStatefulWidget {
   final ShopProduct product;
@@ -164,10 +165,10 @@ class _ProductDetailsPageState extends ConsumerState<ProductDetailsPage> {
                   ? Colors.white.withValues(alpha: 0.05)
                   : Colors.grey.withValues(alpha: 0.1),
               child: imageUrl.isNotEmpty
-                  ? Image.network(
-                      imageUrl,
+                  ? CachedNetworkImage(
+                      imageUrl: imageUrl,
                       fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) => Center(
+                      errorWidget: (context, error, stackTrace) => Center(
                         child: Icon(
                           Icons.image_outlined,
                           size: 100,

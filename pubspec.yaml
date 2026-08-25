@@ -69,6 +69,7 @@ dependencies:
   camera: ^0.12.0+2
   file_picker: ^11.0.2
   gal: ^2.3.3
+  app_links: ^7.2.1
 
 dev_dependencies:
   flutter_test:
@@ -81,6 +82,8 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
   flutter_launcher_icons: ^0.14.3
+  mocktail: ^1.0.5
+  network_image_mock: ^2.1.1
 
 flutter_launcher_icons:
   android: true

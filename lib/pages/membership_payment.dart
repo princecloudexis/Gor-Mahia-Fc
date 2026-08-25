@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:kogalo_network/pages/main_shell.dart';
 import 'package:kogalo_network/pages/payment_success.dart';
 import 'package:kogalo_network/theme/app_colors.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kogalo_network/providers/user_providers.dart';
 import 'package:kogalo_network/repositories/membership_repository.dart';
+import 'package:kogalo_network/services/payment_deep_link_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class MembershipPayment extends ConsumerStatefulWidget {
@@ -29,38 +29,50 @@ class MembershipPayment extends ConsumerStatefulWidget {
   ConsumerState<MembershipPayment> createState() => _MembershipPaymentState();
 }
 
-class _MembershipPaymentState extends ConsumerState<MembershipPayment> with WidgetsBindingObserver {
+class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
   final _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isInitiating = false;
-  bool _paymentLaunched = false;
   bool _isCheckingStatus = false;
   String? _currentPaymentReference;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
+    // Register deep link callback. When Paystack redirects to
+    // kogalonetwork://payment/callback?reference=xxx&type=membership
+    // this fires automatically — no user action needed.
+    PaymentDeepLinkService.instance.registerCallback(_onPaymentDeepLink);
+
+    // Consume any pending deep link (cold-start case)
+    final pending = PaymentDeepLinkService.instance.consumePending();
+    if (pending != null && pending.type == 'membership') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _currentPaymentReference = pending.reference;
+        _verifyPaymentStatus();
+      });
+    }
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
+    PaymentDeepLinkService.instance.unregisterCallback();
     _emailController.dispose();
     super.dispose();
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _paymentLaunched && !_isCheckingStatus) {
-      _verifyPaymentStatus();
-    }
+  /// Called automatically when Paystack redirects back via deep link.
+  void _onPaymentDeepLink(String reference, String type) {
+    if (!mounted) return;
+    debugPrint('🔗 [MembershipPayment] Deep link received: ref=$reference type=$type');
+    _currentPaymentReference = reference;
+    _verifyPaymentStatus();
   }
 
   Future<void> _verifyPaymentStatus() async {
+    if (_isCheckingStatus || !mounted) return;
     setState(() {
       _isCheckingStatus = true;
-      _paymentLaunched = false;
     });
 
     showDialog(
@@ -73,15 +85,17 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> with Widg
             children: [
               CircularProgressIndicator(color: AppColors.primaryGreen),
               SizedBox(height: 16),
-              Text('Verifying payment status...'),
+              Text('Verifying payment...'),
             ],
           ),
         );
       },
     );
 
-    // Give backend a moment to process the webhook if any
-    await Future.delayed(const Duration(seconds: 2));
+    // Give backend 4 seconds to process Paystack's webhook.
+    // When using deep links, the redirect happens AFTER Paystack processes
+    // the payment, so the webhook typically already arrived.
+    await Future.delayed(const Duration(seconds: 4));
 
     if (_currentPaymentReference != null) {
       try {
@@ -117,6 +131,7 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> with Widg
     } else {
       setState(() {
         _isCheckingStatus = false;
+        _currentPaymentReference = null;
       });
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -126,7 +141,6 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> with Widg
       );
     }
   }
-
 
   Future<void> _processPayment() async {
     if (!_formKey.currentState!.validate()) return;
@@ -160,36 +174,28 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> with Widg
       );
 
       if (!mounted) return;
-      Navigator.pop(context); // Close dialog
+      Navigator.pop(context); // Close loading dialog
 
       _currentPaymentReference = response.reference;
 
       if (response.authorizationUrl.isEmpty) {
-        _paymentLaunched = true;
+        // No URL — direct charge (e.g. mocked). Verify immediately.
         _verifyPaymentStatus();
         return;
       }
 
+      // Launch in external browser. Paystack will redirect to
+      // kogalonetwork://payment/callback?reference=xxx&type=membership
+      // on success, which triggers _onPaymentDeepLink automatically.
       final Uri url = Uri.parse(response.authorizationUrl);
       if (await canLaunchUrl(url)) {
-        _paymentLaunched = true;
-        await launchUrl(url, mode: LaunchMode.inAppBrowserView);
+        await launchUrl(url, mode: LaunchMode.externalApplication);
       } else {
         throw Exception('Could not launch payment page.');
       }
-
-      // We no longer navigate away immediately.
-      // The didChangeAppLifecycleState will handle verification when the browser is closed.
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please complete the payment securely in your browser.'),
-          backgroundColor: AppColors.primaryGreen,
-        ),
-      );
     } catch (e) {
       if (!mounted) return;
-      Navigator.pop(context); // Close dialog
+      Navigator.pop(context); // Close loading dialog
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.toString().replaceAll('Exception: ', '')),

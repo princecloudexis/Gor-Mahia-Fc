@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:video_player/video_player.dart';
 import '../../../models/reels_model.dart';
 import '../../../repositories/reels_repository.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class AdItem extends ConsumerStatefulWidget {
   final Reel ad;
@@ -113,10 +114,10 @@ class _AdItemState extends ConsumerState<AdItem> {
             child: CircularProgressIndicator(color: Colors.white54),
           )
         else if (widget.ad.mediaType == 'image' && widget.ad.mediaUrl != null && widget.ad.mediaUrl!.isNotEmpty)
-          Image.network(
-            widget.ad.mediaUrl!,
+          CachedNetworkImage(
+            imageUrl: widget.ad.mediaUrl!,
             fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => const Center(
+            errorWidget: (context, error, stackTrace) => const Center(
               child: Icon(Icons.broken_image, color: Colors.white54, size: 50),
             ),
           )

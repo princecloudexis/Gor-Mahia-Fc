@@ -4,6 +4,7 @@ import 'package:kogalo_network/pages/monthly_contribution.dart';
 import 'package:kogalo_network/providers/user_providers.dart';
 import 'package:kogalo_network/theme/app_colors.dart';
 import 'package:kogalo_network/theme/apptheme.dart';
+import 'package:shimmer_animation/shimmer_animation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -93,9 +94,7 @@ class MyMembership extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primaryGreen),
-        ),
+        loading: () => const _MembershipShimmer(),
         error: (error, _) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -654,6 +653,85 @@ class _QuickActions extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _MembershipShimmer extends StatelessWidget {
+  const _MembershipShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final shimmerColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.black.withValues(alpha: 0.05);
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+      child: Column(
+        children: [
+          Shimmer(
+            duration: const Duration(seconds: 2),
+            color: isDark ? Colors.white : Colors.black,
+            colorOpacity: 0.1,
+            child: Container(
+              height: 200,
+              decoration: BoxDecoration(
+                color: shimmerColor,
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Shimmer(
+            duration: const Duration(seconds: 2),
+            color: isDark ? Colors.white : Colors.black,
+            colorOpacity: 0.1,
+            child: Container(
+              height: 250,
+              decoration: BoxDecoration(
+                color: shimmerColor,
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              Expanded(
+                child: Shimmer(
+                  duration: const Duration(seconds: 2),
+                  color: isDark ? Colors.white : Colors.black,
+                  colorOpacity: 0.1,
+                  child: Container(
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: shimmerColor,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Shimmer(
+                  duration: const Duration(seconds: 2),
+                  color: isDark ? Colors.white : Colors.black,
+                  colorOpacity: 0.1,
+                  child: Container(
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: shimmerColor,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          )
+        ],
       ),
     );
   }

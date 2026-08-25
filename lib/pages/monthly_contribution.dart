@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:kogalo_network/models/contribution_models.dart';
 import 'package:kogalo_network/providers/contribution_providers.dart';
 import 'package:kogalo_network/repositories/contribution_repository.dart';
+import 'package:kogalo_network/services/payment_deep_link_service.dart';
 import 'package:kogalo_network/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,9 +22,8 @@ class MonthlyContribution extends ConsumerStatefulWidget {
 }
 
 class _MonthlyContributionState extends ConsumerState<MonthlyContribution>
-    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  bool _paymentLaunched = false;
   bool _isCheckingStatus = false;
   Contribution? _currentPayingContribution;
   String? _currentPaymentReference;
@@ -32,29 +32,39 @@ class _MonthlyContributionState extends ConsumerState<MonthlyContribution>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    WidgetsBinding.instance.addObserver(this);
+    // Register deep link callback for contribution payments.
+    // Paystack redirects to kogalonetwork://payment/callback?reference=xxx&type=contribution
+    PaymentDeepLinkService.instance.registerCallback(_onPaymentDeepLink);
+
+    // Consume any pending deep link (cold-start case)
+    final pending = PaymentDeepLinkService.instance.consumePending();
+    if (pending != null && pending.type == 'contribution') {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _currentPaymentReference = pending.reference;
+        _verifyPaymentStatus();
+      });
+    }
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
+    PaymentDeepLinkService.instance.unregisterCallback();
     _tabController.dispose();
     super.dispose();
   }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed &&
-        _paymentLaunched &&
-        !_isCheckingStatus) {
-      _verifyPaymentStatus();
-    }
+  /// Called automatically when Paystack redirects back via deep link.
+  void _onPaymentDeepLink(String reference, String type) {
+    if (!mounted) return;
+    debugPrint('🔗 [Contribution] Deep link received: ref=$reference type=$type');
+    _currentPaymentReference = reference;
+    _verifyPaymentStatus();
   }
 
   Future<void> _verifyPaymentStatus() async {
+    if (_isCheckingStatus) return;
     setState(() {
       _isCheckingStatus = true;
-      _paymentLaunched = false;
     });
 
     showDialog(
@@ -74,8 +84,9 @@ class _MonthlyContributionState extends ConsumerState<MonthlyContribution>
       },
     );
 
-    // Give backend time to process the webhook
-    await Future.delayed(const Duration(seconds: 2));
+    // Give backend 4 seconds to process Paystack's webhook.
+    // Deep link fires after Paystack confirms, so webhook is typically already arrived.
+    await Future.delayed(const Duration(seconds: 4));
 
     // Refresh counts
     ref.invalidate(contributionCountProvider);
@@ -297,9 +308,8 @@ class _MonthlyContributionState extends ConsumerState<MonthlyContribution>
       final String authUrl = response.authorizationUrl;
 
       if (authUrl.isEmpty) {
-        // Mocked flow: No URL to launch.
+        // Mocked flow: No URL to launch. Set reference and verify immediately.
         setState(() {
-          _paymentLaunched = true;
           _currentPayingContribution = contribution;
           _currentPaymentReference = response.reference;
         });
@@ -309,11 +319,13 @@ class _MonthlyContributionState extends ConsumerState<MonthlyContribution>
         final Uri url = Uri.parse(authUrl);
         if (await canLaunchUrl(url)) {
           setState(() {
-            _paymentLaunched = true;
             _currentPayingContribution = contribution;
             _currentPaymentReference = response.reference;
           });
-          await launchUrl(url, mode: LaunchMode.inAppBrowserView);
+          // Launch in external browser. Paystack will redirect to
+          // kogalonetwork://payment/callback?reference=xxx&type=contribution
+          // on success, which fires _onPaymentDeepLink automatically.
+          await launchUrl(url, mode: LaunchMode.externalApplication);
         } else {
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(

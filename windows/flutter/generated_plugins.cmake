@@ -3,6 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  app_links
   connectivity_plus
   ffmpeg_kit_flutter_new_min_gpl
   file_selector_windows

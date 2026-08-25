@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kogalo_network/services/fcm_service.dart';
 import 'package:kogalo_network/firebase_options.dart';
+import 'package:kogalo_network/services/payment_deep_link_service.dart';
 
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
     GlobalKey<ScaffoldMessengerState>();
@@ -39,6 +40,10 @@ Future<void> main() async {
   }
 
   runApp(const ProviderScope(child: MyApp()));
+
+  // Initialize deep link listener for Paystack payment callbacks.
+  // Must be called after runApp so NavigationService.navigatorKey is attached.
+  PaymentDeepLinkService.instance.init();
 }
 
 class MyApp extends ConsumerWidget {

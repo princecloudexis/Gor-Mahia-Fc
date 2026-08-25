@@ -17,6 +17,7 @@ import 'package:kogalo_network/providers/policy_provider.dart';
 import 'package:kogalo_network/providers/user_providers.dart';
 import 'package:kogalo_network/theme/app_colors.dart';
 import 'package:kogalo_network/theme/apptheme.dart';
+import 'package:shimmer_animation/shimmer_animation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -49,7 +50,7 @@ class _AuthenticatedView extends ConsumerWidget {
 
     if (user == null) {
       if (authState.status == AuthStatus.loading) {
-        return const Center(child: CircularProgressIndicator());
+        return const _ProfileShimmer();
       }
       return Center(
         child: Column(
@@ -66,17 +67,64 @@ class _AuthenticatedView extends ConsumerWidget {
       );
     }
 
-    return CustomScrollView(
-      physics: const BouncingScrollPhysics(
-        parent: AlwaysScrollableScrollPhysics(),
-      ),
-      slivers: [
+    return Column(
+      children: [
+        // ── FIXED TOP BAR ──
+        SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
+            child: Row(
+              children: [
+                if (Navigator.canPop(context)) ...[
+                  _IconBtn(
+                    icon: Icons.arrow_back,
+                    onTap: () => Navigator.pop(context),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                // Title
+                Expanded(
+                  child: Text(
+                    'Profile',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 20,
+                    ),
+                  ),
+                ),
+                // Edit button
+                _IconBtn(
+                  icon: Icons.edit_outlined,
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => EditProfile(user: user),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        
+        // ── FIXED PROFILE DETAILS ──
         _ProfileHeader(user: user),
-        // _StatsRow(user: user), // Hidden because ticket booking is not implemented yet
-        _MenuSection(),
-        // Extra bottom padding so content clears the floating glass nav bar
-        SliverToBoxAdapter(
-          child: SizedBox(height: MediaQuery.of(context).padding.bottom + 30),
+        
+        // ── SCROLLABLE MENU CONTENT ──
+        Expanded(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              children: [
+                _MenuSection(),
+                SizedBox(height: MediaQuery.of(context).padding.bottom + 30),
+              ],
+            ),
+          ),
         ),
       ],
     );
@@ -94,55 +142,11 @@ class _ProfileHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final String? fullImageUrl = user.cleanedImageUrl;
 
-    return SliverToBoxAdapter(
-      child: Container(
-        color: Theme.of(context).scaffoldBackgroundColor,
-        child: Column(
-          children: [
-            // ── Top bar ──
-            SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                child: Row(
-                  children: [
-                    if (Navigator.canPop(context)) ...[
-                      _IconBtn(
-                        icon: Icons.arrow_back,
-                        onTap: () => Navigator.pop(context),
-                      ),
-                      const SizedBox(width: 12),
-                    ],
-                    // Title
-                    Expanded(
-                      child: Text(
-                        'Profile',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 20,
-                        ),
-                      ),
-                    ),
-
-                    // Edit button
-                    _IconBtn(
-                      icon: Icons.edit_outlined,
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => EditProfile(user: user),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 16),
+    return Container(
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: Column(
+        children: [
+          const SizedBox(height: 16),
 
             // ── Avatar + name ──
             Padding(
@@ -214,8 +218,7 @@ class _ProfileHeader extends StatelessWidget {
             ),
           ],
         ),
-      ).animate().fadeIn(duration: 400.ms),
-    );
+      ).animate().fadeIn(duration: 400.ms);
   }
 }
 
@@ -417,12 +420,11 @@ class _MenuSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SliverToBoxAdapter(
-      child: Padding(
-        padding: const EdgeInsets.only(left: 20, right: 20, top: 24),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).cardColor,
+    return Padding(
+      padding: const EdgeInsets.only(left: 20, right: 20, top: 24),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: Theme.of(context).dividerColor),
           ),
@@ -446,8 +448,7 @@ class _MenuSection extends StatelessWidget {
             },
           ),
         ).animate().fadeIn(duration: 400.ms, delay: 200.ms),
-      ),
-    );
+      );
   }
 }
 
@@ -685,4 +686,109 @@ class MenuItem {
   final Widget? destination;
 
   const MenuItem({required this.icon, required this.title, this.destination});
+}
+
+class _ProfileShimmer extends StatelessWidget {
+  const _ProfileShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final shimmerColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.black.withValues(alpha: 0.05);
+
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  width: 120,
+                  height: 30,
+                  color: Colors.transparent,
+                ),
+                Shimmer(
+                  duration: const Duration(seconds: 2),
+                  color: isDark ? Colors.white : Colors.black,
+                  colorOpacity: 0.1,
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: shimmerColor,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Shimmer(
+              duration: const Duration(seconds: 2),
+              color: isDark ? Colors.white : Colors.black,
+              colorOpacity: 0.1,
+              child: Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: shimmerColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Shimmer(
+              duration: const Duration(seconds: 2),
+              color: isDark ? Colors.white : Colors.black,
+              colorOpacity: 0.1,
+              child: Container(
+                width: 150,
+                height: 24,
+                color: shimmerColor,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Shimmer(
+              duration: const Duration(seconds: 2),
+              color: isDark ? Colors.white : Colors.black,
+              colorOpacity: 0.1,
+              child: Container(
+                width: 100,
+                height: 16,
+                color: shimmerColor,
+              ),
+            ),
+            const SizedBox(height: 32),
+            Expanded(
+              child: ListView.builder(
+                itemCount: 6,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Shimmer(
+                      duration: const Duration(seconds: 2),
+                      color: isDark ? Colors.white : Colors.black,
+                      colorOpacity: 0.1,
+                      child: Container(
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: shimmerColor,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

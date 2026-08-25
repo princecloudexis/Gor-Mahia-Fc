@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../api/api_client.dart';
 import '../models/event_model.dart';
 import '../theme/apptheme.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class EventCard extends ConsumerWidget {
   final EventModel event;
@@ -34,12 +35,12 @@ class EventCard extends ConsumerWidget {
             ClipRRect(
               borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
               child: imageUrl.isNotEmpty
-                  ? Image.network(
-                      imageUrl,
+                  ? CachedNetworkImage(
+                      imageUrl: imageUrl,
                       height: 150,
                       width: double.infinity,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => _ErrorImage(height: 150),
+                      errorWidget: (_, __, ___) => _ErrorImage(height: 150),
                     )
                   : _ErrorImage(height: 150),
             ),

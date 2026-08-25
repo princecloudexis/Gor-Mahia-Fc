@@ -62,6 +62,9 @@ class MembershipRepository {
         data: {
           'email': email,
           'membership_id': int.tryParse(membershipId) ?? membershipId,
+          // Paystack will redirect to this URL on successful payment.
+          // The app intercepts kogalonetwork:// URLs and fires automatically.
+          'callback_url': 'kogalonetwork://payment/callback?type=membership',
         },
       );
       debugPrint('💳 [MembershipPay] /user/pay RAW RESPONSE: ${response.data}');

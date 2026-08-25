@@ -186,8 +186,8 @@ class _PostCommentsSheetState extends ConsumerState<PostCommentsSheet> {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: Image.network(
-                        _selectedGifUrl!,
+                      child: CachedNetworkImage(
+                        imageUrl: _selectedGifUrl!,
                         fit: BoxFit.cover,
                         height: 100,
                       ),

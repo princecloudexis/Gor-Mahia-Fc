@@ -284,9 +284,7 @@ class _HomeState extends ConsumerState<Home> {
           const SizedBox(height: 3),
           Row(
             children: [
-              const SizedBox(
-                width: 36,
-              ), // Aligns with text above (28 icon + 8 padding)
+              const SizedBox(width: 36),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                 decoration: BoxDecoration(
@@ -599,7 +597,10 @@ class _LocationWidget extends ConsumerWidget {
             locationAsync.value?.country.isNotEmpty == true
                 ? locationAsync.value!.country
                 : 'Tap to change',
-            style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 9),
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.5),
+              fontSize: 9,
+            ),
           ),
         ],
       ),
@@ -1710,7 +1711,9 @@ class _FootballRefreshIndicatorState extends State<_FootballRefreshIndicator>
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.greenMain.withValues(alpha: 0.45),
+                                  color: AppColors.greenMain.withValues(
+                                    alpha: 0.45,
+                                  ),
                                   blurRadius: 14,
                                   offset: const Offset(0, 4),
                                 ),

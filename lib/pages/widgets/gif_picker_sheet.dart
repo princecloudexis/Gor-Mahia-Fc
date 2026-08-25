@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../theme/app_colors.dart';
 import '../../providers/community_providers.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class GifPickerSheet extends ConsumerStatefulWidget {
   final void Function(int? id, String? url) onGifSelected;
@@ -98,16 +99,16 @@ class _GifPickerSheetState extends ConsumerState<GifPickerSheet> {
                             },
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(12),
-                              child: Container(
-                                color: isDark
-                                    ? Colors.white.withValues(alpha: 0.08)
-                                    : Colors.black.withValues(alpha: 0.06),
-                                child: Image.network(
-                                  gif.url,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (c, e, s) => const Center(child: Icon(Icons.error)),
+                                child: Container(
+                                  color: isDark
+                                      ? Colors.white.withValues(alpha: 0.08)
+                                      : Colors.black.withValues(alpha: 0.06),
+                                  child: CachedNetworkImage(
+                                    imageUrl: gif.url,
+                                    fit: BoxFit.cover,
+                                    errorWidget: (c, e, s) => const Center(child: Icon(Icons.error)),
+                                  ),
                                 ),
-                              ),
                             ),
                           );
                         },

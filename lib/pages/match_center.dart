@@ -1,6 +1,7 @@
 import 'package:kogalo_network/repositories/match_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shimmer_animation/shimmer_animation.dart';
 import '../theme/app_colors.dart';
 import '../providers/match_providers.dart';
 import '../providers/user_providers.dart';
@@ -241,12 +242,7 @@ class _MatchHeaderState extends ConsumerState<_MatchHeader> with SingleTickerPro
                   ),
                 );
               },
-              loading: () => const Padding(
-                padding: EdgeInsets.symmetric(vertical: 40),
-                child: Center(
-                  child: CircularProgressIndicator(color: Colors.white),
-                ),
-              ),
+              loading: () => const _MatchHeaderShimmer(),
               error: (e, st) => const Padding(
                 padding: EdgeInsets.symmetric(vertical: 40),
                 child: Center(
@@ -339,9 +335,7 @@ class _OverviewTab extends ConsumerWidget {
             ],
           );
         },
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primaryGreen),
-        ),
+        loading: () => _MatchOverviewShimmer(isDark: isDark),
         error: (error, stack) => ListView(
           padding: const EdgeInsets.all(20),
           children: [
@@ -588,9 +582,7 @@ class _StatsTab extends ConsumerWidget {
             ],
           );
         },
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primaryGreen),
-        ),
+        loading: () => _MatchStatsShimmer(isDark: isDark),
         error: (error, stack) => ListView(
           padding: const EdgeInsets.all(20),
           children: [
@@ -726,9 +718,7 @@ class _LineupTab extends ConsumerWidget {
             ],
           );
         },
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.primaryGreen),
-        ),
+        loading: () => _MatchLineupShimmer(isDark: isDark),
         error: (error, stack) => ListView(
           padding: const EdgeInsets.all(20),
           children: [
@@ -919,9 +909,7 @@ class _ChatTabState extends ConsumerState<_ChatTab> {
                       .toList(),
                 );
               },
-              loading: () => const Center(
-                child: CircularProgressIndicator(color: AppColors.primaryGreen),
-              ),
+              loading: () => _MatchChatShimmer(isDark: widget.isDark),
               error: (error, stack) => ListView(
                 padding: const EdgeInsets.all(20),
                 children: [
@@ -1151,6 +1139,227 @@ class _ChatTabState extends ConsumerState<_ChatTab> {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _MatchOverviewShimmer extends StatelessWidget {
+  final bool isDark;
+  const _MatchOverviewShimmer({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final shimmerColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.black.withValues(alpha: 0.05);
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(20),
+      itemCount: 2,
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 20),
+          child: Shimmer(
+            duration: const Duration(seconds: 2),
+            color: isDark ? Colors.white : Colors.black,
+            colorOpacity: 0.1,
+            child: Container(
+              height: 180,
+              decoration: BoxDecoration(
+                color: shimmerColor,
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _MatchLineupShimmer extends StatelessWidget {
+  final bool isDark;
+  const _MatchLineupShimmer({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final shimmerColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.black.withValues(alpha: 0.05);
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(20),
+      itemCount: 2,
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 20),
+          child: Shimmer(
+            duration: const Duration(seconds: 2),
+            color: isDark ? Colors.white : Colors.black,
+            colorOpacity: 0.1,
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: shimmerColor,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    height: 16,
+                    width: 120,
+                    color: isDark ? Colors.white24 : Colors.black12,
+                  ),
+                  const SizedBox(height: 20),
+                  ...List.generate(11, (i) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12.0),
+                    child: Container(
+                      height: 14,
+                      width: 150,
+                      color: isDark ? Colors.white12 : Colors.black12,
+                    ),
+                  )),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _MatchStatsShimmer extends StatelessWidget {
+  final bool isDark;
+  const _MatchStatsShimmer({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final shimmerColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.black.withValues(alpha: 0.05);
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      itemCount: 6,
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 24.0),
+          child: Shimmer(
+            duration: const Duration(seconds: 2),
+            color: isDark ? Colors.white : Colors.black,
+            colorOpacity: 0.1,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  height: 13,
+                  width: 100,
+                  color: shimmerColor,
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Container(height: 14, width: 30, color: shimmerColor),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Container(
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: shimmerColor,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Container(height: 14, width: 30, color: shimmerColor),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _MatchChatShimmer extends StatelessWidget {
+  final bool isDark;
+  const _MatchChatShimmer({required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final shimmerColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.black.withValues(alpha: 0.05);
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(20),
+      itemCount: 6,
+      itemBuilder: (context, index) {
+        final isMe = index % 2 == 0;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Shimmer(
+            duration: const Duration(seconds: 2),
+            color: isDark ? Colors.white : Colors.black,
+            colorOpacity: 0.1,
+            child: Row(
+              mainAxisAlignment:
+                  isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                if (!isMe)
+                  Container(
+                    width: 24,
+                    height: 24,
+                    margin: const EdgeInsets.only(right: 8),
+                    decoration: BoxDecoration(
+                      color: shimmerColor,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                Container(
+                  height: 50,
+                  width: 200,
+                  decoration: BoxDecoration(
+                    color: shimmerColor,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _MatchHeaderShimmer extends StatelessWidget {
+  const _MatchHeaderShimmer();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 40),
+      child: Center(
+        child: Shimmer(
+          duration: const Duration(seconds: 2),
+          color: Colors.white,
+          colorOpacity: 0.2,
+          child: Container(
+            height: 80,
+            width: 250,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+        ),
       ),
     );
   }

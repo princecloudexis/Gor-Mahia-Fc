@@ -12,7 +12,7 @@ import '../models/event_model.dart';
 import 'package:kogalo_network/main.dart';
 import 'package:kogalo_network/services/fcm_service.dart';
 import 'package:kogalo_network/controllers/auth_controller.dart';
-import 'package:kogalo_network/pages/login.dart';
+import 'package:kogalo_network/pages/auth/login.dart';
 
 class HomePageData {
   final List<CategoryModel> categories;

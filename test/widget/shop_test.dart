@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kogalo_network/pages/shop.dart';
+import 'package:kogalo_network/pages/shop/shop.dart';
 import 'package:kogalo_network/models/shop_models.dart';
 import 'package:kogalo_network/providers/shop_providers.dart';
-import 'package:kogalo_network/pages/home_dashboard_sections.dart';
+import 'package:kogalo_network/pages/home/home_dashboard_sections.dart';
 import 'package:kogalo_network/repositories/shop_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'dart:async';

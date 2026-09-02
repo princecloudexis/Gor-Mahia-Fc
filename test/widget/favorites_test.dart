@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kogalo_network/pages/favorites.dart';
+import 'package:kogalo_network/pages/explore/favorites.dart';
 import 'package:kogalo_network/models/event_model.dart';
 import 'package:kogalo_network/models/shop_models.dart';
 import 'package:kogalo_network/repositories/event_repositories.dart';

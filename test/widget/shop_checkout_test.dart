@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kogalo_network/pages/shop_checkout.dart';
+import 'package:kogalo_network/pages/shop/shop_checkout.dart';
 
 void main() {
   testWidgets('ShopCheckoutPage renders cart total and validates fields', (WidgetTester tester) async {

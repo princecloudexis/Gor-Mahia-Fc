@@ -5,10 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../providers/navigation_providers.dart';
 import '../../providers/reels_providers.dart';
-import 'widgets/video_player_item.dart';
-import 'widgets/reels_preload_manager.dart';
-import 'custom_camera_screen.dart';
-import 'widgets/ad_item.dart';
+import './widgets/video_player_item.dart';
+import './widgets/reels_preload_manager.dart';
+import './custom_camera_screen.dart';
+import './widgets/ad_item.dart';
 
 final GlobalKey<RefreshIndicatorState> reelsRefreshKey =
     GlobalKey<RefreshIndicatorState>();

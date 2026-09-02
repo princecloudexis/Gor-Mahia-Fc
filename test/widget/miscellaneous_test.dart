@@ -6,7 +6,7 @@ import 'package:kogalo_network/models/location_model.dart';
 import 'package:kogalo_network/services/location_service.dart';
 import 'package:kogalo_network/widgets/no_connection_widget.dart';
 import 'package:kogalo_network/providers/connectivity_provider.dart';
-import 'package:kogalo_network/pages/search.dart';
+import 'package:kogalo_network/pages/explore/search.dart';
 import 'package:kogalo_network/providers/search_provider.dart';
 
 void main() {

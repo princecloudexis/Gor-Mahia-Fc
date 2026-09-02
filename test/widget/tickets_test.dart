@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kogalo_network/pages/tickets.dart';
-import 'package:kogalo_network/pages/home_dashboard_sections.dart';
+import 'package:kogalo_network/pages/tickets/tickets.dart';
+import 'package:kogalo_network/pages/home/home_dashboard_sections.dart';
 import 'package:kogalo_network/repositories/event_repositories.dart';
 import 'package:kogalo_network/models/user_ticket_model.dart';
 import 'package:kogalo_network/models/event_model.dart';

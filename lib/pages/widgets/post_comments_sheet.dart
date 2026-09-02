@@ -5,7 +5,7 @@ import '../../providers/community_providers.dart';
 import '../../providers/user_providers.dart';
 import '../../theme/app_colors.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'gif_picker_sheet.dart';
+import './gif_picker_sheet.dart';
 
 class PostCommentsSheet extends ConsumerStatefulWidget {
   final CommunityPost post;

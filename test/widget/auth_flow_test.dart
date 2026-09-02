@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kogalo_network/pages/login.dart';
-import 'package:kogalo_network/pages/signup.dart';
+import 'package:kogalo_network/pages/auth/login.dart';
+import 'package:kogalo_network/pages/auth/signup.dart';
 import 'package:kogalo_network/repositories/auth_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:kogalo_network/models/user_model.dart';

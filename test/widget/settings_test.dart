@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kogalo_network/pages/settings.dart';
+import 'package:kogalo_network/pages/profile/settings.dart';
 import 'package:kogalo_network/providers/theme_provider.dart';
 
 void main() {

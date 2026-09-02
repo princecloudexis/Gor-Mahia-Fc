@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'reels_overlay_ui.dart';
-import 'reel_details_view.dart';
+import './reels_overlay_ui.dart';
+import './reel_details_view.dart';
 import '../../../models/reels_model.dart';
 import '../../../providers/navigation_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,7 +10,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../providers/reels_providers.dart';
 import '../../../providers/user_providers.dart';
 import '../../../repositories/reels_repository.dart';
-import 'reels_preload_manager.dart';
+import './reels_preload_manager.dart';
 
 class VideoPlayerItem extends ConsumerStatefulWidget {
   final Reel reel;

@@ -1,5 +1,5 @@
 
-import 'package:kogalo_network/pages/splashscreen.dart';
+import 'package:kogalo_network/pages/auth/splashscreen.dart';
 import 'package:kogalo_network/providers/connectivity_provider.dart';
 import 'package:kogalo_network/widgets/no_connection_widget.dart';
 import 'package:flutter/material.dart';

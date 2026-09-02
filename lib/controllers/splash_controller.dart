@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:kogalo_network/controllers/auth_controller.dart';
-import 'package:kogalo_network/pages/home.dart';
-import 'package:kogalo_network/pages/login.dart';
+import 'package:kogalo_network/pages/home/home.dart';
+import 'package:kogalo_network/pages/auth/login.dart';
 import 'package:kogalo_network/providers/splash_provider.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

@@ -1,5 +1,5 @@
-import 'category_model.dart';
-import 'event_model.dart';
+import './category_model.dart';
+import './event_model.dart';
 
 class SearchResponseModel {
   final List<EventModel> events;

@@ -1,4 +1,4 @@
-import 'package:kogalo_network/pages/splashscreen.dart';
+import 'package:kogalo_network/pages/auth/splashscreen.dart';
 import 'package:kogalo_network/providers/theme_provider.dart';
 import 'package:kogalo_network/theme/apptheme.dart';
 import 'package:kogalo_network/widgets/connectivity_wrapper.dart';

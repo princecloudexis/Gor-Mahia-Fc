@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kogalo_network/pages/profile.dart';
+import 'package:kogalo_network/pages/profile/profile.dart';
 import 'package:kogalo_network/controllers/auth_controller.dart';
 import 'package:kogalo_network/providers/user_providers.dart';
 import 'package:kogalo_network/models/user_model.dart';

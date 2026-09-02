@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kogalo_network/pages/settings.dart';
-import 'package:kogalo_network/pages/help_and_support.dart';
-import 'package:kogalo_network/pages/policy.dart';
+import 'package:kogalo_network/pages/profile/settings.dart';
+import 'package:kogalo_network/pages/support/help_and_support.dart';
+import 'package:kogalo_network/pages/support/policy.dart';
 import 'package:kogalo_network/models/policy_model.dart';
 import 'package:kogalo_network/models/user_model.dart';
 import 'package:kogalo_network/providers/user_providers.dart';

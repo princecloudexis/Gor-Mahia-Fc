@@ -13,6 +13,8 @@ class UserModel {
   final String membershipPlan;
   final bool isPaidMember;
   final DateTime? membershipExpiry;
+  final int? daysUntilExpiry;
+  final bool showRenewalWarning;
 
   UserModel({
     required this.id,
@@ -29,6 +31,8 @@ class UserModel {
     this.membershipPlan = 'Free Plan',
     this.isPaidMember = false,
     this.membershipExpiry,
+    this.daysUntilExpiry,
+    this.showRenewalWarning = false,
   });
 
   String get fullName => '$firstName $lastName';
@@ -103,6 +107,9 @@ class UserModel {
       mExpiry = DateTime.tryParse(expiryRaw.toString());
     }
 
+    final daysUntilExpiry = json['days_until_expiry'] ?? userData['days_until_expiry'];
+    final showWarning = json['show_renewal_warning'] ?? userData['show_renewal_warning'] ?? false;
+
     return UserModel(
       id: userData['id'] as int,
       firstName: userData['first_name'] as String? ?? '',
@@ -122,6 +129,8 @@ class UserModel {
       membershipPlan: mPlan?.toString() ?? 'Free Plan',
       isPaidMember: isPaid == true || isPaid == 1 || isPaid == 'true',
       membershipExpiry: mExpiry,
+      daysUntilExpiry: daysUntilExpiry != null ? int.tryParse(daysUntilExpiry.toString()) : null,
+      showRenewalWarning: showWarning == true || showWarning == 1 || showWarning == 'true',
     );
   }
 }

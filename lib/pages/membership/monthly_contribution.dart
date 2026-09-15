@@ -4,6 +4,7 @@ import 'package:kogalo_network/providers/contribution_providers.dart';
 import 'package:kogalo_network/repositories/contribution_repository.dart';
 import 'package:kogalo_network/services/payment_deep_link_service.dart';
 import 'package:kogalo_network/theme/app_colors.dart';
+import 'package:kogalo_network/widgets/universal_payment_processing_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -67,70 +68,47 @@ class _MonthlyContributionState extends ConsumerState<MonthlyContribution>
       _isCheckingStatus = true;
     });
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return const AlertDialog(
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(color: AppColors.primaryGreen),
-              SizedBox(height: 16),
-              Text('Verifying payment...'),
-            ],
-          ),
-        );
-      },
-    );
-
-    // Give backend 4 seconds to process Paystack's webhook.
-    // Deep link fires after Paystack confirms, so webhook is typically already arrived.
-    await Future.delayed(const Duration(seconds: 4));
-
-    // Refresh counts
-    ref.invalidate(contributionCountProvider);
-    ref.invalidate(contributionsProvider);
-
-    try {
-      final repo = ref.read(contributionRepositoryProvider);
-      final statusResponse = await repo.checkPaymentStatus(
-        _currentPaymentReference!,
-      );
-
-      if (!mounted) return;
-      Navigator.pop(context); // Close dialog
-
-      if (statusResponse.payment == 'success' ||
-          statusResponse.payment.toLowerCase() == 'paid') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Payment Successful! Thank you for your contribution.',
-            ),
-            backgroundColor: AppColors.primaryGreen,
-          ),
-        );
-        // Switch to the 'Paid' tab
-        _tabController.animateTo(1);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Payment not completed or still processing.'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      Navigator.pop(context); // Close dialog
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Payment status checked. Pull to refresh to update.'),
-          backgroundColor: AppColors.primaryGreen,
+    // Navigate to the beautiful universal processing screen.
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => UniversalPaymentProcessingScreen(
+          title: 'Processing Contribution',
+          reference: _currentPaymentReference ?? '',
+          verifyStatus: () async {
+            final repo = ref.read(contributionRepositoryProvider);
+            final statusResponse = await repo.checkPaymentStatus(
+              _currentPaymentReference!,
+            );
+            ref.invalidate(contributionCountProvider);
+            ref.invalidate(contributionsProvider);
+            return statusResponse.payment == 'success' ||
+                statusResponse.payment.toLowerCase() == 'paid';
+          },
+          onSuccess: () {
+            Navigator.pop(context); // pop processing screen
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Payment Successful! Thank you for your contribution.',
+                ),
+                backgroundColor: AppColors.primaryGreen,
+              ),
+            );
+            _tabController.animateTo(1);
+          },
+          onFailure: (message) {
+            Navigator.pop(context); // pop processing screen
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(message),
+                backgroundColor: AppColors.error,
+              ),
+            );
+          },
         ),
-      );
-    } finally {
+      ),
+    ).then((_) {
       if (mounted) {
         setState(() {
           _isCheckingStatus = false;
@@ -138,7 +116,7 @@ class _MonthlyContributionState extends ConsumerState<MonthlyContribution>
           _currentPaymentReference = null;
         });
       }
-    }
+    });
   }
 
   void _showPaymentDialog(Contribution contribution) {
@@ -277,23 +255,6 @@ class _MonthlyContributionState extends ConsumerState<MonthlyContribution>
     String email,
     String amount,
   ) async {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return const AlertDialog(
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(color: AppColors.primaryGreen),
-              SizedBox(height: 16),
-              Text('Initiating payment... Please wait'),
-            ],
-          ),
-        );
-      },
-    );
-
     try {
       final repo = ref.read(contributionRepositoryProvider);
       final response = await repo.payContribution(
@@ -303,17 +264,15 @@ class _MonthlyContributionState extends ConsumerState<MonthlyContribution>
       );
 
       if (!mounted) return;
-      Navigator.pop(context); // Close initiating dialog
 
       final String authUrl = response.authorizationUrl;
 
       if (authUrl.isEmpty) {
-        // Mocked flow: No URL to launch. Set reference and verify immediately.
+        // Mocked flow: verify immediately
         setState(() {
           _currentPayingContribution = contribution;
           _currentPaymentReference = response.reference;
         });
-        // Immediately verify payment
         _verifyPaymentStatus();
       } else {
         final Uri url = Uri.parse(authUrl);
@@ -322,9 +281,6 @@ class _MonthlyContributionState extends ConsumerState<MonthlyContribution>
             _currentPayingContribution = contribution;
             _currentPaymentReference = response.reference;
           });
-          // Launch in external browser. Paystack will redirect to
-          // kogalonetwork://payment/callback?reference=xxx&type=contribution
-          // on success, which fires _onPaymentDeepLink automatically.
           await launchUrl(url, mode: LaunchMode.externalApplication);
         } else {
           if (!mounted) return;
@@ -333,12 +289,8 @@ class _MonthlyContributionState extends ConsumerState<MonthlyContribution>
           );
         }
       }
-
-      // We no longer refresh counts or show a SnackBar immediately.
-      // Verification happens in didChangeAppLifecycleState when the user returns.
     } catch (e) {
       if (!mounted) return;
-      Navigator.pop(context); // Close dialog
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error: $e')));

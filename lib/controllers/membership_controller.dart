@@ -74,6 +74,7 @@ class MembershipController extends StateNotifier<MembershipState> {
         country: country,
         branchId: branchId,
         packageId: packageId,
+        userId: user.id.toString(),
       );
       state = state.copyWith(
         status: MembershipStatus.success,

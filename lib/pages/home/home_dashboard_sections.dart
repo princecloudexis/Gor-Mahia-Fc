@@ -245,20 +245,27 @@ class LiveNowSection extends ConsumerWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              TeamLogoName(
-                                name: match.homeTeam.name,
-                                logo: match.homeTeam.logoUrl,
-                              ),
-                              Text(
-                                '${match.homeScore ?? 0} - ${match.awayScore ?? 0}',
-                                style: const TextStyle(
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.bold,
+                              Expanded(
+                                child: TeamLogoName(
+                                  name: match.homeTeam.name,
+                                  logo: match.homeTeam.logoUrl,
                                 ),
                               ),
-                              TeamLogoName(
-                                name: match.awayTeam.name,
-                                logo: match.awayTeam.logoUrl,
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Text(
+                                  '${match.homeScore ?? 0} - ${match.awayScore ?? 0}',
+                                  style: const TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: TeamLogoName(
+                                  name: match.awayTeam.name,
+                                  logo: match.awayTeam.logoUrl,
+                                ),
                               ),
                             ],
                           ),
@@ -350,6 +357,13 @@ class TeamLogoName extends StatelessWidget {
             imageUrl: logo!,
             width: 48,
             height: 48,
+            memCacheWidth: 150,
+            memCacheHeight: 150,
+            placeholder: (context, url) => Image.asset(
+              'assets/images/real_football.png',
+              width: 48,
+              height: 48,
+            ),
             errorWidget: (_, __, ___) => Image.asset(
               'assets/images/real_football.png',
               width: 48,
@@ -360,7 +374,7 @@ class TeamLogoName extends StatelessWidget {
           Image.asset('assets/images/real_football.png', width: 48, height: 48),
         const SizedBox(height: 8),
         SizedBox(
-          width: 80,
+          width: double.infinity,
           child: Text(
             name,
             style: const TextStyle(fontSize: 12),

@@ -34,9 +34,9 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
         .catchError((error) {
           if (mounted) setState(() => _initError = true);
           if (mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text('Preview not supported on this device.')));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Preview not supported on this device.')),
+            );
           }
         });
   }
@@ -64,7 +64,9 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
           final String filtersStr = videoConfig.filtersCmd(filters);
           final bool isCopy = filters.isEmpty;
           // Use libx264 with ultrafast preset to make it extremely fast
-          final String codecCmd = isCopy ? '-c copy' : '-c:v libx264 -preset ultrafast -crf 28';
+          final String codecCmd = isCopy
+              ? '-c copy'
+              : '-c:v libx264 -preset ultrafast -crf 28';
           return "${videoConfig.startTrimCmd} -i $videoPath ${videoConfig.toTrimCmd} $filtersStr $codecCmd -y $outputPath";
         },
       );
@@ -99,7 +101,6 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
         ).showSnackBar(SnackBar(content: Text('Export error: $e')));
       }
     }
-
     if (mounted) setState(() => _isExporting = false);
   }
 
@@ -171,35 +172,45 @@ class _VideoEditorScreenState extends State<VideoEditorScreen> {
                 ],
               ),
             )
-          : _initError 
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.error_outline, color: Colors.white54, size: 48),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Video format/resolution not supported\nfor editing on this device.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      const SizedBox(height: 24),
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).primaryColor),
-                        onPressed: () {
-                           Navigator.pushReplacement(
-                             context,
-                             MaterialPageRoute(
-                               builder: (context) => UploadReelScreen(videoFile: widget.file),
-                             ),
-                           );
-                        },
-                        child: const Text('Skip Editing & Upload', style: TextStyle(color: Colors.white)),
-                      ),
-                    ],
+          : _initError
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.error_outline,
+                    color: Colors.white54,
+                    size: 48,
                   ),
-                )
-              : const Center(child: CircularProgressIndicator(color: Colors.green)),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Video format/resolution not supported\nfor editing on this device.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).primaryColor,
+                    ),
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              UploadReelScreen(videoFile: widget.file),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      'Skip Editing & Upload',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : const Center(child: CircularProgressIndicator(color: Colors.green)),
     );
   }
 

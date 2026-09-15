@@ -14,6 +14,7 @@ import 'package:kogalo_network/models/checkout_model.dart';
 import 'package:kogalo_network/providers/checkout_provider.dart';
 import 'package:kogalo_network/providers/user_providers.dart';
 import 'package:kogalo_network/services/payment_deep_link_service.dart';
+import 'package:kogalo_network/widgets/universal_payment_processing_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class Checkout extends ConsumerStatefulWidget {
@@ -129,50 +130,54 @@ class _CheckoutState extends ConsumerState<Checkout> {
       _isCheckingStatus = true;
     });
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const _ProcessingPaymentDialog(),
-    );
-
-    // Give backend 4 seconds to process Paystack's webhook.
-    // Deep link fires after Paystack confirms payment, so webhook is usually already there.
-    await Future.delayed(const Duration(seconds: 4));
-
-    if (!mounted) return;
-
-    final PaymentResult result = await ref
-        .read(checkoutControllerProvider(widget.orderId).notifier)
-        .verifyAndCompletePayment(
-          reference: _currentReference!,
-          streetAddress: _addressController.text.trim(),
-          phoneNumber: _phoneController.text.trim(),
-        );
-
-    if (!mounted) return;
-    Navigator.of(context).pop(); // dismiss loading dialog
-    
-    setState(() {
-      _isCheckingStatus = false;
-      _currentReference = null;
-    });
-
-    if (result.isSuccess) {
-      _handleCancelAndCleanup(context, shouldPop: false);
-      ref.invalidate(ticketsProvider('upcoming'));
-      ref.invalidate(ticketsProvider('past'));
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const PaymentSuccess()),
-        (route) => false,
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result.errorMessage ?? 'Payment not completed or still processing.'),
-          backgroundColor: AppColors.error,
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => UniversalPaymentProcessingScreen(
+          title: 'Processing Tickets',
+          reference: _currentReference ?? '',
+          verifyStatus: () async {
+            final PaymentResult result = await ref
+                .read(checkoutControllerProvider(widget.orderId).notifier)
+                .verifyAndCompletePayment(
+                  reference: _currentReference!,
+                  streetAddress: _addressController.text.trim(),
+                  phoneNumber: _phoneController.text.trim(),
+                );
+            if (result.isSuccess) return true;
+            if (result.errorMessage != null) {
+              throw Exception(result.errorMessage);
+            }
+            return false;
+          },
+          onSuccess: () {
+            _handleCancelAndCleanup(context, shouldPop: false);
+            ref.invalidate(ticketsProvider('upcoming'));
+            ref.invalidate(ticketsProvider('past'));
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const PaymentSuccess()),
+              (route) => false,
+            );
+          },
+          onFailure: (message) {
+            Navigator.pop(context); // pop processing screen
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(message),
+                backgroundColor: AppColors.error,
+              ),
+            );
+          },
         ),
-      );
-    }
+      ),
+    ).then((_) {
+      if (mounted) {
+        setState(() {
+          _isCheckingStatus = false;
+          _currentReference = null;
+        });
+      }
+    });
   }
 
   void _processPayment() async {
@@ -180,12 +185,6 @@ class _CheckoutState extends ConsumerState<Checkout> {
     await Future.delayed(const Duration(milliseconds: 100));
 
     if (_formKey.currentState!.validate()) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const _ProcessingPaymentDialog(),
-      );
-
       final user = ref.read(userProvider);
       final PaymentResult result = await ref
           .read(checkoutControllerProvider(widget.orderId).notifier)
@@ -195,7 +194,6 @@ class _CheckoutState extends ConsumerState<Checkout> {
           );
 
       if (!mounted) return;
-      Navigator.of(context).pop();
 
       if (result.isSuccess && result.authorizationUrl != null) {
         final Uri url = Uri.parse(result.authorizationUrl!);
@@ -203,9 +201,6 @@ class _CheckoutState extends ConsumerState<Checkout> {
           setState(() {
             _currentReference = result.reference;
           });
-          // Launch in external browser. Paystack will redirect to
-          // kogalonetwork://payment/callback?reference=xxx&type=ticket
-          // on success, which fires _onPaymentDeepLink automatically.
           await launchUrl(url, mode: LaunchMode.externalApplication);
         } else {
            ScaffoldMessenger.of(context).showSnackBar(

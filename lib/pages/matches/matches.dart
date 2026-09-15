@@ -150,6 +150,23 @@ class _FixturesTab extends ConsumerWidget {
       color: AppColors.primaryGreen,
       child: fixturesAsync.when(
         data: (data) {
+          if (data.liveMatches.isEmpty && data.upcomingFixtures.isEmpty) {
+            return CustomScrollView(
+              slivers: [
+                SliverFillRemaining(
+                  child: Center(
+                    child: Text(
+                      'No upcoming fixtures.',
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+
           return ListView(
             padding: const EdgeInsets.symmetric(vertical: 20),
             children: [
@@ -160,35 +177,27 @@ class _FixturesTab extends ConsumerWidget {
                 ),
                 const SizedBox(height: 24),
               ],
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  'UPCOMING FIXTURES',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 1.2,
-                    color: isDark
-                        ? AppColors.textMutedDark
-                        : AppColors.textMutedLight,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              if (data.upcomingFixtures.isEmpty)
-                Center(
+              if (data.upcomingFixtures.isNotEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: Text(
-                    'No upcoming fixtures.',
+                    'UPCOMING FIXTURES',
                     style: TextStyle(
-                      color: isDark ? Colors.white : Colors.black,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.2,
+                      color: isDark
+                          ? AppColors.textMutedDark
+                          : AppColors.textMutedLight,
                     ),
                   ),
-                )
-              else
+                ),
+                const SizedBox(height: 16),
                 ...data.upcomingFixtures.map(
                   (fixture) => Padding(
                     padding: const EdgeInsets.only(bottom: 12, left: 16, right: 16),
                     child: MatchListTile(
+                      matchId: fixture.id,
                       home: fixture.homeTeam.name.toUpperCase(),
                       away: fixture.awayTeam.name.toUpperCase(),
                       time: fixture.matchDatetimeLabel?.toUpperCase() ?? 'TBD',
@@ -196,6 +205,7 @@ class _FixturesTab extends ConsumerWidget {
                     ),
                   ),
                 ),
+              ],
               const SizedBox(height: 100),
             ],
           );
@@ -235,14 +245,15 @@ class _LiveTab extends ConsumerWidget {
       child: liveMatchesAsync.when(
         data: (liveMatches) {
           if (liveMatches.isEmpty) {
-            return ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                Center(
-                  child: Text(
-                    'No live matches right now.',
-                    style: TextStyle(
-                      color: isDark ? Colors.white : Colors.black,
+            return CustomScrollView(
+              slivers: [
+                SliverFillRemaining(
+                  child: Center(
+                    child: Text(
+                      'No live matches right now.',
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
                     ),
                   ),
                 ),
@@ -687,6 +698,7 @@ class GoalScorerRow extends StatelessWidget {
 }
 
 class MatchListTile extends StatelessWidget {
+  final int matchId;
   final String home;
   final String away;
   final String time;
@@ -694,6 +706,7 @@ class MatchListTile extends StatelessWidget {
 
   const MatchListTile({
     super.key,
+    required this.matchId,
     required this.home,
     required this.away,
     required this.time,
@@ -702,7 +715,16 @@ class MatchListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MatchCenter(matchId: matchId),
+          ),
+        );
+      },
+      child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       decoration: BoxDecoration(
         color: isDark
@@ -739,7 +761,7 @@ class MatchListTile extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 }
 
@@ -757,14 +779,15 @@ class _ResultsTab extends ConsumerWidget {
       child: resultsAsync.when(
         data: (results) {
           if (results.isEmpty) {
-            return ListView(
-              padding: const EdgeInsets.all(20),
-              children: [
-                Center(
-                  child: Text(
-                    'No results found.',
-                    style: TextStyle(
-                      color: isDark ? Colors.white : Colors.black,
+            return CustomScrollView(
+              slivers: [
+                SliverFillRemaining(
+                  child: Center(
+                    child: Text(
+                      'No results found.',
+                      style: TextStyle(
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
                     ),
                   ),
                 ),
@@ -805,7 +828,16 @@ class ResultListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MatchCenter(matchId: match.id),
+          ),
+        );
+      },
+      child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
         color: isDark
@@ -899,7 +931,7 @@ class ResultListTile extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ));
   }
 }
 

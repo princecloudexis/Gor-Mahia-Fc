@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
@@ -443,8 +444,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       _buildClubName(),
                       const SizedBox(height: 26),
                       _buildDivider(),
-                      const SizedBox(height: 42),
-                      _buildBranchBadge(),
+                      const SizedBox(height: 36),
+                      _buildClubTagline(),
                     ],
                   ),
                 ),
@@ -715,75 +716,69 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     ),
   );
 
-  // ── Branch Badge ────────────────────────────────────────────────────────
-  Widget _buildBranchBadge() {
-    return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.15),
-            border: Border.all(
-              color: AppColors.gold.withValues(alpha: 0.4),
-              width: 0.8,
-            ),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Image.asset(
-                'assets/images/branch-logo.png',
-                width: 48,
-                height: 48,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) =>
-                    const Icon(Icons.shield, color: Colors.white54, size: 48),
-              ),
-              const SizedBox(width: 18),
-              Container(
-                width: 1,
-                height: 38,
-                color: Colors.white.withValues(alpha: 0.2),
-              ),
-              const SizedBox(width: 18),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'MACHAKOS',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 2.5,
-                      fontFamily: 'Manrope',
-                    ),
+  // ── Bouncing Football + Cycling Phrases ──────────────────────────
+  Widget _buildClubTagline() {
+    return Column(
+      children: [
+        // Bouncing football using _ring3Controller (3-second loop)
+        AnimatedBuilder(
+          animation: _ring3Controller,
+          builder: (context, _) {
+            // Smooth bounce: goes up then comes back down
+            final double t = _ring3Controller.value;
+            final double bounce = math.sin(t * math.pi * 2).abs();
+            final double offsetY = -(bounce * 18); // bounces up 18px
+            final double scaleX = 1.0 - bounce * 0.06; // squish slightly
+            final double scaleY = 1.0 + bounce * 0.06;
+
+            return Transform.translate(
+              offset: Offset(0, offsetY),
+              child: Transform.scale(
+                scaleX: scaleX,
+                scaleY: scaleY,
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primaryGreen.withValues(alpha: 0.35 * bounce),
+                        blurRadius: 18,
+                        spreadRadius: 2,
+                        offset: Offset(0, 8 * (1 - bounce)),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'BRANCH',
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white70,
-                      letterSpacing: 3.5,
-                      fontFamily: 'Manrope',
-                    ),
+                  child: Image.asset(
+                    'assets/images/real_football.png',
+                    width: 38,
+                    height: 38,
+                    fit: BoxFit.contain,
                   ),
-                ],
+                ),
               ),
-            ],
-          ),
-        )
-        .animate()
-        .fadeIn(duration: 500.ms, delay: 1100.ms)
-        .scale(
-          begin: const Offset(0.9, 0.9),
-          end: const Offset(1.0, 1.0),
-          duration: 500.ms,
-          delay: 1100.ms,
-          curve: Curves.easeOutBack,
-        );
+            );
+          },
+        ),
+
+        const SizedBox(height: 18),
+
+        // Cycling club phrases
+        const _SplashCyclingPhrases(
+          phrases: [
+            'EST. 1968',
+            'THE PEOPLE\'S CLUB',
+            '19+ LEAGUE TITLES',
+            'PRIDE OF AFRICA',
+            'KOGALO FOREVER',
+          ],
+        ),
+      ],
+    )
+    .animate()
+    .fadeIn(duration: 500.ms, delay: 1000.ms)
+    .slideY(begin: 0.3, end: 0, curve: Curves.easeOutCubic);
   }
 
   // ── Footer ────────────────────────────────────────────────────────────────
@@ -825,5 +820,76 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         ),
       ],
     ).animate().fadeIn(duration: 600.ms, delay: 1500.ms);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Cycling Phrases Widget — crossfades through club mottos every 1.5 seconds
+// ─────────────────────────────────────────────────────────────────────────────
+class _SplashCyclingPhrases extends StatefulWidget {
+  final List<String> phrases;
+  const _SplashCyclingPhrases({required this.phrases});
+
+  @override
+  State<_SplashCyclingPhrases> createState() => _SplashCyclingPhrasesState();
+}
+
+class _SplashCyclingPhrasesState extends State<_SplashCyclingPhrases> {
+  int _index = 0;
+  late Timer _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(milliseconds: 1500), (_) {
+      if (mounted) {
+        setState(() {
+          _index = (_index + 1) % widget.phrases.length;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 22,
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 600),
+        transitionBuilder: (child, animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.4),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOutCubic,
+              )),
+              child: child,
+            ),
+          );
+        },
+        child: Text(
+          widget.phrases[_index],
+          key: ValueKey(_index),
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: AppColors.gold.withValues(alpha: 0.80),
+            letterSpacing: 3.5,
+            fontFamily: 'Manrope',
+          ),
+        ),
+      ),
+    );
   }
 }

@@ -28,11 +28,13 @@ class MembershipRepository {
     required String country,
     required String branchId,
     required String packageId,
+    required String userId,
   }) async {
     try {
       final response = await _apiClient.dio.post(
         '/user/membership',
         data: {
+          'user_id': userId,
           'country': country,
           'branch_id': int.tryParse(branchId) ?? branchId,
           'package_type_id': int.tryParse(packageId) ?? packageId,

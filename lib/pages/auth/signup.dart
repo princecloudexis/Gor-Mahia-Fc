@@ -345,7 +345,7 @@ class _SignupState extends ConsumerState<Signup> with TickerProviderStateMixin {
           _buildSleekField(
             controller: phoneController,
             label: 'Phone Number',
-            hint: '2547XX XXX XXX',
+            hint: '07XX XXX XXX',
             keyboardType: TextInputType.phone,
             validator: phoneValidator,
             delay: 2,
@@ -551,7 +551,9 @@ class _SignupState extends ConsumerState<Signup> with TickerProviderStateMixin {
         Text(
           'Already have an account? ',
           style: TextStyle(
-            color: isDark ? Colors.white.withValues(alpha: 0.7) : Colors.black54,
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.7)
+                : Colors.black54,
           ),
         ),
         TextButton(

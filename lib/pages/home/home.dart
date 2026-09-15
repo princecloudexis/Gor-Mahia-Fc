@@ -372,21 +372,28 @@ class _HomeState extends ConsumerState<Home> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Image.asset(
-                      'assets/images/branch-logo.png',
-                      height: 12,
-                      width: 12,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      'MACHAKOS BRANCH',
-                      style: TextStyle(
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white.withValues(alpha: 0.85),
-                        letterSpacing: 1.0,
-                        fontFamily: 'Manrope',
-                      ),
+                    Consumer(
+                      builder: (context, ref, child) {
+                        final user = ref.watch(userProvider);
+                        final isFreePlan = user == null || 
+                            user.membershipPlan.toLowerCase() == 'free plan' || 
+                            user.membershipPlan.toLowerCase() == 'none';
+                        
+                        final badgeText = isFreePlan 
+                            ? 'JOIN A BRANCH' 
+                            : user.membershipPlan.toUpperCase();
+
+                        return Text(
+                          badgeText,
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white.withValues(alpha: 0.85),
+                            letterSpacing: 1.0,
+                            fontFamily: 'Manrope',
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),

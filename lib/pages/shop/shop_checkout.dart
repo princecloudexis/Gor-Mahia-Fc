@@ -229,7 +229,13 @@ class _ShopCheckoutPageState extends ConsumerState<ShopCheckoutPage> {
                   ),
                   const SizedBox(height: 16),
 
-                  Container(
+                  Theme(
+                    data: Theme.of(context).copyWith(
+                      colorScheme: Theme.of(context).colorScheme.copyWith(
+                        primary: AppColors.primaryGreen,
+                      ),
+                    ),
+                    child: Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
                       color: isDark ? AppColors.bgSurfaceDark : Colors.white,
@@ -325,6 +331,7 @@ class _ShopCheckoutPageState extends ConsumerState<ShopCheckoutPage> {
                         ),
                       ],
                     ),
+                  ),
                   ),
 
                   const SizedBox(height: 40),

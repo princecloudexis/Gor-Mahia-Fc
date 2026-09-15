@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kogalo_network/providers/user_providers.dart';
 import 'package:kogalo_network/repositories/membership_repository.dart';
 import 'package:kogalo_network/services/payment_deep_link_service.dart';
+import 'package:kogalo_network/widgets/universal_payment_processing_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class MembershipPayment extends ConsumerStatefulWidget {
@@ -75,94 +76,69 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
       _isCheckingStatus = true;
     });
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return const AlertDialog(
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(color: AppColors.primaryGreen),
-              SizedBox(height: 16),
-              Text('Verifying payment...'),
-            ],
-          ),
-        );
-      },
-    );
+    // Navigate to the beautiful universal processing screen.
+    // It will poll verifyStatus() every 3 seconds and call onSuccess/onFailure.
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => UniversalPaymentProcessingScreen(
+          title: 'Processing Membership',
+          reference: _currentPaymentReference ?? '',
+          verifyStatus: () async {
+            // Give backend a little time on first call
+            final repo = ref.read(membershipRepositoryProvider);
+            await repo.checkPaymentStatus(
+              reference: _currentPaymentReference ?? '',
+              membershipId: widget.membershipId,
+              plan: widget.title,
+            );
+            await ref.read(userProvider.notifier).fetchUser();
+            ref.invalidate(membershipDetailsProvider);
 
-    // Give backend 4 seconds to process Paystack's webhook.
-    // When using deep links, the redirect happens AFTER Paystack processes
-    // the payment, so the webhook typically already arrived.
-    await Future.delayed(const Duration(seconds: 4));
-
-    if (_currentPaymentReference != null) {
-      try {
-        final repo = ref.read(membershipRepositoryProvider);
-        await repo.checkPaymentStatus(
-          reference: _currentPaymentReference!,
-          membershipId: widget.membershipId,
-          plan: widget.title,
-        );
-      } catch (e) {
-        debugPrint('Error checking payment status: $e');
-      }
-    }
-
-    await ref.read(userProvider.notifier).fetchUser();
-    ref.invalidate(membershipDetailsProvider);
-
-    if (!mounted) return;
-    Navigator.pop(context); // Close dialog
-
-    final user = ref.read(userProvider);
-    final isPaid = user != null &&
-                   user.membershipPlan != null &&
-                   user.membershipPlan!.toLowerCase() != 'free plan' &&
-                   user.membershipPlan!.toLowerCase() != 'none';
-
-    if (isPaid) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => PaymentSuccess(title: widget.title)),
-        (route) => false,
-      );
-    } else {
-      setState(() {
-        _isCheckingStatus = false;
-        _currentPaymentReference = null;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Payment not completed or still processing.'),
-          backgroundColor: AppColors.error,
+            final user = ref.read(userProvider);
+            final isPaid = user != null &&
+                user.membershipPlan != null &&
+                user.membershipPlan!.toLowerCase() != 'free plan' &&
+                user.membershipPlan!.toLowerCase() != 'none';
+            return isPaid;
+          },
+          onSuccess: () {
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => PaymentSuccess(title: widget.title)),
+              (route) => false,
+            );
+          },
+          onFailure: (message) {
+            // Pop back to membership payment screen
+            Navigator.pop(context);
+            setState(() {
+              _isCheckingStatus = false;
+              _currentPaymentReference = null;
+            });
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(message),
+                backgroundColor: AppColors.error,
+              ),
+            );
+          },
         ),
-      );
-    }
+      ),
+    ).then((_) {
+      if (mounted) {
+        setState(() {
+          _isCheckingStatus = false;
+        });
+      }
+    });
   }
 
   Future<void> _processPayment() async {
     if (!_formKey.currentState!.validate()) return;
     
     setState(() => _isInitiating = true);
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) {
-        return const AlertDialog(
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CircularProgressIndicator(color: AppColors.primaryGreen),
-              SizedBox(height: 16),
-              Text('Initiating Paystack checkout...'),
-            ],
-          ),
-        );
-      },
-    );
 
     try {
       final repo = ref.read(membershipRepositoryProvider);
@@ -174,12 +150,11 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
       );
 
       if (!mounted) return;
-      Navigator.pop(context); // Close loading dialog
 
       _currentPaymentReference = response.reference;
 
       if (response.authorizationUrl.isEmpty) {
-        // No URL — direct charge (e.g. mocked). Verify immediately.
+        // No URL — direct charge (e.g. mocked). Go straight to processing screen.
         _verifyPaymentStatus();
         return;
       }
@@ -195,7 +170,6 @@ class _MembershipPaymentState extends ConsumerState<MembershipPayment> {
       }
     } catch (e) {
       if (!mounted) return;
-      Navigator.pop(context); // Close loading dialog
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.toString().replaceAll('Exception: ', '')),
